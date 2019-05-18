@@ -118,7 +118,7 @@ Understanding the Basics of a Neural Network:
 Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]  
 I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section.  
 
- Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/p/BwFAab3BvDYEOvtq08j57EcFjNd4UoAKsb_rJ40/)
+ Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/giorgos.xou/)
   
 I wish love and happiness to Everyone! <3
 ## ```Donation```
