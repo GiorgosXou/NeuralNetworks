@@ -73,8 +73,8 @@ Understanding the Basics of a Neural Network:
 |NN.layers[ i ].```_numberOfInputs```|```unsigned int```|ReadOnly|
 |NN.layers[ i ].```_numberOfOutputs```|```unsigned int```|ReadOnly|
 
-## ```Searches Across Internet```
-<br>| ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other
+## ```Searches Across Internet```  
+| ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other
 |```*```| Maybe Intresting?
 | About | NNs | PROGMEM | Define directive | Other & "Random" | HowTo - Arduino Library|
 | ------ | ------ | ------ | ------ | ------ | ------ |
