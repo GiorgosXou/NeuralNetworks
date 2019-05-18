@@ -51,7 +51,35 @@ Understanding the Basics of a Neural Network:<br>
 
 | NN Functions | Input Type (x),(z)|Output Type (Y) | Action |
 | ------ | ------ | ------ | ------ |
-|asdasdas|asdasdas|asdasdas|asdasdasdasdasdasdasdasdasdasdasdasdasd|
+| *FeedForword(```*inputs```)| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
+| *FeedForword(```*inputs```, ```IS_PROGMEM```)| 1D Float Array, Boolean| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed. [Weights And Biases Saved in ROM] |
+| BackProp(```*expected```)| 1D Float Array|1D Float Array| Tells to the NN if the outputs-Y were right/the-expected-X-inputs and then, teaches it.|
+|print(```IS__PROGMEM```)|Boolean|String| Serial.Prints the weights and biases of NN. If print(true) prints from ROM|
+|NN.Layer[ i ].Sigmoid(```&x```)|Constant Float|Float| Returns Sigmoid Activation Function's 1/(1+e^(-x)) value |
+
+| NN -Constructors -Variables -Layer's Variables | Type| Explenation|
+| ------ | ------ | ------ |
+|NeuralNetwork(```*_layer```, ```&NumberOflayers```) |```const unsigned int```, ``` ```| ```Constructor``` |
+|NeuralNetwork(```*_layer```, ```&NumberOflayers```, ```&LRw```, ```&LRb```)|```const unsigned int```, ``` ``` ,```const float```, ``` ```|```Constructor```|
+|NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```|```Constructor```|
+|NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```,```NO_OUTPUTS```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```,```bool```|```Constructor``` ```NO_OUTPUTS```  Clears Outputs from RAM|
+|NN.```LearningRateOfWeights```|```float```|-|
+|NN.```LearningRateOfBiases```|```float```|-|
+|NN.```layers```[ i ]|```Layer*```|-|
+|NN.Layer[ i ].```bias```|```float*```|-|
+|NN.Layer[ i ].```outputs```[ j ]|```float*```|-|
+|NN.Layer[ i ].```weights```[ j ][ l ]|```float**```|-|
+|NN.Layer[ i ].```preLgamma```[ j ]|```float*```|-|
+|NN.layers[ i ].```_numberOfInputs```|```unsigned int```|ReadOnly|
+|NN.layers[ i ].```_numberOfOutputs```|```unsigned int```|ReadOnly|
+
+## ```Searches Across Internet```
+<br>| ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other
+|```*```| Maybe Intresting?
+| About | NNs | PROGMEM | Define directive | Other & "Random" | HowTo - Arduino Library|
+| ------ | ------ | ------ | ------ | ------ | ------ |
+| asdasd | asdasda| asdasd | asdasda| asdasd | asdasdasdasdasdasdasdasdasdasdasdasd|
+
 
 ## ```Notes```
 Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]<br>
