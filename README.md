@@ -115,9 +115,10 @@ Understanding the Basics of a Neural Network:
 
 ## ```Notes```
 Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]  
-I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section.    
- Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/p/BwFAab3BvDYEOvtq08j57EcFjNd4UoAKsb_rJ40/)
+I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section.  
 
+ Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/p/BwFAab3BvDYEOvtq08j57EcFjNd4UoAKsb_rJ40/)
+  
 I wish love and happiness to Everyone! <3
 ## ```Donation```
 + [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/donate/?token=uovyqeI3ewzYpkwK79qNpGrT5ei9GG5xchdP3eUZoFJsTTxrk55ja4BjXI7zrM3hSCzg8m)
