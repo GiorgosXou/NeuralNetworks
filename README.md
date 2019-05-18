@@ -9,8 +9,7 @@ Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs
 <br>
 Examples: Backpropagation_Single_Xor_Gate.ino<br>
 Understanding the Basics of a Neural Network:<br>
-[```1```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) [```2```](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi) [```3```](https://www.youtube.com/watch?v=L_PByyJ9g-I) [```4```](https://www.youtube.com/watch?v=H-ybCx8gt-8) [```5```](https://www.youtube.com/watch?v=I74ymkoNTnw) [```6```](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464) [```7```](https://www.youtube.com/channel/UCgBncpylJ1kiVaPyP-PZauQ) [```8```](https://www.youtube.com/watch?v=An5z8lR8asY) [```9```](http://neuralnetworksanddeeplearning.com/chap1.html) [```10```](https://www.lifehacker.com.au/2016/03/translating-mathematical-notations-into-code-you-can-use/) [```11```](https://en.m.wikipedia.org/wiki/Backpropagation) ```12``` ```13``` .<br> 
-[An Image that Explains some basic things.](https://imgur.com/a/Owxak6w)
+[```1```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) 
 
 ## ```Features```
 
