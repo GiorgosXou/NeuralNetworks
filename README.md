@@ -105,8 +105,8 @@ Understanding the Basics of a Neural Network:<br>
 |26|[linear Regression](https://towardsdatascience.com/coding-deep-learning-for-beginners-linear-regression-part-1-initialization-and-prediction-7a84070b01c8)|||[NN. (TAA),(BDI) Architecture ](https://msdn.microsoft.com/en-us/magazine/mt848706)||
 |27|[+ MLP](https://www.cse.unsw.edu.au/~cs9417ml/MLP2/)|||[NN. fast.ai ?](https://www.fast.ai/)||
 |28|[+ MLP](https://towardsdatascience.com/multi-layer-neural-networks-with-sigmoid-function-deep-learning-for-rookies-2-bf464f09eb7f)|||[NN. deeplearning.net]( http://deeplearning.net/reading-list/tutorials/)||
-|29|[```π‡¬π‡·``` ΞΞµΟ…ΟΟ‰Ξ½ΞΉΞΊΞ¬ Ξ”Ξ―ΞΊΟ„Ο…Ξ±](https://www.youtube.com/watch?v=x4mCfg14S28)|||[NN. BackProp Python]( https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/)||
-|30|[```π‡¬π‡·``` Ξ“ΞµΞ½ΞµΟ„ΞΉΞΊΟΟ‚ Ξ‘Ξ»Ξ³ΟΟΞΉΞΈΞΌΞΏΟ‚]( https://www.youtube.com/watch?v=FyglDUdCqCk)|||[NN. C# Code]( https://github.com/deepakkumar1984/tech-quantum/blob/master/CSharpExamples/StandardExamples/SimpleNeuralNet.cs)||
+|29|[```🇬🇷``` Νευρωνικά Δίκτυα](https://www.youtube.com/watch?v=x4mCfg14S28)|||[NN. BackProp Python]( https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/)||
+|30|[```🇬🇷``` Γενετικός Αλγόριθμος]( https://www.youtube.com/watch?v=FyglDUdCqCk)|||[NN. C# Code]( https://github.com/deepakkumar1984/tech-quantum/blob/master/CSharpExamples/StandardExamples/SimpleNeuralNet.cs)||
 |31|- [MS NN Classification](https://msdn.microsoft.com/en-US/magazine/jj190808.aspx)|||[NN. Implement BackProp Python](https://medium.com/coinmonks/implement-back-propagation-in-neural-networks-ed09897593e7)||
 |32|- [VB ML Q-Learning]( https://www.codeproject.com/Articles/1088282/VisualBasic-Machine-Learning-Step-The-Q-Learning)|||[```NN. Java Tut Playlist```](https://www.youtube.com/watch?v=d3OtgsGcMLw&index=1&list=PLgomWLYGNl1dL1Qsmgumhcg4HOcWZMd3k) ?||
 |33|[* handwritten Recognition ](http://neuralnetworksanddeeplearning.com/chap1.html)|||[NN. BackProp for Dummies]( https://www.quora.com/What-is-the-best-back-propagation-deep-learning-presentation-for-dummies)||
@@ -117,7 +117,7 @@ Understanding the Basics of a Neural Network:<br>
 ## ```Notes```
 Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]<br>
 I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section. <br><br>
- Ξ•ΞΉΞΊΟΞ½Ξ± Ο€ΞΏΟ… Ξ²Ξ»Ξ­Ο€ΞµΞΉ Ο„ΞΏ "ΞµΞ³Ο", ΞΈΟ…ΞΌΞ―Ξ¶ΞµΞΉ ΞΊΞΏΟ…Ο„Ξ― Ο€ΞΏΟ… Ξ΄Ξµ Ξ²Ξ»Ξ­Ο€ΞµΞΉΟ‚, ΞµΞΉΞΊΟΞ½Ξ± Ο€ΞΏΟ… Ο‡Ξ¬Ξ½ΞµΞΉΟ‚β€Ά ΟƒΞΊΞΉΞ¬ Ο€ΞΏΟ… 'Ο„Ξµ Ο†Ο‰Ο‚ ΞΊΞ±ΞΉ Ξ½Ξ± Ξ²Ξ»Ξ­Ο€ΞµΞΉΟ‚, Ξ±ΞΊΞΏΟΞµΞΉ Ο„Ξ± Ξ»ΟΞ³ΞΉΞ± Ο€ΞΏΟ… Ξ»ΞµΟ‚: [...][ β€®#iπ“π‘](https://www.instagram.com/p/BwFAab3BvDYEOvtq08j57EcFjNd4UoAKsb_rJ40/)
+ Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/p/BwFAab3BvDYEOvtq08j57EcFjNd4UoAKsb_rJ40/)
 
 I wish love and happiness to Everyone! <3
 ## ```Donation```
