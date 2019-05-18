@@ -76,7 +76,7 @@ Understanding the Basics of a Neural Network:
 ## ```Searches Across Internet```  
 | ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other |```*```| Maybe Intresting?  
 | About | NNs | PROGMEM | Define directive | Other & "Random" | HowTo - Arduino Library|  
-| ------ | ------ | ------ | ------ | ------ | ------ |
+| ------ | ------ | ------ | ------ | ------ | ------ |  
 |1|[```Playlist```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So)|[```Arduino```](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/)|[```Tutorial```]( https://www.deviceplus.com/how-tos/arduino-guide/arduino-preprocessor-directives-tutorial/)|[A. Initialize Array Values](https://stackoverflow.com/questions/201101/how-to-initialize-all-members-of-an-array-to-the-same-value)|[Arduino Library Tutorial]( https://www.arduino.cc/en/Hacking/libraryTutorial)|  
 |2|[```Playlist```](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)|[```Manual```](https://www.nongnu.org/avr-libc/user-manual/group__avr__pgmspace.html)|[```Arduino Define```]( https://www.arduino.cc/reference/en/language/structure/further-syntax/define/)|[A. Inheritance,destructors?](https://stackoverflow.com/questions/15817941/virtual-destructors-and-deleting-objects-with-multiple-inheritance-how-does-i)|[Arduino Style Guide]( https://www.arduino.cc/en/Reference/APIStyleGuide)|
 |3|[```BackPropagation```](https://www.youtube.com/watch?v=L_PByyJ9g-I)|[```Examples```](http://busyducks.com/wp_4_1/2016/02/11/update-comprehensive-arduino-flash-memory-via-progmem/)|[```Determining board```](https://forum.arduino.cc/index.php?topic=113656.0)|[A. Identifying Arduino type?](https://web-engineering.info/node/28)|[Library specification]( https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5:-Library-specification)|
@@ -114,8 +114,8 @@ Understanding the Basics of a Neural Network:
 
 
 ## ```Notes```
-Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]<br>
-I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section. <br><br>
+Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]  
+I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section.    
  Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/p/BwFAab3BvDYEOvtq08j57EcFjNd4UoAKsb_rJ40/)
 
 I wish love and happiness to Everyone! <3
