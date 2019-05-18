@@ -112,7 +112,7 @@ Understanding the Basics of a Neural Network:
 |33|[* handwritten Recognition ](http://neuralnetworksanddeeplearning.com/chap1.html)|||[NN. BackProp for Dummies]( https://www.quora.com/What-is-the-best-back-propagation-deep-learning-presentation-for-dummies)||
 |34|[* Deep Learning in 6 weeks?](https://www.youtube.com/watch?v=_qjNH1rDLm0)|||[```NN. Wiki Backprop Math```](https://en.m.wikipedia.org/wiki/Backpropagation)||
 |35|[* Playlist](https://www.youtube.com/watch?v=QJoa0JYaX1I&list=PLRqwX-V7Uu6Y7MdSCaIfsxc561QI0U0Tb)|||[NN. Looking Inside](https://ml4a.github.io/ml4a/looking_inside_neural_nets/)||
-|36|[```SciBasic```](https://github.com/xieguigang/sciBASIC)|||||
+|36|[- ```SciBasic```](https://github.com/xieguigang/sciBASIC)|||||
 
 
 ## ```Notes```
