@@ -9,7 +9,7 @@ Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs
 <br>
 Examples: Backpropagation_Single_Xor_Gate.ino<br>
 Understanding the Basics of a Neural Network:<br>
-[```1```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) 
+[1](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) 
 
 ## ```Features```
 
