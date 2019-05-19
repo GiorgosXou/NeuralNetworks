@@ -128,5 +128,5 @@ I wish love and happiness to Everyone! <3
  + Bitcoin Address: 1Cfn2zb2XC5JAqTNjDYAxwKYVwtjqcf5Pm
 
 ## ```Hastags```
-#Arduino, #Microcontrollers, #Simple, #NeuralNetworks, #MLP
+#Arduino, #AVR, #ATtiny85, #Microcontrollers, #Simple, #NeuralNetworks, #MLP
             
