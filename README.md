@@ -32,6 +32,7 @@ Understanding the Basics of a Neural Network:
 - If you want to Use "Serial" On An ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
 - If you have Error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
 - [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on An ATtiny85 doesn't work properly for some reasons, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths Work! [...]
+- I am not yet a professional programmer [...]
 
 ## ```Tested On```
 - Arduino Uno
