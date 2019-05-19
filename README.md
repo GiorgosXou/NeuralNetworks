@@ -59,10 +59,10 @@ Understanding the Basics of a Neural Network:
 
 | NN -Constructors -Variables -Layer's Variables | Type| Explenation|
 | ------ | ------ | ------ |
-|NeuralNetwork(```*_layer```, ```&NumberOflayers```) |```const unsigned int```, ``` ```| ```Constructor``` |
-|NeuralNetwork(```*_layer```, ```&NumberOflayers```, ```&LRw```, ```&LRb```)|```const unsigned int```, ``` ``` ,```const float```, ``` ```|```Constructor```|
-|NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```|```Constructor```|
-|NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```,```NO_OUTPUTS```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```,```bool```|```Constructor``` ```NO_OUTPUTS```  Clears Outputs from RAM|
+|NN(```*_layer```, ```&NumberOflayers```) |```const unsigned int```, ``` ```| ```Constructor``` |
+|NN(```*_layer```, ```&NumberOflayers```, ```&LRw```, ```&LRb```)|```const unsigned int```, ``` ``` ,```const float```, ``` ```|```Constructor```|
+|NN(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```|```Constructor```|
+|NN(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```,```NO_OUTPUTS```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```,```bool```|```Constructor``` ```NO_OUTPUTS```  Clears Outputs from RAM|
 |NN.```LearningRateOfWeights```|```float```|-|
 |NN.```LearningRateOfBiases```|```float```|-|
 |NN.```layers```[ i ]|```Layer*```|-|
