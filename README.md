@@ -126,7 +126,4 @@ I wish love and happiness to Everyone! <3
 ## ```Donation```
 + [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url)
  + Bitcoin Address: 1Cfn2zb2XC5JAqTNjDYAxwKYVwtjqcf5Pm
-
-## ```Hastags```
-#Arduino, #AVR, #ATtiny85, #Microcontrollers, #Simple, #NeuralNetworks, #MLP
             
