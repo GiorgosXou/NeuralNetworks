@@ -4,7 +4,7 @@ Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs
 ## ```Summary```
 | NN Functions | Input Type (x)|Output Type (Y) | Action |
 | ------ | ------ | ------ | ------ |
-| ```*FeedForwavrd(X) ```| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
+| ```*FeedForward(X) ```| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
 | ```*BackProp(x) ```| 1D Float Array|1D Float Array| Tells to the NN if the outputs-Y were right/the-expected-X-inputs and then, teaches it.|
   
 Examples: Backpropagation_Single_Xor_Gate.ino  
