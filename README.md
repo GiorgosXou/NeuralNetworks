@@ -33,6 +33,7 @@ Understanding the Basics of a Neural Network:
 - If you have Error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
 - [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on An ATtiny85 doesn't work properly for some reasons, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths Work! [...]
 - I am not yet a professional programmer [...]
+- [**Make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/en/pmwiki.php?n=Reference/Float):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), on the Arduino, double is the same size as float."*
 
 ## ```Tested On```
 - Arduino Uno
