@@ -105,7 +105,7 @@ void NeuralNetwork::Layer::BackPropOutput(const float *_expected_, const float *
     {
 
         //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
-        gamma = ((2 / _numberOfOutputs) * (outputs[i] - _expected_[i])) * SigmDer(outputs[i]);
+        gamma = (outputs[i] - _expected_[i])) * SigmDer(outputs[i]);
         bias_Delta *= gamma;
 
         for (int j = 0; j < _numberOfInputs; j++)
