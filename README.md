@@ -1,81 +1,276 @@
-﻿# Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
+
+
+
+
+# Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
 Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs) easily and effectively on any Arduino board and other microcontrollers.
 
 ## ```Summary```
 | NN Functions | Input Type (x)|Output Type (Y) | Action |
 | ------ | ------ | ------ | ------ |
+|```GetMeanSqrdError(x)```| Unsigned Int| Float| **Calculates** & Returns the MSE _(Mean Squared Error)_ = _[ SSE (Sum Squared Error) divided by the Product of number-οf-οutputs and inputs-per-epoch]_. |
 | ```*FeedForward(X) ```| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
-| ```*BackProp(x) ```| 1D Float Array|1D Float Array| Tells to the NN if the outputs-Y were right/the-expected-X-inputs and then, teaches it.|
+| ```BackProp(x) ```| 1D Float Array| - | Tells to the NN if the outputs-Y were correct/the-expected/X-inputs and then, "teaches" it.|
   
 Examples: Backpropagation_Single_Xor_Gate.ino  
 Understanding the Basics of a Neural Network:  
 [```0```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) [```1```](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi) [```2```](https://www.youtube.com/watch?v=L_PByyJ9g-I) [```3```](https://www.youtube.com/watch?v=H-ybCx8gt-8) [```4```](https://www.youtube.com/watch?v=I74ymkoNTnw) [```5```](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464) [```6```](https://www.youtube.com/channel/UCgBncpylJ1kiVaPyP-PZauQ) [```7```](https://www.youtube.com/watch?v=An5z8lR8asY) [```8```](http://neuralnetworksanddeeplearning.com/chap1.html) [```9```](https://www.lifehacker.com.au/2016/03/translating-mathematical-notations-into-code-you-can-use/) [```10```](https://en.m.wikipedia.org/wiki/Backpropagation) ```11``` ```12``` .  
 [An Image that Explains some basic things.](https://imgur.com/a/Owxak6w)
 
-## ```Features```
-
-- ##### ``` Current```
-- - ```+``` Optimized Algorithm For Less [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) Usage.
-- - ```+``` Only [Sigmoid Activation Function](https://en.wikipedia.org/wiki/Sigmoid_function).
-- - ```+``` Use of [PROGMEM](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/).
-- - ```+``` Simplicity.
- 
-
-- ##### ```future```
-- - ```-``` [More Activation Functions](https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6).
-- - ```-``` Maybe Usage of External [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
-- - ```-``` Precise properties, for many different needs.
-
-## ```Important```
-
-- ATtiny85 doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory)
-- If you want to Use "Serial" On An ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
-- If you have Error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
-- [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on An ATtiny85 doesn't work properly for some reasons, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths Work! [...]
-- I am not yet a professional programmer [...]
-- [**Make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/en/pmwiki.php?n=Reference/Float):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), on the Arduino, double is the same size as float."*
-
-## ```Tested On```
-- Arduino Uno
-- ATtiny85
-
 ## ```Examples```
 
 |*|Example Files (.ino)|Explenation|
 | ------ | ------ | ------ |
-|1|```Backpropagation_double_Xor```|NeuralNetwork  Training of a 3-input-xor circuit and the print of the output(s) of it|
-|2|```Backpropagation_Single_Xor_Gate```|NeuralNetwork  Training of a xor gate and the print of the output(s) of it|
+|1|```Backpropagation_double_Xor```|NeuralNetwork Training of a 3-input-xor circuit and the print of the output(s) of it.|
+|2|```Backpropagation_Single_Xor_Gate```|NeuralNetwork Training of a xor gate and the print of the output(s) of it.|
 |3|```FeedForward_double_Xor```|print of the outputs of the pre-trained-NN|
-|4|```FeedForward_double_Xor_PROGMEM```|print of the outputs of the pre-trained-NN using weights and biases from ROM|
+|4|```FeedForward_double_Xor_PROGMEM```|print of the outputs of the pre-trained-NN using weights and biases from the programmable memmory.|
+|5|```FeedForward_Individual_MNIST_PROGMEM```| Image recognition, MNIST dataset of handwritten digits. [More Here](https://hackaday.io/project/177195-arduino-image-recognition-on-mnist-dataset)|
+|6|```Any_Activation_Function_Per_Layer```|Example of using multiple Activation Functions per Layer.|
+|7|```Run_In_Loop```|Example of using NN inside the loop
 
-## ```Functions & Variables [...]```
- NN = NeuralNetwork , LR = Learning Rate
+## ```Important```
+- If you have Error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
+- I am **not a professional** in any of all those filds [...]
+- [**Make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/en/pmwiki.php?n=Reference/Float):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), on the Arduino, double is the same size as float."*
 
-| NN Functions | Input Type (x),(z)|Output Type (Y) | Action |
+## ```Features```
+
+- ##### ``` Current```
+- - ```+``` Optimizations based on [user's Preference](#macro-properties).
+- - ```+``` Use of [Activation Functions](https://en.wikipedia.org/wiki/Activation_function) per layer.
+- - ```+``` Many [Activation Functions](#activation-functions).
+- - ```+``` Use of [PROGMEM](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/).
+- - ```+``` Simplicity!
+ 
+
+- ##### ```future```
+- - ```-``` Better code.
+- - ```-``` Use of custom functions
+- - ```-``` [More Activation Functions](https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6).
+- - ```-``` Probably support for [Internal](https://www.arduino.cc/en/Reference/EEPROM) [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
+- - ```-``` Probably support for External [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
+- - ```-``` Even more properties, for many different needs.
+
+## ```Tested On```
+- Arduino Uno
+- ATtiny85
+- - doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) (i think..?)
+- - If you want to Use "Serial" On An ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
+- - [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on An ATtiny85 doesn't work properly for some reasons, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths Work! [...]
+- - <sup><sub>(since the first release I haven't tested it again on the ATtiny85 at least yet, so I am not sure)</sub></sup>
+
+## ```Functions, Variables &  [...]```
+ NN = NeuralNetwork , LR = Learning Rate, ``` ``` = Same as previous  variable Type
+| NN Constructors | Type| 
+| ------ | ------ |
+|<sub>NeuralNetwork()</sub>| - |
+|<sub>NeuralNetwork(```*_layer```, ```&NumberOflayers```, ```*_ActFunctionPerLayer=nullptr```)</sub> |<sub>```const unsigned int```, ``` ```, ```byte```</sub>| 
+|<sub>NeuralNetwork(```*_layer```, ```&NumberOflayers```, ```&LRw```, ```&LRb```, ```*_ActFunctionPerLayer=nullptr```)</sub>|<sub>```const unsigned int```, ``` ``` ,```const float```, ``` ```, ```byte```</sub>|
+|<sub>NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```, ```*_ActFunctionPerLayer=nullptr```)</sub>|<sub>```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```, ```byte```</sub>|
+
+<br>
+
+### [Main Functions]
+| NN Functions | Input Type (x)|Output Type (Y) | Action |
 | ------ | ------ | ------ | ------ |
-| *FeedForword(```*inputs```)| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
-| *FeedForword(```*inputs```, ```IS_PROGMEM```)| 1D Float Array, Boolean| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed. [Weights And Biases Saved in ROM] |
-| BackProp(```*expected```)| 1D Float Array|1D Float Array| Tells to the NN if the outputs-Y were right/the-expected-X-inputs and then, teaches it.|
-|print(```IS__PROGMEM```)|Boolean|String| Serial.Prints the weights and biases of NN. If print(true) prints from ROM|
-|NN.Layer[ i ].Sigmoid(```&x```)|Constant Float|Float| Returns Sigmoid Activation Function's 1/(1+e^(-x)) value |
+|FeedForward_Individual(```x```)|Float| 1D Float Array|"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. <sup>(Way Less RAM too)</sup>|
+| *FeedForword(```x```)| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
+| BackProp(```x```)| 1D Float Array | - | Tells to the NN if the outputs-Y were right/the-expected-X-inputs and then, teaches it.|
+|print()| - |String| Serial.Prints the weights and biases of NN. _(If [B10000000](#macro-properties) prints from PROGMEM)_|
 
-| NN -Constructors -Variables -Layer's Variables | Type| Explenation|
+<br>
+
+### [Activation Functions]
+| Activation Functions | Input | Output | Action |
+| ------ | ------ | ------ | ------ |
+|NN.layers->```Sigmoid```(```&x```)| Float | Float | Returns ```1/(1+e^(-x))``` value|
+|NN.layers->```Tanh```(```&x```)| Float | Float | Returns ```(e^(2*x)-1)/(e^(2*x)+1)``` value|
+|NN.layers->```ReLU```(```&x```)| Float | Float | Returns ```(x>0)?x:0``` value|
+|NN.layers->```LeakyELU```(```&x```)| Float | Float | Returns ```(x>0)?x:AlphaLeaky*x``` value|
+|NN.layers->```ELU```(```&x```)| Float | Float | Returns ```(x>0)?x:AlphaELU*(e^(x)-1)``` value|
+|NN.layers->```SELU```(```&x```)| Float | Float | Returns ```(x>0)?x:AlphaSELU*(e^(x)-1)``` value|
+
+| Derivative Functions | Input | Output | Action |
+| ------ | ------ | ------ | ------ |
+|NN.layers->```SigmoidDer```(```&fx```)| Float | Float | Returns ```fx-fx*fx``` value |
+|NN.layers->```TanhDer```(```&fx```)| Float | Float | Returns ```1-fx*fx``` value |
+|NN.layers->```ReLUDer```(```&fx```)| Float | Float | Returns ```(fx>0)?1:0``` value |
+|NN.layers->```LeakyELUDer```(```&fx```)| Float | Float | Returns ```(fx>0)?1:AlphaLeaky``` value |
+|NN.layers->```ELUDer```(```&fx```)| Float | Float | Returns ```(fx>0)?1:fx+AlphaELU``` value |
+|NN.layers->```SELUDer```(```&fx```)| Float | Float | Returns ```(fx>0)?LamdaSELU:fx+AlphaSELU*LamdaSELU``` value |
+
+<br>
+
+### [Variables]
+| NN Variables | Type| Explenation|
 | ------ | ------ | ------ |
-|NeuralNetwork(```*_layer```, ```&NumberOflayers```) |```const unsigned int```, ``` ```| ```Constructor``` |
-|NeuralNetwork(```*_layer```, ```&NumberOflayers```, ```&LRw```, ```&LRb```)|```const unsigned int```, ``` ``` ,```const float```, ``` ```|```Constructor```|
-|NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```|```Constructor```|
-|NeuralNetwork(```*_layer```, ```*default_Weights```, ```*default_Bias```, ```&NumberOflayers```,```NO_OUTPUTS```)|```const unsigned int```,```float``` ,``` ``` ,```const unsigned int```,```bool```|```Constructor``` ```NO_OUTPUTS```  Clears Outputs from RAM|
+|NN.```ActFunctionPerLayer```| ```byte*``` |if [```ACTIVATION__PER_LAYER```](#macro-properties) defined|
+|NN.```MeanSqrdError```|```float```| [Mean Squared Error](#error-functions)|
+|NN.```sumSquaredError```|```float```| [Sum Squared Error](#error-functions)|
 |NN.```LearningRateOfWeights```|```float```|-|
 |NN.```LearningRateOfBiases```|```float```|-|
-|NN.```layers```[ i ]|```Layer*```|-|
-|NN.Layer[ i ].```bias```|```float*```|-|
-|NN.Layer[ i ].```outputs```[ j ]|```float*```|-|
-|NN.Layer[ i ].```weights```[ j ][ l ]|```float**```|-|
-|NN.Layer[ i ].```preLgamma```[ j ]|```float*```|-|
-|NN.layers[ i ].```_numberOfInputs```|```unsigned int```|ReadOnly|
-|NN.layers[ i ].```_numberOfOutputs```|```unsigned int```|ReadOnly|
+|NN.```weights```|```float*```|if [B00010000](#macro-properties) defined|
+|NN.```layers```|```Layer*```|-|
+
+| Layer Variables | Type| Explenation|
+| ------ | ------ | ------ |
+|NN.layers->```bias```|```float*```|-|
+|NN.layers->```outputs```[]|```float*```|-|
+|NN.layers->```weights```[][]|```float**```|if not [B00010000](#macro-properties) defined|
+|NN.layers->```preLgamma```[]|```float*```|-|
+|NN.layers->```_numberOfInputs```|```unsigned int```|"ReadOnly"|
+|NN.layers->```_numberOfOutputs```|```unsigned int```|"ReadOnly"|
+
+| Activation Variables | Type | Default | Explenation|
+| ------ | ------ | ------ | ------ |
+|NN.AlphaLeaky| float | 0.01 | the α of Leaky |
+|NN.AlphaELU| float | 1 | the α of ELU|
+|NN.AlphaSELU| float | 1.6733 | the α of SELU|
+|NN.LamdaSELU| float | 1.0507 | the λ of SELU|
+
+<br>
+
+### [ERROR Functions]
+| Error Functions | Input | Output | Action |
+| ------ | ------ | ------ | ------ |
+|NN.GetMeanSqrdError(```inputsPerEpoch```)|unsigned int|Float|**Calculates** & Returns the MSE _(Mean Squared Error)_ = _[ SSE (Sum Squared Error) divided by the Product of number-οf-οutputs and inputs-per-epoch]_|
+
+<br>
+
+### [MACRO Properties]
+
+```c++
+#define _1_OPTIMIZE B00000000
+```
+|  _1_OPTIMIZE |  Action |
+| ------ | ------ | 
+| ```B00000000``` |  Nothing | 
+| ```B10000000``` | ⚠️ Enables the use of PROGMEM" instead of RAM|
+| ```B01000000``` | ⚠️ Deletes previous layer's Outputs: Reduces RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *4 )  <sub><sup>approximately i think ?</sub></sup>|  
+| ```B00100000``` | 🔴 Partialy Reduces RAM for Weights, level 1| 
+| ```B00010000``` | Reduces RAM for Weights, level 2 by a factor of number_of_layers*[2]((%28https://forum.arduino.cc/index.php?topic=40837.0#:~:text=A%20pointer%20on%20the%20Arduino,the%20array%20it%20points%20to.%29)) - 2 bytes |  
+| ```B00001000``` | 🟢 Deletes previous layer's Gamma | 
+| ```B00000100``` |  Reduce RAM by a factor of [2](%28https://forum.arduino.cc/index.php?topic=40837.0#:~:text=A%20pointer%20on%20the%20Arduino,the%20array%20it%20points%20to.%29)*(number_of_layers - 1 or 2)bytes <sub><sup>slightly different usage with multiple NNs</sub></sup>| 
+  
+<br>⚠️ = Backpropagation is not Allowed<br>🔴 = Not yet implimented<br>🟢 = Always Enabled **<sub><sup>(not switchable yet.)</sup><sub>**
+
+<br>if you want to use other actication function from the default, define one
+```c++
+#define Sigmoid //[default] No need definition, for single activation across network
+#define Tanh
+#define ReLU
+#define LeakyELU
+#define ELU
+#define SELU
+```
+
+Use any Activation Function Per each Layer like this:
+```c++
+#define ACTIVATION__PER_LAYER
+		#define Sigmoid // 0
+		//#define Tanh
+		//#define ReLU
+		//#define LeakyELU
+		#define ELU     // 1
+		#define SELU    // 2
+
+#include <NeuralNetwork.h>
+
+unsigned int layers[] = {3, ..., 4, 1};
+byte Actv_Functions[] = {1, ..., 2, 0};
+
+// ELU > ... > SELU > Sigmoid
+```
+<sup>⚠️ have in mind that because I used f(x) for derivatives there might be some issues with ACTIVATION__PER_LAYER .. ?</sup>
+<br>
 
 ## ```Searches Across Internet```  
+Here are most of the resources I came across the internet, I recomend you to have a look if you want _(please have in mind that some of those sites, I just only opened them checked something and then just closed them in a matter of seconds [so, please don't get them all siriously])_
+#
+### THANK YOU!
+I also want **especially to thanks** [Underpower Jet](https://www.youtube.com/channel/UCWbkocGpP_8R5ZS1VpuusRA) for his amazing [tutorial](https://www.youtube.com/watch?v=L_PByyJ9g-I), by bringing it more to the surface. Because after all the videos and links I came across, he was the one that made the most significant difference to my understanding of neural networks. Plus, I would like to thanks: [giant_neural_network](https://www.youtube.com/channel/UCrBzGHKmGDcwLFnQGHJ3XYg) for [this](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) and [this](https://www.youtube.com/watch?v=vF0zqCkbsEU&t=12s), [ 3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw) for [this](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi), the Arduino community and everyone else who gave me the oportunity to learn and make this library possible to exist [...] 
+#
+### New Searches:
+* **```Neural Network Related```**
+* *  _**```kind of Intresting To me```**_
+* * * [Training Deep Neural Nets](https://www.slideshare.net/CloudxLab/training-deep-neural-nets) 
+* * * [Activation Functions - EXPLAINED!](https://www.youtube.com/watch?v=s-V7gKrsels)
+* * * [(Of course wiki lol) Activation function](https://en.wikipedia.org/wiki/Activation_function)
+* * * [MNIST functions Intresting Simple Paper](https://arxiv.org/pdf/1804.02763.pdf)
+* * _**```General```**_
+* * * [How many times is backprop used in epoch?](https://datascience.stackexchange.com/a/68666)
+* * * [Back-propagation in Neural Nets with >2 hidden layers](https://stats.stackexchange.com/questions/70168/back-propagation-in-neural-nets-with-2-hidden-layers)
+* * * [Normalized Function, Normalized Data and Normalization](https://www.calculushowto.com/types-of-functions/normalized-function-normalized-data-and-normalization/)
+* * _**```Activation Function Related```**_
+* * * [Why the 6 in relu6?](https://stackoverflow.com/questions/47220595/why-the-6-in-relu6)
+* * * [Are relus incapable of solving certain problems](https://ai.stackexchange.com/questions/2349/are-relus-incapable-of-solving-certain-problems)
+* * * [(Seems Intresting!) Modern Activations](https://lme.tf.fau.de/lecture-notes/lecture-notes-in-deep-learning-activations-convolutions-and-pooling-part-2/)
+* * * [Machine learning using ReLu return NaN](https://stackoverflow.com/questions/45616191/machine-learning-using-relu-return-nan)
+* * * [Machine learning using ReLu return NaN](https://stackoverflow.com/a/45616690/11465149)
+* * * [NaN loss when training regression network](https://stackoverflow.com/questions/37232782/nan-loss-when-training-regression-network)
+* * * [How to avoid NaN in using ReLU + Cross-Entropy? duplicate](https://stats.stackexchange.com/questions/108381/how-to-avoid-nan-in-using-relu-cross-entropy)
+* * * [Activation Functions Explained - GELU, SELU, ELU, ReLU and more](https://mlfromscratch.com/activation-functions-explained/#/)
+* * * [Compressing deep neural networks on FPGAs to binary and ternary precision with HLS4ML](https://cds.cern.ch/record/2715322/plots)
+* * * [For deep learning, With activation relu the output becomes NAN during training while is normal with tanh](https://stackoverflow.com/questions/47685341/for-deep-learning-with-activation-relu-the-output-becomes-nan-during-training-w)
+* * _**```Gradient Explosion and clipping Related```**_
+* * * [A clipped ReLU](https://www.mathworks.com/help/deeplearning/ref/nnet.cnn.layer.clippedrelulayer.html)
+* * * [(Seems Intersting) Paper](https://arxiv.org/pdf/1701.07875.pdf)
+* * * [Complete Guide To Exploding Gradient Problem](https://analyticsindiamag.com/complete-guide-to-exploding-gradient-problem/)
+* * * [Understanding Gradient Clipping (and How It Can Fix Exploding Gradients Problem)](https://neptune.ai/blog/understanding-gradient-clipping-and-how-it-can-fix-exploding-gradients-problem)
+* * * [Can the vanishing gradient problem be solved by multiplying the input of tanh with a coefficient?](https://datascience.stackexchange.com/questions/51545/can-the-vanishing-gradient-problem-be-solved-by-multiplying-the-input-of-tanh-wi)
+* * * [(Seems Intersting) Keras ML library: how to do weight clipping after gradient updates? TensorFlow backend](https://stackoverflow.com/questions/42264567/keras-ml-library-how-to-do-weight-clipping-after-gradient-updates-tensorflow-b)
+* * _**```MNIST Related```**_
+* * * [MNIST-Visualizer](https://github.com/jeffrey-xiao/mnist-visualizer)
+* * * [THE MNIST DATABASE](http://yann.lecun.com/exdb/mnist/)
+* * * [ReLU vs sigmoid in mnist example](https://datascience.stackexchange.com/questions/18667/relu-vs-sigmoid-in-mnist-example)
+* * * [Why not use more than 3 hidden layers for MNIST classification?](https://datascience.stackexchange.com/questions/22173/why-not-use-more-than-3-hidden-layers-for-mnist-classification)
+* * * [Neural network classificator stuck at 85% accuracy for mnist dataset](https://answers.unity.com/questions/1690591/neural-network-classificator-stuck-at-85-accuracy.html )
+* * * [(Arduino Project) MNIST - (approach) downsampled to 9x9 - 170 neurons ](https://hackaday.io/project/41159-deep-neural-network-on-arduino-mnist-handwritten)
+* * * [MNIST digit recognition: what is the best we can get with a fully connected NN only? (no CNN)](https://stats.stackexchange.com/questions/376312/mnist-digit-recognition-what-is-the-best-we-can-get-with-a-fully-connected-nn-o)
+* * * [What is the smallest model in terms of number of parameters that can achieve results over 99% on MNIST dataset?](https://www.quora.com/What-is-the-smallest-model-in-terms-of-number-of-parameters-that-can-achieve-results-over-99-on-MNIST-dataset)
+
+* **```Related to Programming```**
+* * _**```to C-type Languages```**_
+* * * [c++ making a function that always runs when any other function of a class is called](https://stackoverflow.com/questions/518028/in-c-making-a-function-that-always-runs-when-any-other-function-of-a-class-is)
+* * * [int.. = {1,2,}; Weird comma allowed. Any particular reason?](https://stackoverflow.com/questions/7043372/int-a-1-2-weird-comma-allowed-any-particular-reason)
+* * * [Declare an array of pointers to functions in Visual C++](https://docs.microsoft.com/en-us/troubleshoot/cpp/declare-pointers-to-functions)
+* * * [Function Pointer Array to a Method within a Class](https://stackoverflow.com/a/31708674/11465149)
+* * * [Inability to overload Dot '.' operator in c++](https://stackoverflow.com/questions/42183631/inability-to-overload-dot-operator-in-c)
+* * * [How to get address of a pointer in c/c++?](https://stackoverflow.com/questions/22250067/how-to-get-address-of-a-pointer-in-c-c)
+* * * [CSharp 16 bit float conversions](https://stackoverflow.com/questions/59728656/c-sharp-16-bit-float-conversions)
+* * * [Array of function pointers](http://www.cplusplus.com/forum/beginner/27582/)
+* * * [Issue I came across c++](https://stackoverflow.com/questions/65860934/undefined-reference-to-outterclassfunction-ptrs-variable-issue)
+* * * [Issue I came across c++](https://stackoverflow.com/questions/65873987/error-when-iterating-through-an-array-of-pointers-to-functions)
+* * * [c++ constexpr](http://www.enseignement.polytechnique.fr/informatique/INF478/docs/Cpp/en/cpp/language/constexpr.html)
+* * * [c++](https://stackoverflow.com/a/1759575/11465149)
+* * _**```to Python```**_
+* * * [Python Floating Point Precision numpy](https://stackoverflow.com/a/56515598/11465149)
+* * * [Python Floating Point Precision Tensorflow](https://www.tensorflow.org/api_docs/python/tf/keras/backend/set_floatx)
+* * _**```Other```**_
+* * * [Aspect-oriented programming](https://en.wikipedia.org/wiki/Aspect-oriented_programming)
+* * * [Metaprogramming](https://en.wikipedia.org/wiki/Metaprogramming#:~:text=Metaprogramming%20is%20a%20programming%20technique,even%20modify%20itself%20while%20running.)
+
+* **```Arduino Related```**
+* * [Reading and Writing Data to External EEPROM Using Arduino](https://www.instructables.com/Reading-and-Writing-Data-to-External-EEPROM-Using-/)
+* * [avrdude: verification error, first mismatch at byte 0x7800](https://forum.arduino.cc/index.php?topic=396457.0)
+* * [avrdude: verification error, first mismatch at byte 0x7800](https://forum.arduino.cc/index.php?topic=135195.0)
+* * [KEYWORDS.TXT](https://forum.arduino.cc/index.php?topic=149418.0)
+
+* **```#MACROS / pre-processor directives```**
+* * [Is it possible to define same macro more than once?](https://www.sololearn.com/Discuss/1912463/is-it-possible-to-define-same-macro-more-than-once)
+* * [(Very Useful) Print Content of Defined Variable](https://stackoverflow.com/a/12638158/11465149)
+* * [(Very Useful) Generate Functions](https://stackoverflow.com/a/1254012/11465149	)
+* * [(seems intresting) Add numbers](https://stackoverflow.com/questions/3539549/can-i-add-numbers-with-the-c-c-preprocessor)
+* * [3.8 Undefining and Redefining Macros](https://gcc.gnu.org/onlinedocs/cpp/Undefining-and-Redefining-Macros.html)
+* * [(Seems Intresting) Iterate through #defines](https://stackoverflow.com/questions/26501032/iterate-through-defines)
+* * [(Seems Intresting) Checking type of a variable](https://stackoverflow.com/questions/7339619/checking-type-of-a-variable-by-preprocessor-directive)
+* * [Macro functions](http://crasseux.com/books/ctutorial/Macro-functions.html#:~:text=Macros%20that%20do%20so%20are,absolute%20value%20of%20its%20parameter.)
+* * [(Random)](http://www.cplusplus.com/doc/tutorial/preprocessor/)
+
+#
+
+### Old Searches:
 | ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other |```*```| Maybe Intresting?  
 
 | NNs | PROGMEM | Define directive | Other & "Random" | 
@@ -117,15 +312,27 @@ Understanding the Basics of a Neural Network:
 |[- ```SciBasic```](https://github.com/xieguigang/sciBASIC)|||||
 
 
-## ```Notes```
-Forgive me for my mistakes and maybe poor knowledge in C/C++, but it is also my first time making a "normal" library [...]  
-I am also sorry for my randomness in some parts of the ```Searches Across Internet``` Section.  
+## ```Outro```
+Forgive me if I have made any mistakes and please don't take me seriously with every claim i made, I am mainly "self taught" in this field of NeuralNetworks, I am not a professional programmer nor do I have a good knowledge in many of the fields used to create this library[...] 
 
- Εικόνα που βλέπει το "εγώ", θυμίζει κουτί που δε βλέπεις, εικόνα που χάνεις• σκιά που 'τε φως και να βλέπεις, ακούει τα λόγια που λες: [...][ ‮#i📁👁](https://www.instagram.com/giorgos.xou/)
-  
-I wish love and happiness to Everyone! <3
+I need help, I need to learn,<br>I want to learn, I want to help [...]<br>I wish love and happiness to Everyone! 🤍<br>Σημασία έχει, ότι ως αποτέλεσμα έχει την αγάπη.<br>
+
+**if** you want to help me and others to educate ourselves better **and if** you have a love and passion for sharing and helping others, **then** I highly suggest you to **[join our discord server ](https://discord.gg/R2RVeD3gY8)** 🤍
+
+My Instagram account is: [Giorgos.Xou](https://www.instagram.com/giorgos.xou/) [;)](http://prntscr.com/xtz4s6)
+
 ## ```Donation```
+if you want me to continue support this library, learn and bring more functionality to it, it would be really helpfull if you would consider donating, even the least amount of 0.01$ would be really appreciated!
 
-+ [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url)
-+ Bitcoin Address: 1Cfn2zb2XC5JAqTNjDYAxwKYVwtjqcf5Pm
+***Bitcoin Address:***
+<p align="left">
+<img src="https://media.discordapp.net/attachments/803671967973900310/803680678000066610/Screenshot_3317.jpg" width="305" alt="image">
+</p>
+
+**1N8niMND7SqE8B7rsE7Mx7gPctkx2rUMTf**
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) 
+
+<sub>(I need money, else I might gonna kill myself for real). [stackedit.io](https://stackedit.io/app) have been used for the edditing of this MD file</sub> 
+
             

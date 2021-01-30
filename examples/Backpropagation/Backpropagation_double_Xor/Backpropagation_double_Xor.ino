@@ -1,11 +1,14 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
 
+//#define _1_OPTIMIZE B00010000 // REDUCING RAM By using the same pointer for every layer's weights.
+#define Tanh                    // Comment this line to use Sigmoid Activation Function
+
 #include <NeuralNetwork.h>
 
-unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3 input neurons (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
+unsigned int layers[] = {3, 5, 1}; // 3 layers (1st)layer with 3 input neurons (2nd)layer 5 hidden neurons each and (3th)layer with 1 output neuron
 float *outputs; // 4th layer's outputs (in this case output)
 
-//Default Inputs
+//Default Inputs/Training-Data
 const float inputs[8][3] = {
   {0, 0, 0}, //0
   {0, 0, 1}, //1
@@ -23,18 +26,25 @@ void setup()
 {
 
   Serial.begin(9600);
-
   NeuralNetwork NN(layers, NumberOf(layers)); // Creating a NeuralNetwork with default learning-rates
 
-  //Trains the NeuralNetwork for 8000 epochs = Training loops
-  for (int i = 0; i < 8000; i++)
-  {
+  do{ 
     for (int j = 0; j < NumberOf(inputs); j++)
     {
       NN.FeedForward(inputs[j]); // Feeds-Forward the inputs to the first layer of the NN and Gets the output.
       NN.BackProp(expectedOutput[j]); // Tells to the NN if the output was right/the-expectedOutput and then, teaches it.
     }
-  }
+    
+    // Prints the Error.
+    Serial.print("MSE: "); 
+    Serial.println(NN.MeanSqrdError,6);
+
+    // loops through each epoch Until MSE goes < 0.003
+  }while(NN.GetMeanSqrdError(NumberOf(inputs)) > 0.003);
+
+
+  Serial.println("\n =-[OUTPUTS]-=");
+
 
   //Goes through all inputs
   for (int i = 0; i < NumberOf(inputs); i++)
@@ -44,8 +54,6 @@ void setup()
   }
 
   NN.print(); // prints the weights and biases of each layer
-
-
 }
 
 void loop() {

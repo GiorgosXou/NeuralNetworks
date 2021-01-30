@@ -2,22 +2,14 @@
 //https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
 
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
-
-/*[!ATENTION! Only if you WONT use Backpropagation and use PROGMEM!](for now)
-   you can use CLEAN_OUTPUTS. The reason why is,
-   because Backpropagation needs the outputs
-   for some calculations [...]
-*/
-#define CLEAN_OUTPUTS true
-#define IS_PROGMEM    true
+#define _1_OPTIMIZE B11010000 // USES PROGMEM, Deletes previous layer’s Outputs, and REDUCES RAM By using the same pointer for every layer's weights.
 
 #include <NeuralNetwork.h>
-
 
 const unsigned int layers[] = {3, 9, 9, 1};
 float *outputs; // 4th layer's outputs (in this case output)
 
-//Default Inputs
+//Default Inputs/Training-Data
 const float inputs[8][3] = {
   {0, 0, 0}, //0
   {0, 0, 1}, //1
@@ -68,22 +60,18 @@ const PROGMEM float weights[] = {
 
 void setup()
 {
-
+  
   Serial.begin(9600);
-
-  NeuralNetwork NN(layers, weights, biases, NumberOf(layers), CLEAN_OUTPUTS);  // Creating a NeuralNetwork with Pretrained Weights and Biases
+  NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with Pretrained Weights and Biases
 
   //Goes through all inputs
   for (int i = 0; i < NumberOf(inputs); i++)
   {
-    outputs = NN.FeedForward(inputs[i], IS_PROGMEM); // Feeds-Forward the inputs[i] to the first layer of the NN and Gets the output 
+    outputs = NN.FeedForward(inputs[i]); // Feeds-Forward the inputs[i] to the first layer of the NN and Gets the output 
     Serial.println(outputs[0], 7); // prints the first 7 digits after the comma.
   }
 
-  NN.print(true); // default is false, true means use of PROGMEM
-
+  NN.print();
 }
 
-void loop() {
-
-}
+void loop() {}

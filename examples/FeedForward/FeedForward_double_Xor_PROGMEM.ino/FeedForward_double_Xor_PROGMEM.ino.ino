@@ -2,13 +2,14 @@
 //https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
 
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
+#define _1_OPTIMIZE B11010000 // USES PROGMEM, Deletes previous layer’s Outputs, and REDUCES RAM By using the same pointer for every layer's weights.
 
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {3, 9, 9, 1};
 float *outputs; // 4th layer's outputs (in this case output)
 
-//Default Inputs
+//Default Inputs/Training-Data
 const float inputs[8][3] = {
   {0, 0, 0}, //0
   {0, 0, 1}, //1
@@ -21,10 +22,10 @@ const float inputs[8][3] = {
 };
 
 // it is 1 for each layer [Pretrained Biases ]
-const float biases[] = {1, 1, 0.99308};
+const PROGMEM float biases[] = {1, 1, 0.99308};
 
 // it is 3*9 + 9*9 + 9*1  [Pretrained weights]
-const float weights[] = {
+const PROGMEM float weights[] = {
   -0.676266,  3.154561, -1.76689 ,
    1.589422, -2.340522,  1.447924,
    0.291685, -1.222407,  0.669717,
@@ -59,9 +60,8 @@ const float weights[] = {
 
 void setup()
 {
-
+  
   Serial.begin(9600);
-
   NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with Pretrained Weights and Biases
 
   //Goes through all inputs
@@ -72,9 +72,6 @@ void setup()
   }
 
   NN.print();
-
 }
 
-void loop() {
-  
-}
+void loop() {}
