@@ -4,7 +4,7 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
 
 #define _1_OPTIMIZE B10010000 // don't get confused with the line below, it just being redefined if you uncomment it
-//#define _1_OPTIMIZE B11010100 //uncoment to see time difference when optimizing ram even more (about 1ms) *1
+//#define _1_OPTIMIZE B11010100 //uncoment to see time difference when optimizing ram even more (about 1ms) ----> *1
 #include <NeuralNetwork.h>
 
 
@@ -123,5 +123,5 @@ void setup()
 }
 
 void loop() {}
-
-//*1 with B11010100 you can have as many layers as you want without using more RAM size than APPROXIMATELY the size of the (number_of_neurons_in_the_largest_layer * 4 + the_other_standar_something) :P (i am in a hurry)
+// just so u know, It is recomended to use B11010100, in such extreme cases in my opinion 
+//----> *1 with B11010100 you can have as many layers as you want without using more RAM size than APPROXIMATELY the size of the (number_of_neurons_in_the_largest_layer * 4 + the_other_standar_something) :P (i am in a hurry)
