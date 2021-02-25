@@ -1,14 +1,14 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
 
 #define _1_OPTIMIZE B00010000 // REDUCING RAM By using the same pointer for every layer's weights.
-#define ACTIVATION__PER_LAYER // DEFAULT KEYWORD for allowing the use of any Activation-Function per each Layer.
-        #define Sigmoid // 0
-        #define Tanh    // 1
+#define ACTIVATION__PER_LAYER // DEFAULT KEYWORD for allowing the use of any Activation-Function per Layer-to-Layer .
+//        #define Sigmoid // 0   UNCOMMENT LINES| Says to the compiler to compile ONLY Sigmoid (reduces ROM and RAM).
+//        #define Tanh    // 1   UNCOMMENT LINES| Says to the compiler to compile ONLY Tanh    (reduces ROM and RAM).
 
 #include <NeuralNetwork.h>
 
 unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3 input neurons (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
-byte Actv_Functions[] = {1, 0, 1, 1}; // 1 = Tanh and 0 = Sigmoid (in this case)  (just as a proof of consept)
+byte Actv_Functions[] = {  1, 1, 0 }; // 1 = Tanh and 0 = Sigmoid (in this case)  (just as a proof of consept)
 
 float *outputs; // 4th layer's outputs (in this case output)
 
@@ -30,7 +30,7 @@ void setup()
 {
 
   Serial.begin(9600);
-  NeuralNetwork NN(layers, NumberOf(layers),Actv_Functions); // Creating a NeuralNetwork with default learning-rates
+  NeuralNetwork NN(layers, NumberOf(layers), Actv_Functions); // Creating a NeuralNetwork with default learning-rates
 
   do{ 
     for (int j=0; j < NumberOf(inputs); j++) // loops through one Epoch
@@ -58,7 +58,7 @@ void setup()
     Serial.println(outputs[0], 7);         // Prints the first 7 digits of the output after the comma.
   }
 
-  NN.print(); // prints the weights and biases of each layer
+  //NN.print(); // prints the weights and biases of each layer
 }
 
 void loop() {}
