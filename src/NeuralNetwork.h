@@ -113,26 +113,26 @@
     // i will also create a mechanism to show #error if more than one is defined with B opperations?
     #define ACTIVATION //Sigmoid default but for more than one you must declare it
     #define Sigmoid Sigmoid
-    #define ACTIVEATION_FUNCTION Sigmoid
+    #define ACTIVATION_FUNCTION Sigmoid
     // ACTIVATION__PER_LAYER will have any per neuron [2D Array/Matrix] or per layer [1d Array/Vector]
 #elif defined(Sigmoid)
     #define ACT1 1
     #define ACTIVATION //Sigmoid default but for more than one you must declare it
     #define Sigmoid Sigmoid
-    #define ACTIVEATION_FUNCTION Sigmoid
+    #define ACTIVATION_FUNCTION Sigmoid
 #endif
 
 #if defined(Tanh)
     #define ACT2 1
     #define ACTIVATION
-    #define ACTIVEATION_FUNCTION Tanh
+    #define ACTIVATION_FUNCTION Tanh
     #define Tanh Tanh
 #endif
 
 #if defined(ReLU) 
     #define ACT3 1
     #define ACTIVATION
-    #define ACTIVEATION_FUNCTION ReLU
+    #define ACTIVATION_FUNCTION ReLU
     #define ReLU ReLU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
 #endif
@@ -140,7 +140,7 @@
 #if defined(LeakyELU) 
     #define ACT4 1
     #define ACTIVATION
-    #define ACTIVEATION_FUNCTION LeakyELU
+    #define ACTIVATION_FUNCTION LeakyELU
     #define LeakyELU LeakyELU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
 #endif
@@ -148,7 +148,7 @@
 #if defined(ELU)
     #define ACT5 1
     #define ACTIVATION
-    #define ACTIVEATION_FUNCTION ELU
+    #define ACTIVATION_FUNCTION ELU
     #define ELU ELU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
 #endif
@@ -156,18 +156,19 @@
 #if defined(SELU)
     #define ACT6 1
     #define ACTIVATION
-    #define ACTIVEATION_FUNCTION SELU
+    #define ACTIVATION_FUNCTION SELU
     #define SELU SELU
-#endif
-
-#if defined(ACTIVATION__PER_LAYER)
-    #if !defined(ACTIVATION)
-        #error Define At least 1 Activation Function e.g. "#define Sigmoid".
-    #endif
 #endif
 
 #define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6)
 //#pragma message "The content is : " STR(NUM_OF_USED_ACTIVATION_FUNCTIONS)
+
+#if defined(ACTIVATION__PER_LAYER)
+    #if !defined(ACTIVATION)
+        #define USE_ALL_ACTIVATION_FUNCTIONS
+        #define NUM_OF_USED_ACTIVATION_FUNCTIONS 6
+    #endif
+#endif
 
 
 #define MAKE_FUN_NAME1(actname,value) actname(value)
@@ -215,9 +216,9 @@ private:
         //      #0 Constructor                                                         .
         //      #1 Constructor With default/("probably") preptained, weights and biases.
         Layer();
-        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, const NeuralNetwork *NN = nullptr);                                              // #0  
-        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Bias, const NeuralNetwork *NN = nullptr); //                             #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Weights, float *default_Bias, const NeuralNetwork *NN = nullptr); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
+        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN = nullptr);                                              // #0  
+        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Bias, NeuralNetwork * const NN = nullptr); //                             #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
+        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Weights, float *default_Bias, NeuralNetwork * const NN = nullptr); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
 
 
         void FeedForward_Individual(const float &input, const int &j);
@@ -258,43 +259,43 @@ private:
 
         typedef float (Layer::*method_function) (const float &);
         inline static const method_function (activation_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
-            #if defined(Sigmoid)
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
                 &Layer::Sigmoid,
             #endif
-            #if defined(Tanh)
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
                 &Layer::Tanh,
             #endif
-            #if defined(ReLU)
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
                 &Layer::ReLU, 
             #endif
-            #if defined(LeakyELU)
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
                 &Layer::LeakyELU, 
             #endif
-            #if defined(ELU)
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
                 &Layer::ELU, 
             #endif
-            #if defined(SELU)
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
                 &Layer::SELU, 
             #endif            
         };
         #if !defined(NO_BACKPROP)
             inline static const method_function (derivative_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
-                #if defined(Sigmoid)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
                     &Layer::SigmoidDer,
                 #endif
-                #if defined(Tanh)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
                     &Layer::TanhDer,
                 #endif
-                #if defined(ReLU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
                     &Layer::ReLUDer, 
                 #endif
-                #if defined(LeakyELU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
                     &Layer::LeakyELUDer, 
                 #endif
-                #if defined(ELU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
                     &Layer::ELUDer, 
                 #endif
-                #if defined(SELU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
                     &Layer::SELUDer, 
                 #endif                
             };
@@ -618,10 +619,6 @@ public:
 
         for (int i = numberOflayers - 2; i > 0; i--)
         {
-            #if defined(ACTIVATION__PER_LAYER)
-                AtlayerIndex = i;
-            #endif
-
             layers[i].BackPropHidden(&layers[i + 1], layers[i - 1].outputs);
             delete[] layers[i + 1].preLgamma;
             layers[i + 1].preLgamma = NULL; // 18/5/2019
@@ -667,7 +664,7 @@ public:
         }
     }
     #endif
-#pragma endregion
+#pragma endregion NeuralNetwork.cpp
 
 
 
@@ -681,7 +678,7 @@ public:
 
 
     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Weights, float *default_Bias, const NeuralNetwork *NN)
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Weights, float *default_Bias, NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
@@ -703,7 +700,7 @@ public:
         }
 
     #else
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Bias, const NeuralNetwork *NN)
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Bias, NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
@@ -722,7 +719,7 @@ public:
     #endif
 
     //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
-    NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, const NeuralNetwork *NN)
+    NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
     {
 
         _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
@@ -799,7 +796,7 @@ public:
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i] + pgm_read_float(bias));  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVEATION_FUNCTION, outputs[i] + pgm_read_float(bias)); // if double pgm_read_dword
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + pgm_read_float(bias)); // if double pgm_read_dword
                 #endif
             }
 
@@ -841,7 +838,7 @@ public:
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i] + (*bias)); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVEATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
                 #endif
             }
 
@@ -869,7 +866,7 @@ public:
             #if defined(ACTIVATION__PER_LAYER)
                 outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + pgm_read_float(bias));
             #else
-                outputs[i] = ACTIVATE_WITH(ACTIVEATION_FUNCTION, outputs[i] + pgm_read_float(bias)); // if double pgm_read_dword
+                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + pgm_read_float(bias)); // if double pgm_read_dword
             #endif
 
         }
@@ -899,14 +896,14 @@ public:
             #if defined(ACTIVATION__PER_LAYER)
                 outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + (*bias));
             #else
-                outputs[i] = ACTIVATE_WITH(ACTIVEATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
+                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
             #endif
         }
 
         // return outputs;
     } 
     /*
-    αρα θα βγαλω τη sigmoid απο _numberOfOutputs loop ==> Sigmoid(ACTIVEATION_FUNCTION, outputs[i] + (*bias))
+    αρα θα βγαλω τη sigmoid απο _numberOfOutputs loop ==> Sigmoid(ACTIVATION_FUNCTION, outputs[i] + (*bias))
     και θα τη βαλω στο _numberOfInputs loop ==> inputs[j] (για εξοικονομηση RAM, διαφορετικα BeforeActivationOutputs 1D Array [πριν το activation δλδ] με Property)
     ωστε να μπορω οταν θα κανω backprop να παρω τις παραγωγους και αλλων συναρτισεων ενεργοποιησης 
     που απετουν το Input πριν το activation.... αααχ issues τελικα it was too good to be true..
@@ -950,9 +947,8 @@ public:
                     #if defined(ACTIVATION__PER_LAYER)
                         gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
                     #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVEATION_FUNCTION, outputs[i]);
+                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]);
                     #endif
-
                     bias_Delta *= gamma;
 
                     for (int j = _numberOfInputs -1; j >= 0; j--)
@@ -967,7 +963,7 @@ public:
                 for (int i = 0; i < _numberOfOutputs; i++)
                 {
                     //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
-                    //gamma = (outputs[i] - _expected_[i]) * DERIVATIVE_OF(ACTIVEATION_FUNCTION, outputs[i]); // outputs[i] is f(x) not x in this case, because i wanted to delete the array of inputs before activation
+                    //gamma = (outputs[i] - _expected_[i]) * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // outputs[i] is f(x) not x in this case, because i wanted to delete the array of inputs before activation
 
                      //#3
                     gamma = (outputs[i] - _expected_[i]); 
@@ -975,9 +971,8 @@ public:
                     #if defined(ACTIVATION__PER_LAYER)
                         gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
                     #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVEATION_FUNCTION, outputs[i]);
+                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]);
                     #endif
-                    
                     bias_Delta *= gamma;
 
                     for (int j = 0; j < _numberOfInputs; j++)
@@ -993,6 +988,9 @@ public:
 
         void NeuralNetwork::Layer::BackPropHidden(const Layer *frontLayer, const float *inputs)
         {
+            #if defined(ACTIVATION__PER_LAYER)
+                me->AtlayerIndex -= 1; 
+            #endif
             preLgamma = new float[_numberOfInputs]{};
 
             float bias_Delta = 1.0;
@@ -1001,7 +999,11 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 for (int i = _numberOfOutputs -1; i >= 0; i--)
                 {
-                    gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVEATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
+                    #if defined(ACTIVATION__PER_LAYER)
+                        gamma = frontLayer->preLgamma[i] * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                    #else
+                        gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
+                    #endif
                     bias_Delta *= gamma;
 
                     for (int j = _numberOfInputs -1; j >= 0; j--)
@@ -1016,7 +1018,11 @@ public:
             #else
                 for (int i = 0; i < _numberOfOutputs; i++)
                 {
-                    gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVEATION_FUNCTION, outputs[i]);
+                    #if defined(ACTIVATION__PER_LAYER)
+                        gamma = frontLayer->preLgamma[i] * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                    #else
+                        gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
+                    #endif
                     bias_Delta *= gamma;
 
                     for (int j = 0; j < _numberOfInputs; j++)
@@ -1108,7 +1114,7 @@ public:
 
     #endif
 
-#pragma endregion
+#pragma endregion Layer.cpp
 
 #endif
 
