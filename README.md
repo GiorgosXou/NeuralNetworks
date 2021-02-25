@@ -44,10 +44,11 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Simplicity!
  
 
-- ##### ```future```
+- ##### ```in future i want```
 - - ```-``` Better code.
 - - ```-``` Use of custom functions
 - - ```-``` [More Activation Functions](https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6).
+- - ```-``` Different weight initialization methods.
 - - ```-``` Probably support for [Internal](https://www.arduino.cc/en/Reference/EEPROM) [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
 - - ```-``` Probably support for External [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
 - - ```-``` Even more properties, for many different needs.
@@ -155,7 +156,7 @@ Understanding the Basics of a Neural Network:
   
 <br>⚠️ = Backpropagation is not Allowed<br>🔴 = Not yet implimented<br>🟢 = Always Enabled **<sub><sup>(not switchable yet.)</sup><sub>**
 
-<br>if you want to use other actication function from the default, define one
+<br>if you want to use other activation function from the default one, just define one other:
 ```c++
 #define Sigmoid //[default] No need definition, for single activation across network
 #define Tanh
@@ -165,7 +166,17 @@ Understanding the Basics of a Neural Network:
 #define SELU
 ```
 
-Use any Activation Function Per each Layer like this:
+Use any Activation Function Per Layer, like :
+```c++
+#define ACTIVATION__PER_LAYER
+#include <NeuralNetwork.h>
+
+unsigned int layers[] = {3, 4, ..., 2, 1};
+byte Actv_Functions[] = {   1, ..., 2, 0};
+
+// Tanh > ... > ReLU > Sigmoid
+```
+If you want to drastically reduce ROM & slightly RAM size you can Define which Functions to use/compile, like:
 ```c++
 #define ACTIVATION__PER_LAYER
 		#define Sigmoid // 0
@@ -177,8 +188,8 @@ Use any Activation Function Per each Layer like this:
 
 #include <NeuralNetwork.h>
 
-unsigned int layers[] = {3, ..., 4, 1};
-byte Actv_Functions[] = {1, ..., 2, 0};
+unsigned int layers[] = {3, 4, ..., 2, 1};
+byte Actv_Functions[] = {   1, ..., 2, 0};
 
 // ELU > ... > SELU > Sigmoid
 ```
@@ -239,6 +250,7 @@ I also want **especially to thanks** [Underpower Jet](https://www.youtube.com/ch
 * * * [Inability to overload Dot '.' operator in c++](https://stackoverflow.com/questions/42183631/inability-to-overload-dot-operator-in-c)
 * * * [How to get address of a pointer in c/c++?](https://stackoverflow.com/questions/22250067/how-to-get-address-of-a-pointer-in-c-c)
 * * * [CSharp 16 bit float conversions](https://stackoverflow.com/questions/59728656/c-sharp-16-bit-float-conversions)
+* * * [Understanding * oppperator](https://stackoverflow.com/a/31331389)
 * * * [Array of function pointers](http://www.cplusplus.com/forum/beginner/27582/)
 * * * [Issue I came across c++](https://stackoverflow.com/questions/65860934/undefined-reference-to-outterclassfunction-ptrs-variable-issue)
 * * * [Issue I came across c++](https://stackoverflow.com/questions/65873987/error-when-iterating-through-an-array-of-pointers-to-functions)
@@ -260,6 +272,7 @@ I also want **especially to thanks** [Underpower Jet](https://www.youtube.com/ch
 * **```#MACROS / pre-processor directives```**
 * * [Is it possible to define same macro more than once?](https://www.sololearn.com/Discuss/1912463/is-it-possible-to-define-same-macro-more-than-once)
 * * [(Very Useful) Print Content of Defined Variable](https://stackoverflow.com/a/12638158/11465149)
+* * [How to remove gcc warning on pragma region](https://stackoverflow.com/questions/12894454/how-to-remove-gcc-warning-on-pragma-region)
 * * [(Very Useful) Generate Functions](https://stackoverflow.com/a/1254012/11465149	)
 * * [(seems intresting) Add numbers](https://stackoverflow.com/questions/3539549/can-i-add-numbers-with-the-c-c-preprocessor)
 * * [3.8 Undefining and Redefining Macros](https://gcc.gnu.org/onlinedocs/cpp/Undefining-and-Redefining-Macros.html)
