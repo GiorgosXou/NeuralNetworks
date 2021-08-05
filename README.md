@@ -133,7 +133,7 @@ Understanding the Basics of a Neural Network:
 <br>
 
 ### [LOSS Functions]
-| Error Functions | Input | Output | Action |
+| Loss Function | Input | Output | Action |
 | ------ | ------ | ------ | ------ |
 |NN.GetMeanSqrdError(```inputsPerEpoch```)|unsigned int|Float|**Calculates** & Returns the MSE _(Mean Squared Error)_ = _[ SSE (Sum Squared Error) divided by the Product of number-οf-οutputs and inputs-per-epoch]_|
 
