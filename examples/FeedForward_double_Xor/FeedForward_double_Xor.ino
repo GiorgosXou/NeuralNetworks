@@ -1,31 +1,28 @@
-//http://busyducks.com/wp_4_1/2016/02/11/update-comprehensive-arduino-flash-memory-via-progmem/
-//https://www.arduino.cc/reference/en/language/variables/utilities/progmem/
-
-#define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
-#define _1_OPTIMIZE B11010000 // USES PROGMEM, Deletes previous layer’s Outputs, and REDUCES RAM By using the same pointer for every layer's weights.
+#define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
+#define _1_OPTIMIZE B01010010 // https://github.com/GiorgosXou/NeuralNetworks#macro-properties
 
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {3, 9, 9, 1};
-float *outputs; // 4th layer's outputs (in this case output)
+float *output; // 4th layer's output(s)
 
-//Default Inputs/Training-Data
+// Default Input data
 const float inputs[8][3] = {
-  {0, 0, 0}, //0
-  {0, 0, 1}, //1
-  {0, 1, 0}, //1
-  {0, 1, 1}, //0
-  {1, 0, 0}, //1
-  {1, 0, 1}, //0
-  {1, 1, 0}, //0
-  {1, 1, 1}  //1
+  {0, 0, 0}, // = 0
+  {0, 0, 1}, // = 1
+  {0, 1, 0}, // = 1
+  {0, 1, 1}, // = 0
+  {1, 0, 0}, // = 1
+  {1, 0, 1}, // = 0
+  {1, 1, 0}, // = 0
+  {1, 1, 1}  // = 1
 };
 
-// it is 1 for each layer [Pretrained Biases ]
-const PROGMEM float biases[] = {1, 1, 0.99308};
+// It is 1 for each layer [Pretrained Biases ]
+const float biases[] = {1, 1, 0.99308};
 
-// it is 3*9 + 9*9 + 9*1  [Pretrained weights]
-const PROGMEM float weights[] = {
+// It is 3*9 + 9*9 + 9*1  [Pretrained weights]
+const float weights[] = {
   -0.676266,  3.154561, -1.76689 ,
    1.589422, -2.340522,  1.447924,
    0.291685, -1.222407,  0.669717,
@@ -55,23 +52,20 @@ const PROGMEM float weights[] = {
    10.86302,
   -5.551509,
   -1.648114
-
 };
+
 
 void setup()
 {
-  
   Serial.begin(9600);
-  NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with Pretrained Weights and Biases
+  NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with pretrained Weights and Biases
 
-  //Goes through all inputs
+  //Goes through all the input arrays
   for (int i = 0; i < NumberOf(inputs); i++)
   {
-    outputs = NN.FeedForward(inputs[i]); // Feeds-Forward the inputs[i] to the first layer of the NN and Gets the output 
-    Serial.println(outputs[0], 7); // prints the first 7 digits after the comma.
+    output = NN.FeedForward(inputs[i]); // FeedForwards the input[i]-array through the NN  |  returns the predicted output(s)
+    Serial.println(output[0], 7);       // Prints the first 7 digits after the comma
   }
-
-  NN.print();
+  NN.print();                           // Prints the weights & biases of each layer
 }
-
-void loop() {}
+void loop(){}

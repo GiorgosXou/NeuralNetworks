@@ -11,29 +11,48 @@ NeuralNetwork	KEYWORD3	NeuralNetwork
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-GetMeanSqrdError	KEYWORD2
-FeedForward_Individual	KEYWORD2
-FeedForward		KEYWORD2
-BackProp		KEYWORD2
-print			KEYWORD2
+getCategoricalCrossEntropy	KEYWORD2
+getBinaryCrossEntropy		KEYWORD2
+getMeanSqrdError		KEYWORD2
 
-SigmoidDer		KEYWORD2
-TanhDer			KEYWORD2
-ReLUDer			KEYWORD2
-LeakyELUDer		KEYWORD2
-ELUDer			KEYWORD2
-SELUDer			KEYWORD2
+FeedForward_Individual		KEYWORD2
+FeedForward			KEYWORD2
+BackProp			KEYWORD2
+print				KEYWORD2
+
+SigmoidDer			KEYWORD2
+TanhDer				KEYWORD2
+ReLUDer				KEYWORD2
+LeakyELUDer			KEYWORD2
+ELUDer				KEYWORD2
+SELUDer				KEYWORD2
+SoftmaxDer			KEYWORD2
+IdentityDer			KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
-ACTIVATION__PER_LAYER	LITERAL1
-_1_OPTIMIZE		LITERAL1
-Sigmoid			LITERAL1
-Tanh			LITERAL1
-ReLU			LITERAL1
-LeakyELU		LITERAL1
-ELU			LITERAL1
-SELU			LITERAL1
-LOVE			LITERAL1
-love			LITERAL1
+ACTIVATION__PER_LAYER		LITERAL1
+_1_OPTIMIZE			LITERAL1
+
+MEAN_SQUARED_ERROR		LITERAL1
+BINARY_CROSS_ENTROPY		LITERAL1
+CATEGORICAL_CROSS_ENTROPY	LITERAL1
+
+Sigmoid				LITERAL1
+Tanh				LITERAL1
+ReLU				LITERAL1
+LeakyELU			LITERAL1
+ELU				LITERAL1
+SELU				LITERAL1
+Softmax				LITERAL1
+Identity			LITERAL1
+BinaryStep			LITERAL1
+Softplus			LITERAL1
+SiLU				LITERAL1
+GELU				LITERAL1
+Mish				LITERAL1
+Gaussian			LITERAL1
+
+LOVE				LITERAL1
+love				LITERAL1
