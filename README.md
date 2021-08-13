@@ -30,8 +30,13 @@ Understanding the Basics of a Neural Network:
 |7|```Any_Activation_Function_Per_Layer```|Example of using multiple Activation Functions per Layer.|
 
 ## ```Important```
+<<<<<<< HEAD
 - If you have an error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
 -  I am **NOT a professional** in any of all those fields [...] I'm an idiot in some cases too.
+=======
+- If you have Error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
+- I am **not a professional** in any of all those fields [...]
+>>>>>>> origin/master
 - [**Make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/en/pmwiki.php?n=Reference/Float):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), on the Arduino, double is the same size as float."*
 
 ## ```Features```
@@ -45,12 +50,22 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Simplicity!
  
 
+<<<<<<< HEAD
 - ##### ```In the future, i want```
 - - ```-``` Better code.
 - - ```-``` Use of custom functions.
 - - ```-``` More Activation Functions.
 - - ```-``` Different weight initialization methods.
 - - ```-``` Probably support for external/[internal](https://www.arduino.cc/en/Reference/EEPROM) [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
+=======
+- ##### ```in future i want```
+- - ```-``` Better code.
+- - ```-``` Use of custom functions
+- - ```-``` [More Activation Functions](https://towardsdatascience.com/activation-functions-neural-networks-1cbd9f8d91d6).
+- - ```-``` Different weight initialization methods.
+- - ```-``` Probably support for [Internal](https://www.arduino.cc/en/Reference/EEPROM) [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
+- - ```-``` Probably support for External [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
+>>>>>>> origin/master
 - - ```-``` Even more properties, for many different needs.
 
 ## ```Tested On```
@@ -101,10 +116,15 @@ To use any of the variables below,  you first need to ```#define```  a loss func
 
 <br>
 
+<<<<<<< HEAD
 ###  ```float``` [Activation Functions] 
 Because of *(my uncertainty and)* the strict RAM optimization that allows the library to use one array that stores only the values after the activation instead of two arrays storing values before and after the activation, the use of some derivative functions in backpropagation are not supported by this library at this moment, as also seen by the MACRO ```NO_BACKPROP``` below. This means that if you want to use and  ```#define ``` any function from 8-13 under the section *"```NO_BACKPROP``` support"* , you won't be able to use backpropagation.
 
 || Enabling MACRO | Activation Functions | Action |
+=======
+### [LOSS Functions]
+| Loss Function | Input | Output | Action |
+>>>>>>> origin/master
 | ------ | ------ | ------ | ------ |
 |0|```#define Sigmoid```   |NN.layers->```Sigmoid```(```&x```)  | Returns ```1/(1+e^(-x))``` |
 |1|```#define Tanh```      |NN.layers->```Tanh```(```&x```)     | Returns ```(e^(2*x)-1)/(e^(2*x)+1)``` |
@@ -133,7 +153,28 @@ Because of *(my uncertainty and)* the strict RAM optimization that allows the li
 
 <br>
 
+<<<<<<< HEAD
 if you want to use other activation function from the default one, just define one other:
+=======
+### [MACRO Properties]
+
+```c++
+#define _1_OPTIMIZE B00000000
+```
+|  _1_OPTIMIZE |  Action |
+| ------ | ------ | 
+| ```B00000000``` |  Nothing | 
+| ```B10000000``` | ⚠️ Enables the use of PROGMEM" instead of RAM|
+| ```B01000000``` | ⚠️ Deletes previous layer's Outputs: Reduces RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *4 )  <sub><sup>approximately i think ?</sub></sup>|  
+| ```B00100000``` | 🔴 Partialy Reduces RAM for Weights, level 1| 
+| ```B00010000``` | Reduces RAM for Weights, level 2 by a factor of number_of_layers*[2]((%28https://forum.arduino.cc/index.php?topic=40837.0#:~:text=A%20pointer%20on%20the%20Arduino,the%20array%20it%20points%20to.%29)) - 2 bytes |  
+| ```B00001000``` | 🟢 Deletes previous layer's Gamma | 
+| ```B00000100``` |  Reduce RAM by a factor of [2](%28https://forum.arduino.cc/index.php?topic=40837.0#:~:text=A%20pointer%20on%20the%20Arduino,the%20array%20it%20points%20to.%29)*(number_of_layers - 1 or 2)bytes <sub><sup>slightly different usage with multiple NNs</sub></sup>| 
+  
+<br>⚠️ = Backpropagation is not Allowed<br>🔴 = Not yet implimented<br>🟢 = Always Enabled **<sub><sup>(not switchable yet.)</sup><sub>**
+
+<br>if you want to use other activation function from the default one, just define one other:
+>>>>>>> origin/master
 ```c++
 #define Sigmoid //[default] No need definition, for single activation across network
 #define Tanh
@@ -144,7 +185,11 @@ if you want to use other activation function from the default one, just define o
 ...
 ```
 
+<<<<<<< HEAD
 Use any activation function per layer-to-layer, like :
+=======
+Use any Activation Function Per Layer, like :
+>>>>>>> origin/master
 ```c++
 #define ACTIVATION__PER_LAYER
 #include <NeuralNetwork.h>

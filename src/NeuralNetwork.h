@@ -154,14 +154,22 @@
     #define ACTIVATION //Sigmoid default but for more than one you must declare it
     #define ACTIVATION_FUNCTION Sigmoid
     #define Sigmoid Sigmoid
+<<<<<<< HEAD
     #define A1 |‣ Sigmoid 
+=======
+    #define ACTIVATION_FUNCTION Sigmoid
+>>>>>>> origin/master
     // ACTIVATION__PER_LAYER will have any per neuron [2D Array/Matrix] or per layer [1d Array/Vector]
 #elif defined(Sigmoid)
     #define ACT1 1
     #define ACTIVATION //Sigmoid default but for more than one you must declare it
     #define ACTIVATION_FUNCTION Sigmoid
     #define Sigmoid Sigmoid
+<<<<<<< HEAD
     #define A1 |‣ Sigmoid 
+=======
+    #define ACTIVATION_FUNCTION Sigmoid
+>>>>>>> origin/master
 #endif
 #if defined(Tanh)
     #define ACT2 1
@@ -174,6 +182,10 @@
     #define ACT3 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION ReLU
+<<<<<<< HEAD
+=======
+    #define ReLU ReLU
+>>>>>>> origin/master
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ReLU ReLU
     #define A3 |‣ ReLU 
@@ -182,6 +194,10 @@
     #define ACT4 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION LeakyELU
+<<<<<<< HEAD
+=======
+    #define LeakyELU LeakyELU
+>>>>>>> origin/master
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define LeakyELU LeakyELU
     #define A4 |‣ LeakyELU 
@@ -190,6 +206,10 @@
     #define ACT5 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION ELU
+<<<<<<< HEAD
+=======
+    #define ELU ELU
+>>>>>>> origin/master
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ELU ELU
     #define A5 |‣ ELU 
@@ -270,6 +290,7 @@
     #define A14 |‣ Gaussian 
 #endif
 
+<<<<<<< HEAD
 #define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6 + ACT7 + ACT8 + ACT9 + ACT9 + ACT10 + ACT11 + ACT12 + ACT13 + ACT14)
 
 #if defined(ACTIVATION__PER_LAYER)
@@ -279,6 +300,15 @@
         #define AL |‣ "(ALL_ACTIVATION_FUNCTIONS)"
         #define NUM_OF_USED_ACTIVATION_FUNCTIONS 12
         #define MSG7 \n⌥▌"///////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
+=======
+#define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6)
+//#pragma message "The content is : " STR(NUM_OF_USED_ACTIVATION_FUNCTIONS)
+
+#if defined(ACTIVATION__PER_LAYER)
+    #if !defined(ACTIVATION)
+        #define USE_ALL_ACTIVATION_FUNCTIONS
+        #define NUM_OF_USED_ACTIVATION_FUNCTIONS 6
+>>>>>>> origin/master
     #endif
 #endif
 
@@ -399,6 +429,7 @@ private:
 
         typedef float (Layer::*method_function) (const float &);
         inline static const method_function (activation_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
+<<<<<<< HEAD
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
                 &Layer::Sigmoid,
             #endif
@@ -415,6 +446,24 @@ private:
                 &Layer::ELU, 
             #endif
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
+=======
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
+                &Layer::Sigmoid,
+            #endif
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
+                &Layer::Tanh,
+            #endif
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
+                &Layer::ReLU, 
+            #endif
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
+                &Layer::LeakyELU, 
+            #endif
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
+                &Layer::ELU, 
+            #endif
+            #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
+>>>>>>> origin/master
                 &Layer::SELU, 
             #endif        
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
@@ -444,22 +493,22 @@ private:
         };
         #if !defined(NO_BACKPROP)
             inline static const method_function (derivative_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
-                #if defined(Sigmoid)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
                     &Layer::SigmoidDer,
                 #endif
-                #if defined(Tanh)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
                     &Layer::TanhDer,
                 #endif
-                #if defined(ReLU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
                     &Layer::ReLUDer, 
                 #endif
-                #if defined(LeakyELU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
                     &Layer::LeakyELUDer, 
                 #endif
-                #if defined(ELU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
                     &Layer::ELUDer, 
                 #endif
-                #if defined(SELU)
+                #if defined(USE_ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
                     &Layer::SELUDer, 
                 #endif   
                 #if defined(Softmax)
@@ -1439,6 +1488,10 @@ public:
     #endif
 
 #pragma endregion Layer.cpp
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 #endif
 
 
@@ -1449,5 +1502,8 @@ public:
 #5 (Most Probably) It will be Optimised by the compiler if no needed
 #6 https://stackoverflow.com/questions/68689135/unusual-behavior-unnecessary-variables-inside-a-class-result-in-extra-bytes-of
 
+<<<<<<< HEAD
 In Arduino log() = ln = natural logarithm = logarithm with base e 
+=======
+>>>>>>> origin/master
 */

@@ -1,6 +1,13 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
 #define _1_OPTIMIZE B11010110 // https://github.com/GiorgosXou/NeuralNetworks#macro-properties
 
+<<<<<<< HEAD:examples/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
+=======
+#define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the amount of layers (in this case 4)
+
+#define _1_OPTIMIZE B10010000 // don't get confused with the line below, it just being redefined if you uncomment it
+//#define _1_OPTIMIZE B11010100 //uncoment to see time difference when optimizing ram even more (about 1ms) ----> *1
+>>>>>>> origin/master:examples/Other/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {784, 7, 9, 1};
@@ -112,4 +119,11 @@ void setup()
     Serial.println((String)"Predicted [" + (round(output[0]* 9)) + "] - Under " + (millis() - timestamp) + " milliseconds."); // (outputs[0]* 9.0) = denormalizing/converting prediction back to decimical (i think i should have used 10 instead of 9 when i was training but nvm...)
   }
 }
+<<<<<<< HEAD:examples/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
 void loop(){}
+=======
+
+void loop() {}
+// just so u know, It is recomended to use B11010100, in such extreme cases in my opinion 
+//----> *1 with B11010100 you can have as many layers as you want without using more RAM size than APPROXIMATELY the size of the (number_of_neurons_in_the_largest_layer * 4 + the_other_standar_something) :P (i am in a hurry)
+>>>>>>> origin/master:examples/Other/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
