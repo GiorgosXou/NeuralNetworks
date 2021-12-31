@@ -428,6 +428,6 @@ if you want me to continue support this library, learn and bring more functional
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) 
 
-<sub>(I need money, else I might gonna kill myself for real). [stackedit.io](https://stackedit.io/app) have been used for the edditing of this MD file</sub> 
+<sub>(I need money, else I might gonna kill myself for real). [stackedit.io](https://stackedit.io/app) have been used for the editing of this MD file</sub> 
 
             
