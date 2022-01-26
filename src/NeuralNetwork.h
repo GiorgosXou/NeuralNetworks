@@ -71,7 +71,7 @@
 #define MSG5
 #define MSG6
 #define MSG7
-#define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤
+// #define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤
 
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor B01111111) == B11111111)
@@ -300,7 +300,7 @@
 #define STR(x) STR_HELPER(x)
 
 #define INFORMATION LOVE MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 \n[ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 NB A9 A10 A11 A12 A13 A14 |⌥|
-#pragma message( STR(INFORMATION) )
+// #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
 class NeuralNetwork
