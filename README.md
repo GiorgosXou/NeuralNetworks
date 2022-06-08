@@ -77,7 +77,7 @@ Understanding the Basics of a Neural Network:
 |FeedForward_Individual(```x```)|Float| 1D Float Array|"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. <sup>(Way Less RAM too)</sup>|
 | *FeedForword(```x```)| 1D Float Array| 1D Float Array| "Feeds" the NN with X-input values and returns Y-Output Values, If needed.|
 | BackProp(```x```)| 1D Float Array | - | Tells to the NN if the outputs-Y were right/the-expected-X-inputs and then, teaches it.|
-|print()| - |String| Serial.Prints the weights and biases of NN. _(If [B10000000](#macro-properties) prints from PROGMEM)_|
+|print()| - |String| Serial.Prints the weights and biases of NN. _(If [B10000000](#define-macro-properties) prints from PROGMEM)_|
 
 <br>
 
@@ -188,15 +188,15 @@ byte Actv_Functions[] = {   1, ..., 2, 0};
 ### ```Type``` [Other Variables]
 | Type | NN's Variables | Explenation|
 | ------ | ------ | ------ |
-|```byte*```      |NN.```ActFunctionPerLayer``` |if [```ACTIVATION__PER_LAYER```](#macro-properties) defined|
+|```byte*```      |NN.```ActFunctionPerLayer``` |if ```ACTIVATION__PER_LAYER``` defined|
 |```float```       |NN.```LearningRateOfWeights```|The Learning-Rate-Of-Weights |
 |```float```       |NN.```LearningRateOfBiases```| The Learning-Rate-Of-Biases|
-|```float*```      |NN.```weights```|If [B00010000](#macro-properties) defined|
+|```float*```      |NN.```weights```|If [B00010000](#define-macro-properties) defined|
 |```Layer*```      |NN.```layers``` | Layers of NN|
 ||<center>**Layer's Variables**</center>||
 |```float*```      |NN.layers[i].```bias```| The bias of an individual layer[i] |
 |```float*```      |NN.layers[i].```outputs```[]| The Output array of an individual layer[i]|
-|```float**```     |NN.layers[i].```weights```[][]|if not [B00010000](#macro-properties) defined|
+|```float**```     |NN.layers[i].```weights```[][]|if not [B00010000](#define-macro-properties) defined|
 |```float*```      |NN.layers[i].```preLgamma```[]| The γ-error of previous layer[i-1] |
 |```unsigned int```|NN.layers[i].```_numberOfInputs```| The number-Of-Inputs for an individual layer[i]|
 |```unsigned int```|NN.layers[i].```_numberOfOutputs```| The number-Of-Outputs for an individual layer[i]|
