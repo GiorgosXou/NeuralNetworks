@@ -163,7 +163,17 @@
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
 
+// Disable SIMD parallel processing if double precision is enabled
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
+    #if defined(USE_64_BIT_DOUBLE)
         #undef MSG7
+        #define MSG7 \n⌥▌" [1] B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+    #else
+        #define ESP_SUPPORTS_SIMD
+        #include "esp_dsp.h"
+    #endif
+#endif
+
 #if defined(_2_OPTIMIZE)
     #if ((_2_OPTIMIZE bitor B01111111) == B11111111)
         #if defined(REDUCE_RAM_WEIGHTS_COMMON)
@@ -1864,16 +1874,24 @@ public:
         for (int i = 0; i < _numberOfOutputs; i++)
         {
             outputs[i] = 0;
-            for (int j = 0; j < _numberOfInputs; j++)
-            {
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    outputs[i] += inputs[j] * me->weights[me->i_j];
-                    me->i_j++;
-                #else
-                    outputs[i] += inputs[j] * weights[i][j]; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
-                #endif
-                
-            }
+            #if !defined(ESP_SUPPORTS_SIMD)
+                for (int j = 0; j < _numberOfInputs; j++)
+                {
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        outputs[i] += inputs[j] * me->weights[me->i_j];
+                        me->i_j++;
+                    #else
+                        outputs[i] += inputs[j] * weights[i][j]; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
+                    #endif
+                    
+                }
+            #elif !defined(REDUCE_RAM_WEIGHTS_LVL2)
+                dsps_dotprod_f32(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+            #else
+                dsps_dotprod_f32(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); 
+                me->i_j+= _numberOfInputs;
+            #endif
+
             #if defined(ACTIVATION__PER_LAYER)
                 outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + (*bias)); //if softmax then calls the SoftmaxSum
             #elif defined(Softmax)
