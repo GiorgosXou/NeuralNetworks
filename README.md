@@ -12,7 +12,7 @@ Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs
 | NN Functions | Input Type (x)|Output Type (Y) | Action |
 | ------ | ------ | ------ | ------ |
 | ```BackProp(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| - | <details><summary>Trains the Neural-network</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
-| ```*FeedForward(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| DFLOAT Array| <details><summary>Returns the output of it</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
+| ```*FeedForward(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| <details><summary>Returns the output of it</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
 |```getMeanSqrdError(x)```| Unsigned Int| float| <details><summary> Returns the Mean Squared Error</summary> MSE, is SSE (Sum Squared Error) divided by the Product of number-οf-οutputs and inputs-per-epoch aka batch-size. </details>|
 
 Understanding the Basics of a Neural Network:  
@@ -333,6 +333,22 @@ if you want me to continue support this library, learn and bring more functional
 # 🌐 Research
 Here most of the resources I came across the internet, I recomend you to have a look if you want to _(but please stay aware of the fact that for some of those sites, I had only opened them checked something and then closed them in a matter of seconds [so, please don't get them all seriously])_
 
+
+**```22\11\2023```** 
+* **```Code Related:```**
+* * _**```Macros:```**_
+* * * Do not put comments in front of #define whatever
+* * * [is #ifdef \_\_SD\_H\_\_ considered a bad practice?](https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice '2023-11-22 12:32:04 AM')
+* * * [C++11-style \[\[unused\]\] attribute in gcc?](https://stackoverflow.com/questions/31909631/c11-style-unused-attribute-in-gcc '2023-11-22 12:38:06 AM')
+* * * [comments in c macro definition](https://stackoverflow.com/questions/30133528/comments-in-c-macro-definition '2023-11-22 12:41:41 AM')
+* * * [Using #undef before #define](https://stackoverflow.com/questions/28136208/using-undef-before-define/28136246#28136246 '2023-11-22 12:39:22 AM')
+* * _**```Arduino:```**_ 
+* * * _**```StackOverflow:```**_
+* * * * [PROGMEM : pgm_read_float_near() equivalent for double? (Arduino Due)](https://arduino.stackexchange.com/a/94783/77085 '2023-11-22 12:35:08 AM')
+* * * * [warning: inline variables are only available with ‘-std=c++17’ or ‘-std=gnu++17’ how to suppress it? \[closed\]](https://stackoverflow.com/questions/72181312/warning-inline-variables-are-only-available-with-std-c17-or-std-gnu17 '2023-11-22 12:40:45 AM')
+
+<br>
+
 **```12\08\2021```** 
 * **```Neural Network Related```**
 * *  _**``` Videos:```**_
@@ -514,9 +530,9 @@ Here most of the resources I came across the internet, I recomend you to have a 
 # 🕳️ Outro
 - Forgive me if I've made any mistakes and please don't take me seriously with every claim i make, I am mainly "self taught" in this field of NeuralNetworks, I am not a professional programmer nor do I have a good knowledge in many of the fields used to create this library, **I just make things because I love to** [...] 
 
-- Also looking for jobs, if you are interested let me know, I really like working with embeded systems, C\C++ and python
+- Also looking for jobs, if you are interested let me know, I really like working with embeded systems, C\C++, python, CLIs and etc.
 
-**if** you want to help me and others to educate ourselves better **and if** you have a love and passion for sharing and helping others, **then** I suggest you to **[join our discord server ](https://discord.gg/R2RVeD3gY8)** 🤍
+**if** you want to help me&others to educate ourselves better **and if** you have a love and passion for sharing and helping, **then** I suggest you to **[join our discord server ](https://discord.gg/R2RVeD3gY8)** 🤍
 
 My Instagram account is: [giorgos.xou](https://www.instagram.com/giorgos.xou/) [;)](http://prntscr.com/xtz4s6) feel free to ask me anything
 
