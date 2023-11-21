@@ -144,8 +144,27 @@
 #define ACT12 0
 #define ACT13 0
 #define ACT14 0
+// Custom Activation Fuctions
+#define CACT1 0
+#define CACT2 0
+#define CACT3 0
+#define CACT4 0
+#define CACT5 0
 
-// STR(AX) | pragma message | A = Activation
+// Custom Activation Fuctions Definitions (eg. DFLOAT CUSTOM_AFX(...);)
+#define CUSTOM_AF1_DEFINITION
+#define CUSTOM_AF2_DEFINITION
+#define CUSTOM_AF3_DEFINITION
+#define CUSTOM_AF4_DEFINITION
+#define CUSTOM_AF5_DEFINITION
+
+#define CUSTOM_DF1_DEFINITION
+#define CUSTOM_DF2_DEFINITION
+#define CUSTOM_DF3_DEFINITION
+#define CUSTOM_DF4_DEFINITION
+#define CUSTOM_DF5_DEFINITION
+
+// STR(AX) | pragma message | A = Activation | AL = All | CA = Custom Activation
 #define A1 
 #define A2 
 #define A3 
@@ -162,7 +181,20 @@
 #define A14
 #define AL
 
-// NB = (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
+#define CA1
+#define CA2
+#define CA3
+#define CA4
+#define CA5
+
+// NB = NO BACKPROP | CSTA = Custom Activation message | NB_CA5 = NB message for CAs
+#define NB_CA1 
+#define NB_CA2 
+#define NB_CA3 
+#define NB_CA4 
+#define NB_CA5
+
+#define CSTA
 #define NB
 
 #if !defined(ACTIVATION__PER_LAYER)
@@ -397,9 +429,10 @@
     #define A14 |‣ Gaussian 
 #endif
 
-#define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6 + ACT7 + ACT8 + ACT9 + ACT9 + ACT10 + ACT11 + ACT12 + ACT13 + ACT14)
+#define CONCATENATE_WITHOUT_SPACE(x, y) CONCATENATE_IMPL(x, y)
+#define CONCATENATE_IMPL(x, y) x ## y
 
-#if defined(ACTIVATION__PER_LAYER)
+#if defined(CUSTOM_AF1)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA1
     #undef CSTA 
     #undef CACT1
@@ -407,15 +440,26 @@
     #undef ACTIVATION_FUNCTION
     #undef CUSTOM_AF1_DEFINITION
     #undef DEFAULT_ACTIVATION_FUNCTION
-    #undef CSTA 
-    #undef CA2
-        #undef NB_CA1
-        #undef NB
-        #undef CUSTOM_DF1_DEFINITION
+    #define ACTIVATION
+    #define CUSTOM_AF1_DEFINITION DFLOAT CUSTOM_AF1(const DFLOAT &x);
+    #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
+    #if defined(CUSTOM_DF1)
         #undef CUSTOM_DF1
         #undef CUSTOM_DF1_DEFINITION
+        #define CUSTOM_DF1 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF1, Der)
+        #define CUSTOM_DF1_DEFINITION DFLOAT CUSTOM_DF1(const float &fx);
+    #else
+        #define NO_BACKPROP
         #undef NB
         #undef NB_CA1
+        #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
+        #define NB_CA1 |‣ CUSTOM_AF1
+    #endif
+    #define CACT1 1
+    #define ACTIVATION_FUNCTION CUSTOM_AF1
+    #define CA1 |‣ CUSTOM_AF1
+#endif
+#if defined(CUSTOM_AF2)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA2
     #undef CSTA 
     #undef CACT2
@@ -423,11 +467,26 @@
     #undef ACTIVATION_FUNCTION
     #undef CUSTOM_AF2_DEFINITION
     #undef DEFAULT_ACTIVATION_FUNCTION
-    #undef CUSTOM_AF1_DEFINITION
+    #define ACTIVATION
+    #define CUSTOM_AF2_DEFINITION DFLOAT CUSTOM_AF2(const DFLOAT &x);
+    #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
+    #if defined(CUSTOM_DF2)
         #undef CUSTOM_DF2
         #undef CUSTOM_DF2_DEFINITION
+        #define CUSTOM_DF2 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF2, Der)
+        #define CUSTOM_DF2_DEFINITION DFLOAT CUSTOM_DF2(const DFLOAT &fx);
+    #else
+        #define NO_BACKPROP
         #undef NB
         #undef NB_CA2
+        #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
+        #define NB_CA2 |‣ CUSTOM_AF2
+    #endif
+    #define CACT2 1
+    #define ACTIVATION_FUNCTION CUSTOM_AF2
+    #define CA2 |‣ CUSTOM_AF2
+#endif
+#if defined(CUSTOM_AF3)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA3
     #undef CSTA 
     #undef CACT3
@@ -435,10 +494,26 @@
     #undef CUSTOM_AF3_DEFINITION
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
+    #define ACTIVATION
+    #define CUSTOM_AF3_DEFINITION DFLOAT CUSTOM_AF3(const DFLOAT &x);
+    #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
+    #if defined(CUSTOM_DF3)
         #undef CUSTOM_DF3
         #undef CUSTOM_DF3_DEFINITION
+        #define CUSTOM_DF3 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF3, Der)
+        #define CUSTOM_DF3_DEFINITION DFLOAT CUSTOM_DF3(const DFLOAT &fx);
+    #else
+        #define NO_BACKPROP
         #undef NB
         #undef NB_CA3
+        #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
+        #define NB_CA3 |‣ CUSTOM_AF3
+    #endif
+    #define CACT3 1
+    #define ACTIVATION_FUNCTION CUSTOM_AF3
+    #define CA3 |‣ CUSTOM_AF3
+#endif
+#if defined(CUSTOM_AF4)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA4
     #undef CSTA 
     #undef CACT4
@@ -446,10 +521,26 @@
     #undef CUSTOM_AF4_DEFINITION
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
+    #define ACTIVATION
+    #define CUSTOM_AF4_DEFINITION DFLOAT CUSTOM_AF4(const DFLOAT &x);
+    #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
+    #if defined(CUSTOM_DF4)
         #undef CUSTOM_DF4
         #undef CUSTOM_DF4_DEFINITION
+        #define CUSTOM_DF4 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF4, Der)
+        #define CUSTOM_DF4_DEFINITION DFLOAT CUSTOM_DF4(const DFLOAT &fx);
+    #else
+        #define NO_BACKPROP
         #undef NB
         #undef NB_CA4
+        #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
+        #define NB_CA4 |‣ CUSTOM_AF4
+    #endif
+    #define CACT4 1
+    #define ACTIVATION_FUNCTION CUSTOM_AF4
+    #define CA4 |‣ CUSTOM_AF4
+#endif
+#if defined(CUSTOM_AF5)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA5
     #undef CSTA 
     #undef CACT5
@@ -457,10 +548,28 @@
     #undef CUSTOM_AF5_DEFINITION
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
+    #define ACTIVATION
+    #define CUSTOM_AF5_DEFINITION DFLOAT CUSTOM_AF5(const DFLOAT &x);
+    #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
+    #if defined(CUSTOM_DF5)
         #undef CUSTOM_DF5
         #undef CUSTOM_DF5_DEFINITION
+        #define CUSTOM_DF5 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF5, Der)
+        #define CUSTOM_DF5_DEFINITION DFLOAT CUSTOM_DF5(const DFLOAT &fx);
+    #else
+        #define NO_BACKPROP
         #undef NB
         #undef NB_CA5
+        #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
+        #define NB_CA5 |‣ CUSTOM_AF5
+    #endif
+    #define CACT5 1
+    #define ACTIVATION_FUNCTION CUSTOM_AF5
+    #define CA5 |‣ CUSTOM_AF5
+#endif
+
+
+#define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6 + ACT7 + ACT8 + ACT9 + ACT9 + ACT10 + ACT11 + ACT12 + ACT13 + ACT14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
         #define AL |‣ "(ALL_ACTIVATION_FUNCTIONS)"
@@ -569,8 +678,18 @@ private:
         float SoftmaxSum (const float &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax 
         float SoftmaxDer (const float &fx);
 
-        float Identity   (const float &x );
-        float IdentityDer(const float &x );
+        // Custom Activation Fuctions Definitions (eg. DFLOAT CUSTOM_AFX(...);)
+        CUSTOM_AF1_DEFINITION
+        CUSTOM_AF2_DEFINITION
+        CUSTOM_AF3_DEFINITION
+        CUSTOM_AF4_DEFINITION
+        CUSTOM_AF5_DEFINITION
+
+        CUSTOM_DF1_DEFINITION
+        CUSTOM_DF2_DEFINITION
+        CUSTOM_DF3_DEFINITION
+        CUSTOM_DF4_DEFINITION
+        CUSTOM_DF5_DEFINITION
 
         // NO_BACKPROP support
         float BinaryStep (const float &x );
@@ -631,6 +750,22 @@ private:
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Gaussian)            
                 &Layer::Gaussian,
             #endif
+
+            #if defined(CUSTOM_AF1)            
+                &Layer::CUSTOM_AF1,
+            #endif
+            #if defined(CUSTOM_AF2)            
+                &Layer::CUSTOM_AF2,
+            #endif
+            #if defined(CUSTOM_AF3)            
+                &Layer::CUSTOM_AF3,
+            #endif
+            #if defined(CUSTOM_AF4)            
+                &Layer::CUSTOM_AF4,
+            #endif
+            #if defined(CUSTOM_AF5)            
+                &Layer::CUSTOM_AF5,
+            #endif
         };
         #if !defined(NO_BACKPROP)
             inline static const method_function (derivative_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
@@ -658,6 +793,22 @@ private:
                 #if defined(Identity)            
                     &Layer::IdentityDer,
                 #endif         
+
+                #if defined(CUSTOM_DF1)            
+                    &Layer::CUSTOM_DF1,
+                #endif
+                #if defined(CUSTOM_DF2)            
+                    &Layer::CUSTOM_DF2,
+                #endif
+                #if defined(CUSTOM_DF3)            
+                    &Layer::CUSTOM_DF3,
+                #endif
+                #if defined(CUSTOM_DF4)            
+                    &Layer::CUSTOM_DF4,
+                #endif
+                #if defined(CUSTOM_DF5)            
+                    &Layer::CUSTOM_DF5,
+                #endif
             };
         #endif  
         //https://stackoverflow.com/a/31708674/11465149
