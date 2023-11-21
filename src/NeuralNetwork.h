@@ -45,7 +45,7 @@
     #define As__AVR_ATtinyX__
 
     #if defined(__AVR_ATtiny85__)
-        #define MSG0 \n⌥▌"///////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Last time i tried backpropagation on an ATtiny85 I had Issues [...]"
+        #undef MSG0
     #endif
 #endif
 
@@ -77,12 +77,13 @@
     #if ((_1_OPTIMIZE bitor B01111111) == B11111111)
         #define USE_PROGMEM
         #define NO_BACKPROP
-        #define MSG1 \n⌥▌"B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
+        #undef IS_CONST
+        #undef MSG1
     #endif
     #if ((_1_OPTIMIZE bitor B10111111) == B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
         #define NO_BACKPROP
-        #define MSG2 \n⌥▌"B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
+        #undef MSG2
     #endif  
     
     #if ((_1_OPTIMIZE bitor B11101111) == B11111111)
@@ -90,28 +91,44 @@
         #define REDUCE_RAM_WEIGHTS_LVL2
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]
     #elif ((_1_OPTIMIZE bitor B11011111) == B11111111)
-        #define MSG3 \n⌥▌"B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
+        #undef MSG3
         //#define REDUCE_RAM_WEIGHTS_COMMON
         //#define REDUCE_RAM_WEIGHTS_LVL1
     #endif
 
     #if ((_1_OPTIMIZE bitor B11110111) == B11111111)
         #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
-        #define MSG4 \n⌥▌"B00001000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
+        #undef MSG4
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111011) == B11111111)
         #define REDUCE_RAM_STATIC_REFERENCE
-        #define MSG5 \n⌥▌"B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
+        #undef MSG5
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111101) == B11111111)
         #define DISABLE_MSE
-        #define MSG6 \n⌥▌"B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
+        #undef MSG6
+        #undef MSG7
+        #undef PGM_READ_DFLOAT 
+        #undef DFLOAT 
+        #undef ATOL 
+        #undef LLONG 
+        #undef DFLOAT_LEN 
+        #undef DFLOAT 
+        #undef PGM_READ_DFLOAT 
+            #undef MSG3
+        #undef MSG7
+        #undef LLONG 
+        #undef ATOL 
     #endif
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
 
+        #undef MSG7
+            #undef MSG3
+            #undef MSG9
+        #undef MSG8
 
 #define ACT1  0
 #define ACT2  0
@@ -150,13 +167,10 @@
 
 #if !defined(ACTIVATION__PER_LAYER)
     //DEFAULT
-    // i will also create a mechanism to show #error if more than one is defined with B opperations?
-    #define ACTIVATION //Sigmoid default but for more than one you must declare it
-    #define ACTIVATION_FUNCTION Sigmoid
-    #define Sigmoid Sigmoid
-    #define A1 |‣ Sigmoid 
-    // ACTIVATION__PER_LAYER will have any per neuron [2D Array/Matrix] or per layer [1d Array/Vector]
-#elif defined(Sigmoid)
+    #undef A1
+    #undef ACT1
+    #undef Sigmoid
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT1 1
     #define ACTIVATION //Sigmoid default but for more than one you must declare it
     #define ACTIVATION_FUNCTION Sigmoid
@@ -164,6 +178,12 @@
     #define A1 |‣ Sigmoid 
 #endif
 #if defined(Tanh)
+    #undef A2
+    #undef ACT2
+    #undef Tanh
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT2 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Tanh
@@ -171,6 +191,12 @@
     #define A2 |‣ Tanh
 #endif
 #if defined(ReLU) 
+    #undef A3
+    #undef ACT3
+    #undef ReLU
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT3 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION ReLU
@@ -179,6 +205,12 @@
     #define A3 |‣ ReLU 
 #endif
 #if defined(LeakyELU) 
+    #undef A4
+    #undef ACT4
+    #undef LeakyELU
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT4 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION LeakyELU
@@ -187,6 +219,12 @@
     #define A4 |‣ LeakyELU 
 #endif
 #if defined(ELU)
+    #undef A5
+    #undef ACT5
+    #undef ELU
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT5 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION ELU
@@ -195,6 +233,12 @@
     #define A5 |‣ ELU 
 #endif
 #if defined(SELU)
+    #undef A6
+    #undef ACT6
+    #undef SELU
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT6 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SELU
@@ -202,6 +246,12 @@
     #define A6 |‣ SELU
 #endif
 #if defined(Softmax)
+    #undef A7
+    #undef ACT7
+    #undef Softmax
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT7 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softmax
@@ -209,6 +259,12 @@
     #define A7 |‣ Softmax
 #endif
 #if defined(Identity)
+    #undef A8
+    #undef ACT8
+    #undef Identity
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT8 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Identity
@@ -216,15 +272,41 @@
     #define A8 |‣ Identity
 #endif
 #if defined(BinaryStep)
+    #undef ACT9
+    #undef A9
+    #undef NB
+    #undef A9
+    #undef ACT9
+    #undef BinaryStep
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
     #define ACT9 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION BinaryStep
+    #undef ACTIVATION_FUNCTION
+    #undef ACTIVATION
+    #undef Softplus
+    #undef ACT10
+    #undef A10
+    #undef NB
     #define BinaryStep BinaryStep
     #define A9 |‣ BinaryStep 
 #endif
-#if defined(Softplus)
+    #undef ACTIVATION_FUNCTION
+    #undef ACTIVATION
+    #undef Softplus
+    #undef ACT10
+    #undef A10
+    #undef NB
+    #undef A10
+    #undef ACT10
+    #undef Softplus
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
     #define ACT10 1
@@ -233,16 +315,47 @@
     #define Softplus Softplus
     #define A10 |‣ Softplus 
 #endif
-#if defined(SiLU)
-    #define NO_BACKPROP
-    #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
-    #define ACT11 1
+    #undef DEFAULT_ACTIVATION_FUNCTION
+    #undef ACTIVATION_FUNCTION
+    #undef ACTIVATION
+    #undef SiLU
+    #undef ACT11
+    #undef A11
+    #undef NB
+    #undef A11
+    #undef ACT11
+    #undef SiLU
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
+    #undef Mish
+    #undef ACT13
+    #undef A13
+    #undef NB
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SiLU
+    #undef DEFAULT_ACTIVATION_FUNCTION
+    #undef ACTIVATION_FUNCTION
+    #undef ACTIVATION
+    #undef Gaussian
+    #undef ACT14
+    #undef ACTIVATION
+    #undef GELU
+    #undef ACT12
+    #undef A12
+    #undef A14
+    #undef NB
     #define SiLU SiLU
     #define A11 |‣ SiLU 
 #endif
-#if defined(GELU)
+    #undef CA1
+    #undef NB
+    #undef A12
+    #undef ACT12
+    #undef GELU
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
     #define ACT12 1
@@ -252,6 +365,13 @@
     #define A12 |‣ GELU 
 #endif
 #if defined(Mish)
+    #undef NB
+    #undef A13
+    #undef ACT13
+    #undef Mish
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
     #define ACT13 1
@@ -261,6 +381,13 @@
     #define A13 |‣ Mish 
 #endif
 #if defined(Gaussian)
+    #undef NB
+    #undef A14
+    #undef ACT14
+    #undef Gaussian
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
     #define ACT14 1
@@ -273,12 +400,75 @@
 #define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6 + ACT7 + ACT8 + ACT9 + ACT9 + ACT10 + ACT11 + ACT12 + ACT13 + ACT14)
 
 #if defined(ACTIVATION__PER_LAYER)
-    #if !defined(ACTIVATION)
+    #undef CA1
+    #undef CSTA 
+    #undef CACT1
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef CUSTOM_AF1_DEFINITION
+    #undef DEFAULT_ACTIVATION_FUNCTION
+    #undef CSTA 
+    #undef CA2
+        #undef NB_CA1
+        #undef NB
+        #undef CUSTOM_DF1_DEFINITION
+        #undef CUSTOM_DF1
+        #undef CUSTOM_DF1_DEFINITION
+        #undef NB
+        #undef NB_CA1
+    #undef CA2
+    #undef CSTA 
+    #undef CACT2
+    #undef ACTIVATION
+    #undef ACTIVATION_FUNCTION
+    #undef CUSTOM_AF2_DEFINITION
+    #undef DEFAULT_ACTIVATION_FUNCTION
+    #undef CUSTOM_AF1_DEFINITION
+        #undef CUSTOM_DF2
+        #undef CUSTOM_DF2_DEFINITION
+        #undef NB
+        #undef NB_CA2
+    #undef CA3
+    #undef CSTA 
+    #undef CACT3
+    #undef ACTIVATION
+    #undef CUSTOM_AF3_DEFINITION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
+        #undef CUSTOM_DF3
+        #undef CUSTOM_DF3_DEFINITION
+        #undef NB
+        #undef NB_CA3
+    #undef CA4
+    #undef CSTA 
+    #undef CACT4
+    #undef ACTIVATION
+    #undef CUSTOM_AF4_DEFINITION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
+        #undef CUSTOM_DF4
+        #undef CUSTOM_DF4_DEFINITION
+        #undef NB
+        #undef NB_CA4
+    #undef CA5
+    #undef CSTA 
+    #undef CACT5
+    #undef ACTIVATION
+    #undef CUSTOM_AF5_DEFINITION
+    #undef ACTIVATION_FUNCTION
+    #undef DEFAULT_ACTIVATION_FUNCTION
+        #undef CUSTOM_DF5
+        #undef CUSTOM_DF5_DEFINITION
+        #undef NB
+        #undef NB_CA5
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
         #define AL |‣ "(ALL_ACTIVATION_FUNCTIONS)"
-        #define NUM_OF_USED_ACTIVATION_FUNCTIONS 12
+        #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
         #define MSG7 \n⌥▌"///////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
+        #undef MSG10
+        #undef A1
+        #undef Sigmoid
     #endif
 #endif
 
