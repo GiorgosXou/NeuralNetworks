@@ -64,6 +64,17 @@
 // - That gives you access to the standard types and constants of the Arduino language.
 #include "Arduino.h"
 
+// https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
+#define SD_LIB_NAME <SD.h>
+#if defined(__SD_H__) || defined(SD_h) 
+    #define SUPPORTS_SD_FUNCTIONALITY
+#elif defined __has_include
+    #if __has_include(SD_LIB_NAME)
+        #include SD_LIB_NAME
+        #define SUPPORTS_SD_FUNCTIONALITY
+    #endif
+#endif
+
 #define EEPROM_LIB_NAME <EEPROM.h>
 #if defined(EEPROM_h) || defined(__EEPROM_H__) 
     #define INCLUDES_EEPROM_H
@@ -636,6 +647,10 @@ private:
     const float *_inputs;         // Pointer to primary/first Inputs Array from Sketch    .
                                   // (Used for backpropagation)                           .
 
+    #if defined(SUPPORTS_SD_FUNCTIONALITY)
+        bool isAlreadyLoadedOnce = false; // Determines if load() function has been called more than once, so the next time it will clean | I mean... if you use sd library then you have a spare byte right?
+    #endif
+
     class Layer
     {
     public:
@@ -926,7 +941,11 @@ public:
     float getCategoricalCrossEntropy (unsigned int inputsPerEpoch); 
     float loss  (float &sum, float &loss, unsigned int batch_size);        
 
-    void BackProp(const float *expected);    // BackPropopagation - (error, delta-weights, etc.).
+    #if defined(SUPPORTS_SD_FUNCTIONALITY)
+        NeuralNetwork(String file);
+        bool save(String file); // TODO: load\Save from RAM and PROGMEM, EEPROM, FRAM and other medias 
+        bool load(String file);
+    #endif
     #if defined(INCLUDES_EEPROM_H)
         unsigned int save(unsigned int atAddress); // EEPROM
     #endif
@@ -944,6 +963,15 @@ public:
 //=======================================================================================================================================================================
 #pragma region NeuralNetwork.cpp
     NeuralNetwork::NeuralNetwork() {}
+    #if defined(SUPPORTS_SD_FUNCTIONALITY)
+        NeuralNetwork::NeuralNetwork(String file){
+            isAllocdWithNew = false;
+            #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = this;
+            #endif
+            load(file);
+        }
+    #endif
     
     NeuralNetwork::~NeuralNetwork() // i might have messed up here some things but nvm for now
     {
@@ -979,8 +1007,12 @@ public:
             weights = NULL;
         #endif
 
-        delete[] layers;
-        layers = NULL; // 18/5/2019
+        #if defined(ACTIVATION__PER_LAYER) && defined(SUPPORTS_SD_FUNCTIONALITY) 
+            if (isAlreadyLoadedOnce){
+                delete[] ActFunctionPerLayer;
+                ActFunctionPerLayer = NULL;
+            }
+        #endif  
     }
 
     NeuralNetwork::NeuralNetwork(const unsigned int *layer_, float *default_Weights, float *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer )
@@ -1284,6 +1316,116 @@ public:
     }
     
 
+    #if defined(SUPPORTS_SD_FUNCTIONALITY)
+        bool NeuralNetwork::save(String file) 
+        {
+            File myFile = SD.open(file, FILE_WRITE);
+            if (myFile){
+                int totalNumOfWeights = 0;
+                myFile.println("        "); // yes... it needs those spaces
+                myFile.println(numberOflayers+1); 
+                for(int n=0; n<numberOflayers; n++){
+                    #if defined(ACTIVATION__PER_LAYER)
+                        myFile.println(ActFunctionPerLayer[n]); 
+                    #endif
+                    myFile.println(layers[n]._numberOfInputs); 
+                    myFile.println(layers[n]._numberOfOutputs); 
+                    myFile.println(*((LLONG*)(&*layers[n].bias))); 
+                    for(int i=0; i<layers[n]._numberOfOutputs; i++){
+                        for(int j=0; j<layers[n]._numberOfInputs; j++){
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                myFile.println(*((LLONG*)(&weights[totalNumOfWeights]))); // I would had used i_j but I have totalNumOfWeights so... :)
+                            #else
+                                myFile.println(*((LLONG*)(&layers[n].weights[i][j]))); 
+                            #endif
+                            totalNumOfWeights++;
+                        }
+                    }
+                }
+                myFile.seek(0); // that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below
+                myFile.print(totalNumOfWeights);
+                myFile.close();
+            }
+            return false;
+        }
+
+
+        bool NeuralNetwork::load(String file)
+        {
+            if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
+                pdestract();
+
+            File myFile = SD.open(file);
+            if (myFile) {
+                isAllocdWithNew = true;
+
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    int count_ij = 0;
+                    i_j = 0;
+                    weights = new DFLOAT[myFile.readStringUntil('\n').toInt()];
+                #else
+                    myFile.readStringUntil('\n').toInt(); // Skipping line
+                #endif
+
+                numberOflayers = myFile.readStringUntil('\n').toInt() - 1;
+                layers = new Layer[numberOflayers]; 
+
+                #if defined(ACTIVATION__PER_LAYER)
+                    isAlreadyLoadedOnce = true;
+                    ActFunctionPerLayer = new byte[numberOflayers];
+                #endif  
+
+                #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                    me = this;
+                #endif
+
+                unsigned int tmp_layerInputs;
+                unsigned int tmp_layerOutputs;
+
+                DFLOAT *tmp_bias;  
+                LLONG tmp;
+
+                for (int i = 0; i < numberOflayers; i++)
+                {
+                    #if defined(ACTIVATION__PER_LAYER)
+                        ActFunctionPerLayer[i] = myFile.readStringUntil('\n').toInt();
+                    #endif      
+                    tmp_layerInputs  = myFile.readStringUntil('\n').toInt();
+                    tmp_layerOutputs = myFile.readStringUntil('\n').toInt();
+                    tmp  = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                    tmp_bias         = new DFLOAT;
+                    *tmp_bias        = *((DFLOAT*)(&tmp));
+
+                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+                        layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias,this);
+                        layers[i].weights = new DFLOAT *[tmp_layerOutputs];
+                    #endif
+
+                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+                        for(int j=0; j<tmp_layerOutputs; j++){
+                            layers[i].weights[j] = new DFLOAT[tmp_layerInputs];
+                            for(int k=0; k<tmp_layerInputs; k++){
+                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                layers[i].weights[j][k] =  *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                            }
+                        }
+                    #else
+                        for(int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
+                            tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                count_ij++;
+                        }
+                    #endif
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+                        layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias,this);
+                    #endif
+                }
+                myFile.close();
+                return true;
+              }
+            return false;
+        }
+    #endif
     #if defined(INCLUDES_EEPROM_H)
         template< typename T >
         void put_EEPROM_value(unsigned int &addr, T val){
