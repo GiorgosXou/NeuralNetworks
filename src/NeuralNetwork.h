@@ -197,19 +197,19 @@
 #define CSTA
 #define NB
 
-#if !defined(ACTIVATION__PER_LAYER)
-    //DEFAULT
+
+#if defined(Sigmoid) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A1
     #undef ACT1
     #undef Sigmoid
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT1 1
-    #define ACTIVATION //Sigmoid default but for more than one you must declare it
+    #define ACTIVATION 
     #define ACTIVATION_FUNCTION Sigmoid
     #define Sigmoid Sigmoid
     #define A1 |‣ Sigmoid 
 #endif
-#if defined(Tanh)
+#if defined(Tanh) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A2
     #undef ACT2
     #undef Tanh
@@ -222,7 +222,7 @@
     #define Tanh Tanh
     #define A2 |‣ Tanh
 #endif
-#if defined(ReLU) 
+#if defined(ReLU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A3
     #undef ACT3
     #undef ReLU
@@ -236,7 +236,7 @@
     #define ReLU ReLU
     #define A3 |‣ ReLU 
 #endif
-#if defined(LeakyELU) 
+#if defined(LeakyELU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A4
     #undef ACT4
     #undef LeakyELU
@@ -250,7 +250,7 @@
     #define LeakyELU LeakyELU
     #define A4 |‣ LeakyELU 
 #endif
-#if defined(ELU)
+#if defined(ELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A5
     #undef ACT5
     #undef ELU
@@ -264,7 +264,7 @@
     #define ELU ELU
     #define A5 |‣ ELU 
 #endif
-#if defined(SELU)
+#if defined(SELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A6
     #undef ACT6
     #undef SELU
@@ -277,7 +277,7 @@
     #define SELU SELU
     #define A6 |‣ SELU
 #endif
-#if defined(Softmax)
+#if defined(Softmax)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A7
     #undef ACT7
     #undef Softmax
@@ -290,7 +290,7 @@
     #define Softmax Softmax
     #define A7 |‣ Softmax
 #endif
-#if defined(Identity)
+#if defined(Identity)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A8
     #undef ACT8
     #undef Identity
@@ -303,9 +303,7 @@
     #define Identity Identity
     #define A8 |‣ Identity
 #endif
-#if defined(BinaryStep)
-    #undef ACT9
-    #undef A9
+#if defined(BinaryStep) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
     #undef A9
     #undef ACT9
@@ -314,24 +312,14 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
+    #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT9 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION BinaryStep
-    #undef ACTIVATION_FUNCTION
-    #undef ACTIVATION
-    #undef Softplus
-    #undef ACT10
-    #undef A10
-    #undef NB
     #define BinaryStep BinaryStep
     #define A9 |‣ BinaryStep 
 #endif
-    #undef ACTIVATION_FUNCTION
-    #undef ACTIVATION
-    #undef Softplus
-    #undef ACT10
-    #undef A10
+#if defined(Softplus)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
     #undef A10
     #undef ACT10
@@ -340,19 +328,14 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
+    #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT10 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softplus
     #define Softplus Softplus
     #define A10 |‣ Softplus 
 #endif
-    #undef DEFAULT_ACTIVATION_FUNCTION
-    #undef ACTIVATION_FUNCTION
-    #undef ACTIVATION
-    #undef SiLU
-    #undef ACT11
-    #undef A11
+#if defined(SiLU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
     #undef A11
     #undef ACT11
@@ -360,27 +343,15 @@
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
-    #undef Mish
-    #undef ACT13
-    #undef A13
-    #undef NB
+    #define NO_BACKPROP
+    #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
+    #define ACT11 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SiLU
-    #undef DEFAULT_ACTIVATION_FUNCTION
-    #undef ACTIVATION_FUNCTION
-    #undef ACTIVATION
-    #undef Gaussian
-    #undef ACT14
-    #undef ACTIVATION
-    #undef GELU
-    #undef ACT12
-    #undef A12
-    #undef A14
-    #undef NB
     #define SiLU SiLU
     #define A11 |‣ SiLU 
 #endif
-    #undef CA1
+#if defined(GELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
     #undef A12
     #undef ACT12
@@ -389,14 +360,14 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
+    #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT12 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION GELU
     #define GELU GELU
     #define A12 |‣ GELU 
 #endif
-#if defined(Mish)
+#if defined(Mish)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
     #undef A13
     #undef ACT13
@@ -405,14 +376,14 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
+    #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT13 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Mish
     #define Mish Mish
     #define A13 |‣ Mish 
 #endif
-#if defined(Gaussian)
+#if defined(Gaussian)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
     #undef A14
     #undef ACT14
@@ -421,7 +392,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NB | (𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣)
+    #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT14 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Gaussian
@@ -570,14 +541,28 @@
 
 
 #define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6 + ACT7 + ACT8 + ACT9 + ACT9 + ACT10 + ACT11 + ACT12 + ACT13 + ACT14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
+
+
+#if !defined(ACTIVATION)
+    #if defined(ACTIVATION__PER_LAYER)
+        // ACTIVATE ALL FUNCTIONS
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
         #define AL |‣ "(ALL_ACTIVATION_FUNCTIONS)"
         #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
-        #define MSG7 \n⌥▌"///////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
+        #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
         #undef MSG10
+        #define MSG10 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
+    #else
+        //ENABLE DEFAULT ACTIVATION FUNCTION
+        // i will also create a mechanism to show #error if more than one is defined with B opperations?
         #undef A1
         #undef Sigmoid
+        #define DEFAULT_ACTIVATION_FUNCTION
+        #define ACTIVATION //Sigmoid default but for more than one you must declare it
+        #define ACTIVATION_FUNCTION Sigmoid
+        #define Sigmoid Sigmoid
+        #define A1 |‣ Sigmoid 
     #endif
 #endif
 
