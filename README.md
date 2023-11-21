@@ -34,7 +34,7 @@ Understanding the Basics of a Neural Network:
  
 
 - ##### ```In the future, i want```
-- - ```-``` [Your support.](## 'yes, your support is a feature too xD')
+- - ```-``` [Your support.](#-donation 'yes, your support is a feature too xD')
 - - ```-``` Better overall code.
 - - ```-``` Other training methods.
 - - ```-``` More Activation Functions.
@@ -45,7 +45,7 @@ Understanding the Basics of a Neural Network:
 # ✏️ Examples
 
 - ***`🔤 Basic:`***
-- - [Using a NN inside the loop](## 'Run_In_Loop')
+- - [Using a NN inside the loop](./examples/Basic/Run_In_Loop/Run_In_Loop.ino 'Run_In_Loop')
 - - [Pre-trained NN behaving as a 3-input-xor circuit](./examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino 'FeedForward_double_Xor.ino')
 - - [Training a NN to behave as a 3-input-xor circuit][EXAMPLE_DOUBLE_XOR_BACKPROP_INO]
 - - [Training a NN to behave as a single xor-gate](./examples/Basic/Backpropagation_Single_Xor/Backpropagation_Single_Xor.ino 'Backpropagation_Single_Xor_Gate.ino')
