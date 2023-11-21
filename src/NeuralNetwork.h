@@ -62,6 +62,15 @@
 // - That gives you access to the standard types and constants of the Arduino language.
 #include "Arduino.h"
 
+#define EEPROM_LIB_NAME <EEPROM.h>
+#if defined(EEPROM_h) || defined(__EEPROM_H__) 
+    #define INCLUDES_EEPROM_H
+#elif defined __has_include
+    #if __has_include(EEPROM_LIB_NAME)
+        #include EEPROM_LIB_NAME 
+        #define INCLUDES_EEPROM_H
+    #endif
+#endif
 
 // STR(MSGX) | pragma message
 #define MSG1
@@ -1272,6 +1281,43 @@ public:
         return loss;
     }
     
+
+    #if defined(INCLUDES_EEPROM_H)
+        template< typename T >
+        void put_EEPROM_value(unsigned int &addr, T val){
+            EEPROM.put(addr, val);
+            addr += sizeof(T);
+        }
+
+        unsigned int NeuralNetwork::save(unsigned int atAddress){
+            unsigned int tmp_addr = 0;
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                i_j = 0;
+            #endif
+            put_EEPROM_value(atAddress, numberOflayers);
+            tmp_addr = atAddress;
+            atAddress += (numberOflayers+1)*sizeof(unsigned int);
+            for(int n=0; n<numberOflayers; n++){
+                put_EEPROM_value(tmp_addr, layers[n]._numberOfInputs);
+                #if defined(ACTIVATION__PER_LAYER)
+                    put_EEPROM_value(atAddress, ActFunctionPerLayer[n]);
+                #endif
+                put_EEPROM_value(atAddress, *layers[n].bias);
+                for(int i=0; i<layers[n]._numberOfOutputs; i++){
+                    for(int j=0; j<layers[n]._numberOfInputs; j++){
+                        #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            put_EEPROM_value(atAddress, layers[n].weights[i][j]);
+                        #else
+                            put_EEPROM_value(atAddress, weights[i_j]);
+                            i_j++;
+                        #endif
+                    }
+                }
+            }
+            put_EEPROM_value(tmp_addr, layers[numberOflayers-1]._numberOfOutputs);
+            return atAddress;
+        }
+    #endif
 
     //If Microcontroller isn't one of the .._No_Common_Serial_Support Series then it compiles the code below.
     #if !defined(As__No_Common_Serial_Support) // then Compile:
