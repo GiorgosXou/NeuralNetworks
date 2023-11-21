@@ -955,7 +955,12 @@ public:
     #if defined(USE_INTERNAL_EEPROM)
         NeuralNetwork(unsigned int address);
     #endif
-   // NeuralNetwork(const unsigned int *layer_, const PROGMEM float *default_Weights, const PROGMEM float *default_Bias, const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
+    #if !defined(NO_BACKPROP)
+        NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL);                                              // #0
+        NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, const DFLOAT &LRb, byte *_ActFunctionPerLayer = NULL);          // #0
+    #endif
+    NeuralNetwork(const unsigned int *layer_, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
+    // NeuralNetwork(const unsigned int *layer_, const PROGMEM DFLOAT *default_Weights, const PROGMEM DFLOAT *default_Bias, const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
     
     void  reset_Individual_Input_Counter();
     float *FeedForward_Individual(const float &input);
@@ -966,6 +971,9 @@ public:
     float getBinaryCrossEntropy      (unsigned int inputsPerEpoch); 
     float getCategoricalCrossEntropy (unsigned int inputsPerEpoch); 
     float loss  (float &sum, float &loss, unsigned int batch_size);        
+    #if !defined (NO_BACKPROP)
+        void BackProp(const DFLOAT *expected);    // BackPropopagation - (error, delta-weights, etc.).
+    #endif
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork(String file);
@@ -1098,61 +1106,69 @@ public:
         }
     }
 
-    NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const float &LRw, const float &LRb,  byte *_ActFunctionPerLayer )
-    {
-        LearningRateOfWeights = LRw; // Initializing the Learning Rate of Weights
-        LearningRateOfBiases  = LRb; // Initializing the Learning Rate of Biases
-
-        numberOflayers = NumberOflayers - 1;
-
-        layers = new Layer[numberOflayers];
-
-        #if defined(ACTIVATION__PER_LAYER)
-            ActFunctionPerLayer = _ActFunctionPerLayer;
-        #endif 
-
-        #if defined(REDUCE_RAM_STATIC_REFERENCE)
-            me = this;
-        #endif
-
-        #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi
-            for (int i = 0; i < numberOflayers; i++)
-                i_j += layer_[i] * layer_[i + 1];
-            
-            weights = new float[i_j];
-            i_j=0;
-        #endif
-
-        for (int i = 0; i < numberOflayers; i++)
+    #if !defined(NO_BACKPROP)
+        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, const DFLOAT &LRb,  byte *_ActFunctionPerLayer )
         {
-            layers[i] =  Layer(layer_[i], layer_[i + 1],this);
+            LearningRateOfWeights = LRw; // Initializing the Learning Rate of Weights
+            LearningRateOfBiases  = LRb; // Initializing the Learning Rate of Biases
+
+            numberOflayers = NumberOflayers - 1;
+
+            layers = new Layer[numberOflayers];
+
+            #if defined(ACTIVATION__PER_LAYER)
+                ActFunctionPerLayer = _ActFunctionPerLayer;
+            #endif 
+
+            #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = this;
+            #endif
+
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
+                for (int i = 0; i < numberOflayers; i++)
+                    i_j += layer_[i] * layer_[i + 1];
+                
+                weights = new DFLOAT[i_j];
+                i_j=0;
+            #endif
+
+            for (int i = 0; i < numberOflayers; i++)
+            {
+                layers[i] =  Layer(layer_[i], layer_[i + 1],this);
+            }
+
         }
 
-    }
+        //maybe i will  add one more constructor so i can release memory from feedforward outputs in case i dont want backprop?
 
-    //maybe i will  add one more constructor so i can release memory from feedforward outputs in case i dont want backprop?
+        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers,  byte *_ActFunctionPerLayer )
+        {
+            numberOflayers = NumberOflayers - 1;
 
-    NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers,  byte *_ActFunctionPerLayer )
-    {
-        numberOflayers = NumberOflayers - 1;
+            layers = new Layer[numberOflayers];
 
-        layers = new Layer[numberOflayers];
+            #if defined(ACTIVATION__PER_LAYER)
+                ActFunctionPerLayer = _ActFunctionPerLayer;
+            #endif 
 
-        #if defined(ACTIVATION__PER_LAYER)
-            ActFunctionPerLayer = _ActFunctionPerLayer;
-        #endif 
+            #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = this;
+            #endif
 
-        #if defined(REDUCE_RAM_STATIC_REFERENCE)
-            me = this;
-        #endif
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
+                for (int i = 0; i < numberOflayers; i++)
+                    i_j += layer_[i] * layer_[i + 1];
+                
+                weights = new DFLOAT[i_j];
+                i_j=0;
+            #endif
 
-        #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi
             for (int i = 0; i < numberOflayers; i++)
-                i_j += layer_[i] * layer_[i + 1];
-            
-            weights = new float[i_j];
-            i_j=0;
-        #endif
+            {
+                layers[i] =  Layer(layer_[i], layer_[i + 1],this);
+            }
+        }
+    #endif
 
     #if defined(USE_INTERNAL_EEPROM)
 
@@ -1320,31 +1336,33 @@ public:
 
 
 
-    void NeuralNetwork::BackProp(const float *expected)
-    {
-        /* i dont find any reason of having this if Backprop will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too
-        #if defined(ACTIVATION__PER_LAYER)
-            AtlayerIndex = numberOflayers - 1;
-        #endif  
-        */
-
-        layers[numberOflayers - 1].BackPropOutput(expected, layers[numberOflayers - 2].outputs); // issue because backprop einai anapoda ta weights [Fixed]
-
-        for (int i = numberOflayers - 2; i > 0; i--)
+    #if !defined (NO_BACKPROP)
+        void NeuralNetwork::BackProp(const DFLOAT *expected)
         {
-            layers[i].BackPropHidden(&layers[i + 1], layers[i - 1].outputs);
-            delete[] layers[i + 1].preLgamma;
-            layers[i + 1].preLgamma = NULL; // 18/5/2019
+            /* i dont find any reason of having this if Backprop will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too
+            #if defined(ACTIVATION__PER_LAYER)
+                AtlayerIndex = numberOflayers - 1;
+            #endif  
+            */
+
+            layers[numberOflayers - 1].BackPropOutput(expected, layers[numberOflayers - 2].outputs); // issue because backprop einai anapoda ta weights [Fixed]
+
+            for (int i = numberOflayers - 2; i > 0; i--)
+            {
+                layers[i].BackPropHidden(&layers[i + 1], layers[i - 1].outputs);
+                delete[] layers[i + 1].preLgamma;
+                layers[i + 1].preLgamma = NULL; // 18/5/2019
+            }
+
+            layers[0].BackPropHidden(&layers[1], _inputs);
+
+            delete[] layers[1].preLgamma;
+            delete[] layers[0].preLgamma;
+
+            layers[0].preLgamma = NULL;
+            layers[1].preLgamma = NULL;
         }
-
-        layers[0].BackPropHidden(&layers[1], _inputs);
-
-        delete[] layers[1].preLgamma;
-        delete[] layers[0].preLgamma;
-
-        layers[0].preLgamma = NULL;
-        layers[1].preLgamma = NULL;
-    }
+    #endif
 
 
     //LOSS_FUNCTIONS
