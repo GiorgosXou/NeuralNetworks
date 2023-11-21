@@ -52,6 +52,8 @@
 // Defines a list of microcontroller series (as) As__No_Common_Serial_Support (in that moment)
 #if defined(As__AVR_ATtinyX__) // or etc.
 #define As__No_Common_Serial_Support
+#if defined(ESP32)
+    #define AS_SOFTWARE_EMULATED_EEPROM
 #endif
 
 
