@@ -95,6 +95,11 @@
 #define MSG7
 #define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤
 
+#define ATOL atol
+#define LLONG long
+#define DFLOAT float
+#define DFLOAT_LEN 7
+#define PGM_READ_DFLOAT pgm_read_float
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor B01111111) == B11111111)
         #define USE_PROGMEM
@@ -139,10 +144,21 @@
         #undef DFLOAT_LEN 
         #undef DFLOAT 
         #undef PGM_READ_DFLOAT 
-            #undef MSG3
+        #define USE_64_BIT_DOUBLE
+        #define ATOL atoll
+        #define LLONG long long
+        #define DFLOAT_LEN 15
+        #define DFLOAT double
+        #define PGM_READ_DFLOAT pgm_read_double
+
+        double pgm_read_double(const double* address) {
+            double result;
+            memcpy_P(&result, address, sizeof(double));
+            return result;
+        }
+
         #undef MSG7
-        #undef LLONG 
-        #undef ATOL 
+        #define MSG7 \n⌥▌" [1] B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Not all MCUs support 64bit\8byte double (USE_64_BIT_DOUBLE)."
     #endif
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
