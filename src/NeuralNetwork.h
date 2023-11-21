@@ -573,7 +573,7 @@
         #define ALL_ACTIVATION_FUNCTIONS
         #define AL |‣ "(ALL_ACTIVATION_FUNCTIONS)"
         #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
-        #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5) // #21
+        #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
         #undef MSG10
         #define MSG10 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
     #else
