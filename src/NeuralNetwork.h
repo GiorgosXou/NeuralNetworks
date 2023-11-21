@@ -13,15 +13,6 @@
 /*
 [double on some Arduino boards like UNO for example is equal to float]
 
-  and for a safety reason, i decided to use float instead of double,
-  because of PROGMEM and the fact that pgm_read_float(&of_a_double),
-  works on an arduino Uno and that makes me feel insecure ... So   ,
-  i think it would be better like this, at least for now, as a float 
-  and not a double. In case u want to use double, just replace every
-  float with double and use pgm_read_dword instead of pgm_read_float
-  if your microcontroller supports double precicion.
-  Thanks for reading. (:
-
 - https://www.arduino.cc/reference/en/language/variables/data-types/double/
 - https://forum.arduino.cc/index.php?topic=613873.0
 */
@@ -46,12 +37,14 @@
 
     #if defined(__AVR_ATtiny85__)
         #undef MSG0
+        #define MSG0 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Last time i tried backpropagation on an ATtiny85 I had Issues [...]"
     #endif
 #endif
 
 // Defines a list of microcontroller series (as) As__No_Common_Serial_Support (in that moment)
 #if defined(As__AVR_ATtinyX__) // or etc.
-#define As__No_Common_Serial_Support
+    #define As__No_Common_Serial_Support
+#endif
 #if defined(ESP32)
     #define AS_SOFTWARE_EMULATED_EEPROM
 #endif
@@ -93,24 +86,31 @@
 #define MSG5
 #define MSG6
 #define MSG7
-#define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤
+#define MSG8
+#define MSG9
+#define MSG10
+#define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤\n
 
 #define ATOL atol
 #define LLONG long
 #define DFLOAT float
 #define DFLOAT_LEN 7
 #define PGM_READ_DFLOAT pgm_read_float
+#define IS_CONST
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor B01111111) == B11111111)
         #define USE_PROGMEM
         #define NO_BACKPROP
         #undef IS_CONST
+        #define IS_CONST const
         #undef MSG1
+        #define MSG1 \n⌥▌" [1] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
     #endif
     #if ((_1_OPTIMIZE bitor B10111111) == B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
         #define NO_BACKPROP
         #undef MSG2
+        #define MSG2 \n⌥▌" [1] B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
     #endif  
     
     #if ((_1_OPTIMIZE bitor B11101111) == B11111111)
@@ -119,6 +119,7 @@
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]
     #elif ((_1_OPTIMIZE bitor B11011111) == B11111111)
         #undef MSG3
+        #define MSG3 \n⌥▌" [1] B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
         //#define REDUCE_RAM_WEIGHTS_COMMON
         //#define REDUCE_RAM_WEIGHTS_LVL1
     #endif
@@ -126,19 +127,22 @@
     #if ((_1_OPTIMIZE bitor B11110111) == B11111111)
         #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
         #undef MSG4
+        #define MSG4 \n⌥▌" [1] B00001000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111011) == B11111111)
         #define REDUCE_RAM_STATIC_REFERENCE
         #undef MSG5
+        #define MSG5 \n⌥▌" [1] B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111101) == B11111111)
         #define DISABLE_MSE
         #undef MSG6
-        #undef MSG7
-        #undef PGM_READ_DFLOAT 
-        #undef DFLOAT 
+        #define MSG6 \n⌥▌" [1] B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
+    #endif
+
+    #if ((_1_OPTIMIZE bitor B11111110) == B11111111)
         #undef ATOL 
         #undef LLONG 
         #undef DFLOAT_LEN 
@@ -654,7 +658,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 \n[ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 NB A9 A10 A11 A12 A13 A14 |⌥|
+#define INFORMATION LOVE MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 |⌥|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -669,8 +673,9 @@ private:
         #endif
     #endif
     int Individual_Input = 0;
+    bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
     bool FIRST_TIME_FDFp = false; // determines if there are trashes left in last outputs .
-    const float *_inputs;         // Pointer to primary/first Inputs Array from Sketch    .
+    const DFLOAT *_inputs;        // Pointer to primary/first Inputs Array from Sketch    .
                                   // (Used for backpropagation)                           .
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
@@ -688,64 +693,77 @@ private:
         unsigned int _numberOfInputs;  // # of neurons in the previous layer.
         unsigned int _numberOfOutputs; // # of neurons in the current  layer.
 
-        float *bias;         // bias    of this     layer
-        float *outputs;      // outputs of this     layer  [1D Array] pointers.
+        IS_CONST DFLOAT *bias;         // bias    of this     layer  || Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
+        DFLOAT *outputs;               // outputs of this     layer  [1D Array] pointers.
         
         //#if defined(REDUCE_RAM_WEIGHTS_LVL1)
-        //    float *weights;      // weights of this     layer  [1D Array] pointers.                             #(used if     #REDUCE_RAM_WEIGHTS_LVL1   defined)         
+        //    DFLOAT *weights;         // weights of this     layer  [1D Array] pointers.                             #(used if     #REDUCE_RAM_WEIGHTS_LVL1   defined)         
         //#endif
         #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-            float **weights;       // weights of this     layer  [2D Array] pointers.                             #(used if NOT #REDUCE_RAM_WEIGHTS_COMMON defined) 
+            IS_CONST DFLOAT **weights; // weights of this     layer  [2D Array] pointers.                             #(used if NOT #REDUCE_RAM_WEIGHTS_COMMON defined) 
         #endif
-        float *preLgamma;          // gamma   of previous layer  [1D Array] pointers.
+        #if !defined(NO_BACKPROP)
+            DFLOAT *preLgamma;         // gamma   of previous layer  [1D Array] pointers.
+        #endif
 
         // Default Constractor                                                         .
         //      #0 Constructor                                                         .
         //      #1 Constructor With default/("probably") preptained, weights and biases.
         Layer();
-        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN = nullptr);                                              // #0  
-        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Bias, NeuralNetwork * const NN = nullptr); //                             #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Weights, float *default_Bias, NeuralNetwork * const NN = nullptr); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
+        #if !defined(USE_PROGMEM) 
+            // ^^^^^ I keep this USE_PROGMEM instead of NO_BACKPROP because that way if I add a NeuralNetwork::feedforward_PROGMEM, with -fpermisive someone will be able to use both RAM-NN and PROGMEM-NN at the same time
+            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN = NULL); // #0  
+        #endif
+        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN = NULL); //                                       #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
+        Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN = NULL); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
 
 
-        void FeedForward_Individual(const float &input, const int &j);
-        void FdF_Individual_PROGMEM(const float &input, const int &j);
+        void FeedForward_Individual(const DFLOAT &input, const int &j);
+        void FdF_Individual_PROGMEM(const DFLOAT &input, const int &j);
         #if defined(USE_INTERNAL_EEPROM)
             void FdF_Individual_iEEPROM(const DFLOAT &input, const int &j);
         #endif
 
-        void BackPropOutput(const float *_expected_, const float *inputs);
-        void BackPropHidden(const Layer *frontLayer, const float *inputs);
+        void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
+        void FdF_PROGMEM(const DFLOAT *inputs);
         #if defined(USE_INTERNAL_EEPROM)
             void FdF_IN_EEPROM(const DFLOAT *inputs);
         #endif
 
+        #if !defined (NO_BACKPROP)
+            void BackPropOutput(const DFLOAT *_expected_, const DFLOAT *inputs);
+            void BackPropHidden(const Layer *frontLayer, const DFLOAT *inputs);
+        #endif
+
 
         // "Extra Math"
-        float erf(float x);
+        DFLOAT erf(DFLOAT x);
 
         //if i acctually consider using other complicated activation functions i might need to think again about the before_Activation_output Array [...]
-        float Sigmoid    (const float &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
-        float SigmoidDer (const float &fx); // Derivative of Sigmoid Activation Function.
+        DFLOAT Sigmoid    (const DFLOAT &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
+        DFLOAT SigmoidDer (const DFLOAT &fx); // Derivative of Sigmoid Activation Function.
         
-        float Tanh       (const float &x ); 
-        float TanhDer    (const float &fx); 
+        DFLOAT Tanh       (const DFLOAT &x ); 
+        DFLOAT TanhDer    (const DFLOAT &fx); 
 
-        float ReLU       (const float &x ); 
-        float ReLUDer    (const float &fx); // x is also fx on ReLU
+        DFLOAT ReLU       (const DFLOAT &x ); 
+        DFLOAT ReLUDer    (const DFLOAT &fx); // x is also fx on ReLU
 
-        float LeakyELU   (const float &x );
-        float LeakyELUDer(const float &fx); 
+        DFLOAT LeakyELU   (const DFLOAT &x );
+        DFLOAT LeakyELUDer(const DFLOAT &fx); 
 
-        float ELU        (const float &x ); // α = 1 
-        float ELUDer     (const float &fx); 
+        DFLOAT ELU        (const DFLOAT &x ); // α = 1 
+        DFLOAT ELUDer     (const DFLOAT &fx); 
         
-        float SELU       (const float &x ); // Maybe use https://stackoverflow.com/a/42264773/11465149
-        float SELUDer    (const float &fx); 
+        DFLOAT SELU       (const DFLOAT &x ); // Maybe use https://stackoverflow.com/a/42264773/11465149
+        DFLOAT SELUDer    (const DFLOAT &fx); 
 
-        void  Softmax    ();
-        float SoftmaxSum (const float &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax 
-        float SoftmaxDer (const float &fx);
+        void   Softmax    ();
+        DFLOAT SoftmaxSum (const DFLOAT &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax 
+        DFLOAT SoftmaxDer (const DFLOAT &fx);
+
+        DFLOAT Identity   (const DFLOAT &x );
+        DFLOAT IdentityDer(const DFLOAT &x );
 
         // Custom Activation Fuctions Definitions (eg. DFLOAT CUSTOM_AFX(...);)
         CUSTOM_AF1_DEFINITION
@@ -761,12 +779,12 @@ private:
         CUSTOM_DF5_DEFINITION
 
         // NO_BACKPROP support
-        float BinaryStep (const float &x );
-        float Softplus   (const float &x );
-        float SiLU       (const float &x );
-        float GELU       (const float &x );
-        float Mish       (const float &x );
-        float Gaussian   (const float &x );
+        DFLOAT BinaryStep (const DFLOAT &x );
+        DFLOAT Softplus   (const DFLOAT &x );
+        DFLOAT SiLU       (const DFLOAT &x );
+        DFLOAT GELU       (const DFLOAT &x );
+        DFLOAT Mish       (const DFLOAT &x );
+        DFLOAT Gaussian   (const DFLOAT &x );
         
 
         #if defined(USE_INTERNAL_EEPROM)
@@ -775,10 +793,10 @@ private:
         void print_PROGMEM();
         void print();
     };  
-    //just like "static float *wights" [...]  i might have a function to switch?
+    //just like "static DFLOAT *wights" [...]  i might have a function to switch?
     #if defined(ACTIVATION__PER_LAYER)
 
-        typedef float (Layer::*method_function) (const float &);
+        typedef DFLOAT (Layer::*method_function) (const DFLOAT &);
         inline static const method_function (activation_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
                 &Layer::Sigmoid,
@@ -897,8 +915,8 @@ public:
     // need to add a function for those who want to switch/redirect the pointer to a deferent weight Array... maybe? ... Why not?!? lol.
     // issues with multiple NNs too ...
     #if defined(REDUCE_RAM_WEIGHTS_LVL2) 
-        float *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-        int i_j; 
+        IS_CONST DFLOAT *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
+        int i_j = 0; 
     #endif   
 
     #if defined(ACTIVATION__PER_LAYER)
@@ -908,48 +926,51 @@ public:
 
     // #5 This is the sum of the exp(outputs) of the previous layer (for All and each layer)
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
-        float sumOfSoftmax = 0;
+        DFLOAT sumOfSoftmax = 0;
     #endif
 
     // no negative values allowed, (just saying..)
     // Alphas and Lamdas of Activation Functions | #6 MACROS.
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
-        float AlphaLeaky = 0.01   ;
+        DFLOAT AlphaLeaky = 0.01   ;
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-        float AlphaSELU  = 1.6733 ; 
-        float LamdaSELU  = 1.0507 ;
+        DFLOAT AlphaSELU  = 1.6733 ; 
+        DFLOAT LamdaSELU  = 1.0507 ;
     #endif        
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
-        float AlphaELU   = 1      ;
+        DFLOAT AlphaELU   = 1      ;
     #endif
 
 
-    Layer *layers;               // layers in the network [1D Array].
-    unsigned int numberOflayers; // Number of layers.
+    Layer *layers;                   // layers in the network [1D Array].
+    unsigned int numberOflayers = 0; // Number of layers.
 
 
     // unsigned float doesn't exist..? lol
-    float LearningRateOfWeights = 0.33 ; // Learning Rate of Weights.
-    float LearningRateOfBiases  = 0.066; // Learning Rate of Biases .
+    #if !defined (NO_BACKPROP)
+        DFLOAT LearningRateOfWeights = 0.33 ; // Learning Rate of Weights.
+        DFLOAT LearningRateOfBiases  = 0.066; // Learning Rate of Biases .
+    #endif
     
 
     // LOSS VARIABLES | V Because #6
     #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
-        float sumSquaredError              = 0;  
-        float MeanSqrdError                = 0; 
+        DFLOAT sumSquaredError              = 0;  
+        DFLOAT MeanSqrdError                = 0; 
     #endif
     #if defined(CATEGORICAL_CROSS_ENTROPY)
-        float sumOfCategoricalCrossEntropy = 0;  
-        float CategoricalCrossEntropy      = 0; 
+        DFLOAT sumOfCategoricalCrossEntropy = 0;  
+        DFLOAT CategoricalCrossEntropy      = 0; 
     #endif
     #if defined(BINARY_CROSS_ENTROPY)
-        float sumOfBinaryCrossEntropy      = 0;  
-        float BinaryCrossEntropy           = 0; 
+        DFLOAT sumOfBinaryCrossEntropy      = 0;  
+        DFLOAT BinaryCrossEntropy           = 0; 
     #endif
 
 
-    ~NeuralNetwork(); // Destractor.
+    void pdestract(); // partial destaction
+    ~NeuralNetwork(); // Destructor.
 
     NeuralNetwork();
     #if defined(USE_INTERNAL_EEPROM)
@@ -963,14 +984,15 @@ public:
     // NeuralNetwork(const unsigned int *layer_, const PROGMEM DFLOAT *default_Weights, const PROGMEM DFLOAT *default_Bias, const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
     
     void  reset_Individual_Input_Counter();
-    float *FeedForward_Individual(const float &input);
-    float *FeedForward(const float *inputs); // Moves Calculated outputs as inputs to next layer.
+    DFLOAT *FeedForward_Individual(const DFLOAT &input);
+    DFLOAT *FeedForward(const DFLOAT *inputs); // Moves Calculated outputs as inputs to next layer.
     
     //LOSS FUNCTIONS +common
-    float getMeanSqrdError           (unsigned int inputsPerEpoch); 
-    float getBinaryCrossEntropy      (unsigned int inputsPerEpoch); 
-    float getCategoricalCrossEntropy (unsigned int inputsPerEpoch); 
-    float loss  (float &sum, float &loss, unsigned int batch_size);        
+    DFLOAT getMeanSqrdError           (unsigned int inputsPerEpoch); 
+    DFLOAT getBinaryCrossEntropy      (unsigned int inputsPerEpoch); 
+    DFLOAT getCategoricalCrossEntropy (unsigned int inputsPerEpoch); 
+    DFLOAT loss  (DFLOAT &sum, DFLOAT &loss, unsigned int batch_size);        
+
     #if !defined (NO_BACKPROP)
         void BackProp(const DFLOAT *expected);    // BackPropopagation - (error, delta-weights, etc.).
     #endif
@@ -983,6 +1005,8 @@ public:
     #if defined(INCLUDES_EEPROM_H)
         unsigned int save(unsigned int atAddress); // EEPROM
     #endif
+    // unsigned int save(FRAM fram, unsigned int atAddress); // FRAM https://www.arduino.cc/reference/en/libraries/fram_i2c/
+    
     void print();
      
 };
@@ -996,7 +1020,13 @@ public:
 //NeuralNetwork.cpp
 //=======================================================================================================================================================================
 #pragma region NeuralNetwork.cpp
-    NeuralNetwork::NeuralNetwork() {}
+    NeuralNetwork::NeuralNetwork() {
+        isAllocdWithNew = false;
+        #if defined(REDUCE_RAM_STATIC_REFERENCE)
+            me = this;
+        #endif
+    }
+
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork::NeuralNetwork(String file){
             isAllocdWithNew = false;
@@ -1007,8 +1037,6 @@ public:
         }
     #endif
     
-    NeuralNetwork::~NeuralNetwork() // i might have messed up here some things but nvm for now
-    {
 
     void NeuralNetwork::pdestract()
     {
@@ -1073,9 +1101,12 @@ public:
             layers = NULL; // 18/5/2019
         }
     }
+    NeuralNetwork::~NeuralNetwork() { pdestract(); } 
 
-    NeuralNetwork::NeuralNetwork(const unsigned int *layer_, float *default_Weights, float *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer )
+
+    NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer )
     {
+        isAllocdWithNew = false;
         numberOflayers = NumberOflayers - 1;
 
         layers = new Layer[numberOflayers]; // there has to be a faster way by alocating memory for example...
@@ -1211,7 +1242,7 @@ public:
 
     void NeuralNetwork::reset_Individual_Input_Counter() { Individual_Input = 0;}
 
-    float *NeuralNetwork::FeedForward_Individual(const float &input)
+    DFLOAT *NeuralNetwork::FeedForward_Individual(const DFLOAT &input)
     {
         #if defined(USE_PROGMEM)
             layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
@@ -1272,10 +1303,10 @@ public:
             return  layers[numberOflayers - 1].outputs;
         }
 
-        return nullptr;
+        return NULL;
     }
 
-    float *NeuralNetwork::FeedForward(const float *inputs)
+    DFLOAT *NeuralNetwork::FeedForward(const DFLOAT *inputs)
     {
         _inputs = inputs;
         
@@ -1293,7 +1324,7 @@ public:
         #if defined(ACTIVATION__PER_LAYER)
             AtlayerIndex = 0;
         #endif  
-        // resets starting point (could have had a function returning it insted of initializing it on constructor too?)
+        // resets starting point (could have had a function returning it instead of initializing it on constructor too?)
         #if defined(REDUCE_RAM_WEIGHTS_LVL2) 
             i_j=0;
         #endif
@@ -1368,16 +1399,16 @@ public:
     //LOSS_FUNCTIONS
     //inputsPerEpoch = batch size
     #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
-        float NeuralNetwork::getMeanSqrdError          (unsigned int inputsPerEpoch) { return loss(sumSquaredError, MeanSqrdError, inputsPerEpoch)                        ;}
+        DFLOAT NeuralNetwork::getMeanSqrdError          (unsigned int inputsPerEpoch) { return loss(sumSquaredError, MeanSqrdError, inputsPerEpoch)                        ;}
     #endif
     #if defined(CATEGORICAL_CROSS_ENTROPY)
-        float NeuralNetwork::getCategoricalCrossEntropy(unsigned int inputsPerEpoch) { return loss(sumOfCategoricalCrossEntropy, CategoricalCrossEntropy, inputsPerEpoch) ;}
+        DFLOAT NeuralNetwork::getCategoricalCrossEntropy(unsigned int inputsPerEpoch) { return loss(sumOfCategoricalCrossEntropy, CategoricalCrossEntropy, inputsPerEpoch) ;}
     #endif
     #if defined(BINARY_CROSS_ENTROPY)
-        float NeuralNetwork::getBinaryCrossEntropy     (unsigned int inputsPerEpoch) { return loss(sumOfBinaryCrossEntropy, BinaryCrossEntropy, inputsPerEpoch)           ;}
+        DFLOAT NeuralNetwork::getBinaryCrossEntropy     (unsigned int inputsPerEpoch) { return loss(sumOfBinaryCrossEntropy, BinaryCrossEntropy, inputsPerEpoch)           ;}
     #endif
 
-    float NeuralNetwork::loss(float &sum, float &loss, unsigned int batch_size)
+    DFLOAT NeuralNetwork::loss(DFLOAT &sum, DFLOAT &loss, unsigned int batch_size)
     {
         loss = (sum/(layers[numberOflayers - 1]._numberOfOutputs * batch_size));
         sum = 0; // resets the value of the sum-variable that passes by reference to 0
@@ -1578,7 +1609,7 @@ public:
 
 
     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Weights, float *default_Bias, NeuralNetwork * const NN )
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
@@ -1588,73 +1619,74 @@ public:
             #endif
 
             #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
-                outputs = new float[_numberOfOutputs]; //    ##1    New Array of Outputs.
+                outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
             #endif
             
             bias = default_Bias; //                          ##1    Bias as Default Bias.
-            weights = new float *[_numberOfOutputs]; //      ##1    New Array of Pointers to (float) weights.
+            weights = new IS_CONST DFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (DFLOAT) weights.
 
             for (int i = 0; i < _numberOfOutputs; i++)              // [matrix] (_numberOfOutputs * _numberOfInputs)
                 weights[i] = &default_Weights[i * _numberOfInputs]; // Passing Default weights to ##1 weights by reference.  
         }
-
-    #else
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, float *default_Bias, NeuralNetwork * const NN )
-        {
-            _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
-            _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
-
-            #if !defined(REDUCE_RAM_STATIC_REFERENCE)
-                me = NN;
-            #endif
-
-            #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
-                outputs = new float[_numberOfOutputs]; //    ##1    New Array of Outputs.
-            #endif
-            
-            bias = default_Bias; //                          ##1    Bias as Default Bias.
-        }
-
     #endif
 
-    //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
-    NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
+    NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN )
     {
-
-        _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
-        _numberOfOutputs = NumberOfOutputs;                           // ##1       Number of Outputs.
+        _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
+        _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
 
         #if !defined(REDUCE_RAM_STATIC_REFERENCE)
             me = NN;
         #endif
 
-        outputs = new float[_numberOfOutputs];                        // ##1    New Array of Outputs.
-        #if !defined(REDUCE_RAM_WEIGHTS_COMMON)      
-            weights = new float *[_numberOfOutputs];                  // ##1    New Array of Pointers to (float) weights.
+        #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
+            outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
         #endif
-        bias = new float;                                             // ##1    New          Bias   .
-        *bias = 1.0;
-
-        float _random;
+        
+        bias = default_Bias; //                          ##1    Bias as Default Bias.
+    }
 
     #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
         {
-            #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-                weights[i] = new float[_numberOfInputs];
+
+            _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
+            _numberOfOutputs = NumberOfOutputs;                           // ##1       Number of Outputs.
+
+            #if !defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = NN;
             #endif
-            
-            for (int j = 0; j < _numberOfInputs; j++)
+
+            #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
+                outputs = new DFLOAT[_numberOfOutputs];                     // ##1    New Array of Outputs.
+            #endif 
+            #if !defined(REDUCE_RAM_WEIGHTS_COMMON)      
+                weights = new DFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (DFLOAT) weights.
+            #endif
+            bias = new DFLOAT;                                             // ##1    New          Bias   .
+            *bias = 1.0;
+
+            DFLOAT _random;
+
+            for (int i = 0; i < _numberOfOutputs; i++)
             {
-                _random = (random(-90000, 90000)); // Pseudo-Random Number between -90000 and 90000
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    me->weights[me->i_j] = _random / 100000;
-                    me->i_j++;
-                #else
-                    weights[i][j] = _random / 100000;  // Divided by 100000 = a Number between -0.90000 and 0.90000
+                #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
+                    weights[i] = new DFLOAT[_numberOfInputs];
                 #endif
+                
+                for (int j = 0; j < _numberOfInputs; j++)
+                {
+                    _random = (random(-90000, 90000)); // Pseudo-Random Number between -90000 and 90000
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        me->weights[me->i_j] = _random / 100000;
+                        me->i_j++;
+                    #else
+                        weights[i][j] = _random / 100000;  // Divided by 100000 = a Number between -0.90000 and 0.90000
+                    #endif
+                }
             }
+
         }
     // Yes, it needs the "elif" else it doesn't find any decleration of the function\method bellow
     #elif defined(USE_INTERNAL_EEPROM)
@@ -1673,11 +1705,11 @@ public:
         }
     #endif
 
-    void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const float &input, const int &j)
+    void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const DFLOAT &input, const int &j)
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
             if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
-                outputs = new float[_numberOfOutputs]; // ? speed ? or {} or memset .. it matters
+                outputs = new DFLOAT[_numberOfOutputs]; // ? speed ? or {} or memset .. it matters
         #endif
         //outputs[i] = 0; kai o midenismos se for
 
@@ -1694,9 +1726,9 @@ public:
                 outputs[i] = 0; // ? speed ? safe one..
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                outputs[i] += input * pgm_read_float(&me->weights[me->i_j+j]);
+                outputs[i] += input * PGM_READ_DFLOAT(&me->weights[me->i_j+j]);
             #else
-                outputs[i] += input * pgm_read_float(&weights[i][j]); // if double pgm_read_dword 
+                outputs[i] += input * PGM_READ_DFLOAT(&weights[i][j]); // if double pgm_read_dword 
             #endif
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -1709,18 +1741,18 @@ public:
             for (i = 0; i < _numberOfOutputs; i++)
             {
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i] + pgm_read_float(bias));  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i] + PGM_READ_DFLOAT(bias));  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
-                    outputs[i] = exp(outputs[i] + pgm_read_float(bias));
+                    outputs[i] = exp(outputs[i] + PGM_READ_DFLOAT(bias));
                     sumOfSoftmax += outputs[i];
                 #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + pgm_read_float(bias)); // if double pgm_read_dword
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + PGM_READ_DFLOAT(bias)); // if double pgm_read_dword
                 #endif
             }
 
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
                 // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                if (me->ActFunctionPerLayer[me->AtlayerIndex] == 6)
+                if (me->ActFunctionPerLayer[0] == 6)
                     Softmax();
             #elif defined(Softmax)
                 Softmax();
@@ -1728,11 +1760,11 @@ public:
         }
     }
 
-    void NeuralNetwork::Layer::FeedForward_Individual(const float &input, const int &j)
+    void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const int &j)
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
             if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
-                outputs = new float[_numberOfOutputs];
+                outputs = new DFLOAT[_numberOfOutputs];
         #endif
         //outputs[i] = 0; kai o midenismos se for
 
@@ -1750,7 +1782,7 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 outputs[i] += input * me->weights[me->i_j+j];
             #else
-                outputs[i] += input * weights[i][j]; // if double pgm_read_dword 
+                outputs[i] += input * weights[i][j];
             #endif
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -1773,7 +1805,7 @@ public:
 
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
                 // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                if (me->ActFunctionPerLayer[me->AtlayerIndex] == 6)
+                if (me->ActFunctionPerLayer[0] == 6)
                     Softmax();
             #elif defined(Softmax)
                 Softmax();
@@ -1870,9 +1902,10 @@ public:
         }
     #endif
 
+    void NeuralNetwork::Layer::FdF_PROGMEM(const DFLOAT *inputs) //*
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            outputs = new float[_numberOfOutputs];
+            outputs = new DFLOAT[_numberOfOutputs];
         #endif
         
         //feed forwards
@@ -1882,19 +1915,19 @@ public:
             for (int j = 0; j < _numberOfInputs; j++) 
             {
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    outputs[i] += inputs[j] * pgm_read_float(&me->weights[me->i_j]);
+                    outputs[i] += inputs[j] * PGM_READ_DFLOAT(&me->weights[me->i_j]);
                     me->i_j++;
                 #else
-                    outputs[i] += inputs[j] * pgm_read_float(&weights[i][j]); // if double pgm_read_dword 
+                    outputs[i] += inputs[j] * PGM_READ_DFLOAT(&weights[i][j]);
                 #endif
             }
             #if defined(ACTIVATION__PER_LAYER)
-                outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + pgm_read_float(bias));
+                outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + PGM_READ_DFLOAT(bias));
             #elif defined(Softmax)
-                outputs[i] = exp(outputs[i] + pgm_read_float(bias));
+                outputs[i] = exp(outputs[i] + PGM_READ_DFLOAT(bias));
                 sumOfSoftmax += outputs[i];
             #else
-                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + pgm_read_float(bias)); // if double pgm_read_dword
+                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + PGM_READ_DFLOAT(bias)); // if double pgm_read_dword
             #endif
         }
 
@@ -1907,10 +1940,10 @@ public:
         #endif
     }
 
-    void NeuralNetwork::Layer::FeedForward(const float *inputs) //*
+    void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs) //*
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            outputs = new float[_numberOfOutputs];
+            outputs = new DFLOAT[_numberOfOutputs];
         #endif
     
         //feed forwards
@@ -1956,15 +1989,15 @@ public:
     } 
 
     
-    float NeuralNetwork::Layer::erf(float x)
+    DFLOAT NeuralNetwork::Layer::erf(DFLOAT x)
     {
         // constants | don't trust the precision you see here
-        float a1 =  0.254829592;
-        float a2 = -0.284496736;
-        float a3 =  1.421413741;
-        float a4 = -1.453152027;
-        float a5 =  1.061405429;
-        float p  =  0.3275911;
+        DFLOAT a1 =  0.254829592;
+        DFLOAT a2 = -0.284496736;
+        DFLOAT a3 =  1.421413741;
+        DFLOAT a4 = -1.453152027;
+        DFLOAT a5 =  1.061405429;
+        DFLOAT p  =  0.3275911;
 
         // Save the sign of x
         int sign = 1;
@@ -1973,8 +2006,8 @@ public:
         x = fabs(x);
 
         // A&S formula 7.1.26
-        float t = 1.0/(1.0 + p*x);
-        float y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
+        DFLOAT t = 1.0/(1.0 + p*x);
+        DFLOAT y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
 
         return sign*y;
     }
@@ -1989,61 +2022,62 @@ public:
     */
 
 
-    float NeuralNetwork::Layer::Sigmoid       (const float &x) { return 1 / (1 + exp(-x))                                ;}
-    float NeuralNetwork::Layer::Tanh          (const float &x) { return (exp(2*x) - 1) / (exp(2*x) + 1)                  ;}
-    float NeuralNetwork::Layer::ReLU          (const float &x) { return (x > 0) ? x : 0                                  ;}
+    DFLOAT NeuralNetwork::Layer::Sigmoid       (const DFLOAT &x) { return 1 / (1 + exp(-x))                                ;}
+    DFLOAT NeuralNetwork::Layer::Tanh          (const DFLOAT &x) { return (exp(2*x) - 1) / (exp(2*x) + 1)                  ;}
+    DFLOAT NeuralNetwork::Layer::ReLU          (const DFLOAT &x) { return (x > 0) ? x : 0                                  ;}
 
+    // REMINDER: They are wrapped in #defines because of their Alphas
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
-        float NeuralNetwork::Layer::LeakyELU  (const float &x) { return (x > 0) ? x : me->AlphaLeaky * x                 ;}
+        DFLOAT NeuralNetwork::Layer::LeakyELU  (const DFLOAT &x) { return (x > 0) ? x : me->AlphaLeaky * x                 ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
-        float NeuralNetwork::Layer::ELU       (const float &x) { return (x > 0) ? x : me->AlphaELU  * (exp(x) - 1)       ;}
+        DFLOAT NeuralNetwork::Layer::ELU       (const DFLOAT &x) { return (x > 0) ? x : me->AlphaELU  * (exp(x) - 1)       ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-        float NeuralNetwork::Layer::SELU      (const float &x) { return (x > 0) ? x : me->AlphaSELU * (exp(x) - 1)       ;}
+        DFLOAT NeuralNetwork::Layer::SELU      (const DFLOAT &x) { return (x > 0) ? x : me->AlphaSELU * (exp(x) - 1)       ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
-        float NeuralNetwork::Layer::SoftmaxSum(const float &x) { float tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
+        DFLOAT NeuralNetwork::Layer::SoftmaxSum(const DFLOAT &x) { DFLOAT tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
         void  NeuralNetwork::Layer::Softmax() {for (int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}}
     #endif
 
-    float NeuralNetwork::Layer::Identity      (const float &x) {return x                                                 ;}
+    DFLOAT NeuralNetwork::Layer::Identity      (const DFLOAT &x) {return x                                                 ;}
     //NO_BACKPROP
-    float NeuralNetwork::Layer::BinaryStep    (const float &x) {return (x < 0) ? 0 : 1                                   ;}
-    float NeuralNetwork::Layer::Softplus      (const float &x) {return log(1 + exp(x))                                   ;}
-    float NeuralNetwork::Layer::SiLU          (const float &x) {return x / (1 + exp(-x))                                 ;}
-    float NeuralNetwork::Layer::GELU          (const float &x) {return (1/2) * x * (1 + erf(x / sqrt(x)))                ;}
-    float NeuralNetwork::Layer::Mish          (const float &x) {return x * Tanh(log(1 + exp(x)))                         ;}
-    float NeuralNetwork::Layer::Gaussian      (const float &x) {return exp(-(x*x))                                       ;}
+    DFLOAT NeuralNetwork::Layer::BinaryStep    (const DFLOAT &x) {return (x < 0) ? 0 : 1                                   ;}
+    DFLOAT NeuralNetwork::Layer::Softplus      (const DFLOAT &x) {return log(1 + exp(x))                                   ;}
+    DFLOAT NeuralNetwork::Layer::SiLU          (const DFLOAT &x) {return x / (1 + exp(-x))                                 ;}
+    DFLOAT NeuralNetwork::Layer::GELU          (const DFLOAT &x) {return (1/2) * x * (1 + erf(x / sqrt(x)))                ;}
+    DFLOAT NeuralNetwork::Layer::Mish          (const DFLOAT &x) {return x * Tanh(log(1 + exp(x)))                         ;}
+    DFLOAT NeuralNetwork::Layer::Gaussian      (const DFLOAT &x) {return exp(-(x*x))                                       ;}
 
     #if !defined(NO_BACKPROP)
 
-        float NeuralNetwork::Layer::SigmoidDer  (const float &fx) { return fx - fx * fx                                                     ;} 
-        float NeuralNetwork::Layer::TanhDer     (const float &fx) { return 1 - fx * fx                                                      ;}
-        float NeuralNetwork::Layer::ReLUDer     (const float &fx) { return (fx > 0) ? 1 : 0                                                 ;} 
+        DFLOAT NeuralNetwork::Layer::SigmoidDer  (const DFLOAT &fx) { return fx - fx * fx                                                     ;} 
+        DFLOAT NeuralNetwork::Layer::TanhDer     (const DFLOAT &fx) { return 1 - fx * fx                                                      ;}
+        DFLOAT NeuralNetwork::Layer::ReLUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : 0                                                 ;} 
 
         #if defined(LeakyELU)    
-            float NeuralNetwork::Layer::LeakyELUDer(const float &fx) { return (fx > 0) ? 1 : me->AlphaLeaky                                 ;} 
+            DFLOAT NeuralNetwork::Layer::LeakyELUDer(const DFLOAT &fx) { return (fx > 0) ? 1 : me->AlphaLeaky                                 ;} 
         #endif
         #if defined(ELU)
-            float NeuralNetwork::Layer::ELUDer     (const float &fx) { return (fx > 0) ? 1 : fx + me->AlphaELU                              ;} 
+            DFLOAT NeuralNetwork::Layer::ELUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : fx + me->AlphaELU                              ;} 
         #endif
         #if defined(SELU)
-            float NeuralNetwork::Layer::SELUDer    (const float &fx) { return (fx > 0) ? me->LamdaSELU : fx + me->AlphaSELU * me->LamdaSELU ;} 
+            DFLOAT NeuralNetwork::Layer::SELUDer    (const DFLOAT &fx) { return (fx > 0) ? me->LamdaSELU : fx + me->AlphaSELU * me->LamdaSELU ;} 
         #endif
         
-        float NeuralNetwork::Layer::SoftmaxDer     (const float &fx) { return fx * (1 - fx)                                                 ;} // hmm...?
-        float NeuralNetwork::Layer::IdentityDer    (const float &x ) {return 1                                                              ;}
+        DFLOAT NeuralNetwork::Layer::SoftmaxDer     (const DFLOAT &fx) { return fx * (1 - fx)                                                 ;} // hmm...?
+        DFLOAT NeuralNetwork::Layer::IdentityDer    (const DFLOAT &x ) {return 1                                                              ;}
 
 
-        void NeuralNetwork::Layer::BackPropOutput(const float *_expected_, const float *inputs)
+        void NeuralNetwork::Layer::BackPropOutput(const DFLOAT *_expected_, const DFLOAT *inputs)
         {
 
-            preLgamma = new float[_numberOfInputs]{}; // create gamma of previous layer and initialize{} values to 0 .. meh
+            preLgamma = new DFLOAT[_numberOfInputs]{}; // create gamma of previous layer and initialize{} values to 0 .. meh
             
 
-            float bias_Delta = 1.0;
-            float gamma;
+            DFLOAT bias_Delta = 1.0;
+            DFLOAT gamma;
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 for (int i = _numberOfOutputs -1; i >= 0; i--)
@@ -2089,10 +2123,10 @@ public:
                     
                     // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros again lol
                     #if defined(CATEGORICAL_CROSS_ENTROPY)
-                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (float)log(outputs[i]);
+                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
                     #endif
                     #if defined(BINARY_CROSS_ENTROPY)
-                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (float)log(outputs[i]) + (1.0 - _expected_[i]) * (float)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
+                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
                     #endif
                     #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
                         me->sumSquaredError += gamma * gamma; 
@@ -2117,15 +2151,15 @@ public:
             *bias -= bias_Delta * me->LearningRateOfBiases;
         }
 
-        void NeuralNetwork::Layer::BackPropHidden(const Layer *frontLayer, const float *inputs)
+        void NeuralNetwork::Layer::BackPropHidden(const Layer *frontLayer, const DFLOAT *inputs)
         {
             #if defined(ACTIVATION__PER_LAYER)
                 me->AtlayerIndex -= 1; 
             #endif
-            preLgamma = new float[_numberOfInputs]{};
+            preLgamma = new DFLOAT[_numberOfInputs]{};
 
-            float bias_Delta = 1.0;
-            float gamma;
+            DFLOAT bias_Delta = 1.0;
+            DFLOAT gamma;
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 for (int i = _numberOfOutputs -1; i >= 0; i--)
@@ -2175,10 +2209,14 @@ public:
     void NeuralNetwork::Layer::print()
     { 
         Serial.print(_numberOfInputs);
-        Serial.print(" ");
+        Serial.print("x");
         Serial.print(_numberOfOutputs);
         Serial.print("| bias:");
-        Serial.print(*bias);
+        Serial.print(*bias, DFLOAT_LEN);
+        #if defined(ACTIVATION__PER_LAYER)
+            Serial.print("| F(x):");
+            Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+        #endif
         Serial.println();
 
         for (int i = 0; i < _numberOfOutputs; i++)
@@ -2190,11 +2228,11 @@ public:
                 Serial.print(" W:");
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     if (me->weights[me->i_j] > 0) Serial.print(" "); // dont even bothered to opt. here lol
-                    Serial.print(me->weights[me->i_j], 7);
+                    Serial.print(me->weights[me->i_j], DFLOAT_LEN);
                     me->i_j++;
                 #else
                     if (weights[i][j] > 0) Serial.print(" ");
-                    Serial.print(weights[i][j], 7);
+                    Serial.print(weights[i][j], DFLOAT_LEN);
                 #endif
                 Serial.print(" ");
             }
@@ -2210,7 +2248,11 @@ public:
         Serial.print("x");
         Serial.print(_numberOfOutputs);
         Serial.print("| bias:");
-        Serial.print(pgm_read_float(bias));
+        Serial.print(PGM_READ_DFLOAT(bias), DFLOAT_LEN);
+        #if defined(ACTIVATION__PER_LAYER)
+            Serial.print("| F(x):");
+            Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+        #endif
         Serial.println();
 
         for (int i = 0; i < _numberOfOutputs; i++)
@@ -2219,15 +2261,15 @@ public:
             Serial.print(" ");
             for (int j = 0; j < _numberOfInputs; j++)
             {
-                //weights[i][j] = (float)j;
+                //weights[i][j] = (DFLOAT)j;
                 Serial.print(" W:");
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    if (pgm_read_float(&me->weights[me->i_j]) > 0) Serial.print(" "); // if gratter than 10 too or something would be nice
-                    Serial.print(pgm_read_float(&me->weights[me->i_j]), 6);
+                    if (PGM_READ_DFLOAT(&me->weights[me->i_j]) > 0) Serial.print(" "); // if gratter than 10 too or something would be nice
+                    Serial.print(PGM_READ_DFLOAT(&me->weights[me->i_j]), DFLOAT_LEN);
                     me->i_j++;
                 #else
-                    if (pgm_read_float(&weights[i][j]) > 0 ) Serial.print(" ");
-                    Serial.print(pgm_read_float(&weights[i][j]), 6);
+                    if (PGM_READ_DFLOAT(&weights[i][j]) > 0 ) Serial.print(" ");
+                    Serial.print(PGM_READ_DFLOAT(&weights[i][j]), DFLOAT_LEN);
                 #endif
                 Serial.print(" ");
             }
