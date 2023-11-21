@@ -39,7 +39,7 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Other training methods.
 - - ```-``` More Activation Functions.
 - - ```-``` Different weight initialization methods.
-- - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM) and FRAM.
+- - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM) and [FRAM](https://en.wikipedia.org/wiki/Ferroelectric_RAM).
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️ Examples
