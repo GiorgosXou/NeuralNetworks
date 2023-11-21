@@ -126,9 +126,32 @@
 #endif
 
         #undef MSG7
+#if defined(_2_OPTIMIZE)
+    #if ((_2_OPTIMIZE bitor B01111111) == B11111111)
+        #if defined(REDUCE_RAM_WEIGHTS_COMMON)
             #undef MSG3
+            #define MSG3 \n⌥▌" [_] B00110000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+        #endif
+        #define NO_BACKPROP
+        #define USE_INTERNAL_EEPROM
+        #if defined(ACTIVATION__PER_LAYER)
+            #define SIZEOF_FX sizeof(byte)
+        #else
+            #define SIZEOF_FX 0
+        #endif
+        #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
+            #define MSG9 \n⌥▌" [2] B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
+        #endif
         #undef MSG8
+        #define MSG8 \n⌥▌" [2] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
+        #if !defined(EEPROM_h) || !defined(__EEPROM_H__) 
+            // for some reason it says 'EEPROM' was not declared in this scope even though i #include it below. So it needs it at the sketch i guess too
+            #include <EEPROM.h>
+            #define INCLUDES_EEPROM_H
+        #endif
+    #endif
+#endif
 
 #define ACT1  0
 #define ACT2  0
@@ -591,6 +614,12 @@ class NeuralNetwork
 {
 private:
 
+    #if defined(USE_INTERNAL_EEPROM)
+        unsigned int address = 0;
+        #if defined(ACTIVATION__PER_LAYER)
+            byte F1; // first activation function only for use in FdF_Individual_iEEPROM
+        #endif
+    #endif
     int Individual_Input = 0;
     bool FIRST_TIME_FDFp = false; // determines if there are trashes left in last outputs .
     const float *_inputs;         // Pointer to primary/first Inputs Array from Sketch    .
@@ -629,12 +658,15 @@ private:
 
         void FeedForward_Individual(const float &input, const int &j);
         void FdF_Individual_PROGMEM(const float &input, const int &j);
-        
-        void FeedForward(const float *inputs); // Calculates the outputs() of layer.
-        void FdF_PROGMEM(const float *inputs);
+        #if defined(USE_INTERNAL_EEPROM)
+            void FdF_Individual_iEEPROM(const DFLOAT &input, const int &j);
+        #endif
 
         void BackPropOutput(const float *_expected_, const float *inputs);
         void BackPropHidden(const Layer *frontLayer, const float *inputs);
+        #if defined(USE_INTERNAL_EEPROM)
+            void FdF_IN_EEPROM(const DFLOAT *inputs);
+        #endif
 
 
         // "Extra Math"
@@ -685,6 +717,9 @@ private:
         float Gaussian   (const float &x );
         
 
+        #if defined(USE_INTERNAL_EEPROM)
+            void print_INTERNAL_EEPROM();
+        #endif
         void print_PROGMEM();
         void print();
     };  
@@ -865,9 +900,9 @@ public:
     ~NeuralNetwork(); // Destractor.
 
     NeuralNetwork();
-    NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = nullptr);                                              // #0
-    NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const float &LRw, const float &LRb, byte *_ActFunctionPerLayer = nullptr);          // #0
-    NeuralNetwork(const unsigned int *layer_, float *default_Weights, float *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = nullptr); // #1
+    #if defined(USE_INTERNAL_EEPROM)
+        NeuralNetwork(unsigned int address);
+    #endif
    // NeuralNetwork(const unsigned int *layer_, const PROGMEM float *default_Weights, const PROGMEM float *default_Bias, const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
     
     void  reset_Individual_Input_Counter();
@@ -881,6 +916,9 @@ public:
     float loss  (float &sum, float &loss, unsigned int batch_size);        
 
     void BackProp(const float *expected);    // BackPropopagation - (error, delta-weights, etc.).
+    #if defined(INCLUDES_EEPROM_H)
+        unsigned int save(unsigned int atAddress); // EEPROM
+    #endif
     void print();
      
 };
@@ -901,7 +939,7 @@ public:
 
         for (int i = 0; i < numberOflayers; i++)
         {
-            #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
+        #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
                 for (int j = 0; j < layers[i]._numberOfOutputs; j++) // because of this i wont make _numberOfOutputs/inputs private :/ or maybe.. i ll see... or i will change them to const* ... what? i've just read it again lol
                 {
                     delete[] layers[i].weights[j];
@@ -1022,11 +1060,44 @@ public:
             i_j=0;
         #endif
 
-        for (int i = 0; i < numberOflayers; i++)
-        {
-            layers[i] =  Layer(layer_[i], layer_[i + 1],this);
+    #if defined(USE_INTERNAL_EEPROM)
+
+        template< typename T >
+        T get_EEPROM_value(unsigned int &addr){
+            // T val = EEPROM.get(addr,val);
+            // addr += sizeof(T);
+            // return val;
+            // T val;
+            // uint8_t *ptr = reinterpret_cast<uint8_t*>(&val);
+            // for (int i = 0; i < sizeof(T); ++i, ++addr) {
+            //     ptr[i] = EEPROM.read(addr);
+            // }
+            // return (T)ptr;
+            uint8_t ptr[sizeof(T)];
+            for (int i = 0; i < sizeof(T); ++i, ++addr) {
+                ptr[i] = EEPROM.read(addr);
+            }
+            return *reinterpret_cast<T*>(ptr);
         }
-    }
+
+        //TODO: common get function that adds to address for  EEPROM
+        NeuralNetwork::NeuralNetwork(unsigned int addr){
+            // isAllocdWithNew = false; // no need because of pdestract #if condition
+            #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = this;
+            #endif
+            numberOflayers = get_EEPROM_value<unsigned int>(addr);
+            layers = new Layer[numberOflayers];
+
+            unsigned int tmp1;
+            unsigned int tmp2;
+            for (int i = 0; i < numberOflayers; i++){
+                layers[i] =  Layer(EEPROM.get(addr,tmp1), EEPROM.get(addr+sizeof(unsigned int),tmp2), this);
+                addr += sizeof(unsigned int);
+            }
+            address = addr + sizeof(unsigned int);
+        }
+    #endif
 
     void NeuralNetwork::reset_Individual_Input_Counter() { Individual_Input = 0;}
 
@@ -1034,6 +1105,10 @@ public:
     {
         #if defined(USE_PROGMEM)
             layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
+        #elif defined(USE_INTERNAL_EEPROM)
+            unsigned int tmp_addr = address;
+            layers[0].FdF_Individual_iEEPROM(input, Individual_Input);
+            address = tmp_addr;
         #else
             layers[0].FeedForward_Individual(input, Individual_Input);
         #endif
@@ -1042,6 +1117,10 @@ public:
         if (Individual_Input == layers[0]._numberOfInputs)
         {
             Individual_Input=0;
+
+            #if defined(USE_INTERNAL_EEPROM)
+                address += SIZEOF_FX + sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+            #endif
         
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 if (FIRST_TIME_FDFp == true) // is it the first time ? if not, then delete trashes
@@ -1058,11 +1137,13 @@ public:
                 #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                     sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
                 #endif
-                #if defined(ACTIVATION__PER_LAYER)
+                #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM)
                     AtlayerIndex = i;
                 #endif  
                 #if defined(USE_PROGMEM)
                     layers[i].FdF_PROGMEM(layers[i - 1].outputs);
+                #elif defined(USE_INTERNAL_EEPROM)
+                    layers[i].FdF_IN_EEPROM(layers[i - 1].outputs);
                 #else
                     layers[i].FeedForward(layers[i - 1].outputs);
                 #endif
@@ -1074,6 +1155,9 @@ public:
 
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                 sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
+            #endif
+            #if defined(USE_INTERNAL_EEPROM)
+                address = tmp_addr;
             #endif
             return  layers[numberOflayers - 1].outputs;
         }
@@ -1106,6 +1190,9 @@ public:
         
         #if defined(USE_PROGMEM)
             layers[0].FdF_PROGMEM(_inputs);
+        #elif defined(USE_INTERNAL_EEPROM)
+            unsigned int tmp_addr = address;
+            layers[0].FdF_IN_EEPROM(_inputs);
         #else
             layers[0].FeedForward(_inputs);
         #endif
@@ -1120,6 +1207,8 @@ public:
             #endif  
             #if defined(USE_PROGMEM)
                 layers[i].FdF_PROGMEM(layers[i - 1].outputs);
+            #elif defined(USE_INTERNAL_EEPROM)
+                layers[i].FdF_IN_EEPROM(layers[i - 1].outputs);
             #else
                 layers[i].FeedForward(layers[i - 1].outputs);
             #endif
@@ -1128,6 +1217,9 @@ public:
                 layers[i - 1].outputs = NULL;
             #endif
         }
+        #if defined(USE_INTERNAL_EEPROM)
+            address = tmp_addr;
+        #endif
 
         return layers[numberOflayers - 1].outputs;
     }
@@ -1188,18 +1280,29 @@ public:
         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
             i_j=0; 
         #endif
+        #if defined(USE_INTERNAL_EEPROM)
+            unsigned int tmp_addr = address;
+        #endif
 
         Serial.println();
         Serial.println("----------------------");
 
         for (int i = 0; i < numberOflayers; i++)
         {
+            #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM)  // not def USE_INTERNAL_EEPROM, because AtlayerIndex is not needed
+                AtlayerIndex = i;
+            #endif  
             #if defined(USE_PROGMEM)
                 layers[i].print_PROGMEM();
+            #elif defined(USE_INTERNAL_EEPROM)
+                layers[i].print_INTERNAL_EEPROM();
             #else
                 layers[i].print();
             #endif
         }
+        #if defined(USE_INTERNAL_EEPROM)
+            address = tmp_addr;
+        #endif
     }
     #endif
 #pragma endregion NeuralNetwork.cpp
@@ -1275,7 +1378,9 @@ public:
 
         float _random;
 
-        for (int i = 0; i < _numberOfOutputs; i++)
+    #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
+        //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
         {
             #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
                 weights[i] = new float[_numberOfInputs];
@@ -1292,8 +1397,22 @@ public:
                 #endif
             }
         }
+    // Yes, it needs the "elif" else it doesn't find any decleration of the function\method bellow
+    #elif defined(USE_INTERNAL_EEPROM)
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
+        {
+            _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
+            _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
 
-    }
+            #if !defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = NN;
+            #endif
+
+            #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
+                outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
+            #endif
+        }
+    #endif
 
     void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const float &input, const int &j)
     {
@@ -1403,7 +1522,95 @@ public:
         }
     }
 
-    void NeuralNetwork::Layer::FdF_PROGMEM(const float *inputs) //*
+
+    #if defined (USE_INTERNAL_EEPROM)
+        void NeuralNetwork::Layer::FdF_Individual_iEEPROM(const DFLOAT &input, const int &j)
+        {
+            if (j == 0){ // if it is the first input then create output array (for the output layer of this current layer)
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
+                    outputs = new DFLOAT[_numberOfOutputs];
+                #endif
+                #if defined(ACTIVATION__PER_LAYER)
+                    me->F1 = get_EEPROM_value<byte>(me->address);
+                #endif
+                bias = new DFLOAT(get_EEPROM_value<DFLOAT>(me->address));
+            }else{
+                me->address += sizeof(DFLOAT) + SIZEOF_FX;
+            }
+
+            DFLOAT tmp_jweight;
+            int i;
+            for (i = 0; i < _numberOfOutputs; i++)
+            {
+                if (j == 0)
+                    outputs[i] = 0;
+
+                outputs[i] += input * EEPROM.get(me->address + j*sizeof(DFLOAT), tmp_jweight);
+                me->address += _numberOfInputs * sizeof(DFLOAT); 
+            }
+
+            // when all individual inputs get summed and multiplied by their weights in their outputs, then pass them from the activation function
+            if (j == _numberOfInputs -1){
+                for (i = 0; i < _numberOfOutputs; i++){
+                    #if defined(ACTIVATION__PER_LAYER)
+                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i] + (*bias)); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                    #elif defined(Softmax)
+                        outputs[i] = exp(outputs[i] + (*bias));
+                        sumOfSoftmax += outputs[i];
+                    #else
+                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
+                    #endif
+                }
+                delete bias;
+
+                #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                    // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                    if (me->F1 == 6)
+                        Softmax();
+                #elif defined(Softmax)
+                    Softmax();
+                #endif
+            }
+        }
+
+
+        void NeuralNetwork::Layer::FdF_IN_EEPROM(const DFLOAT *inputs)
+        {
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                outputs = new DFLOAT[_numberOfOutputs];
+            #endif
+            #if defined(ACTIVATION__PER_LAYER)
+                byte fx = get_EEPROM_value<byte>(me->address); 
+            #endif
+
+            DFLOAT tmp_bias = get_EEPROM_value<DFLOAT>(me->address); 
+            for (int i = 0; i < _numberOfOutputs; i++)
+            {
+                outputs[i] = 0; // #2
+                for (int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
+                {
+                    outputs[i] += inputs[j] * get_EEPROM_value<DFLOAT>(me->address);
+                }
+                #if defined(ACTIVATION__PER_LAYER)
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i] + tmp_bias);
+                #elif defined(Softmax)
+                    outputs[i] = exp(outputs[i] + tmp_bias);
+                    sumOfSoftmax += outputs[i];
+                #else
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + tmp_bias);
+                #endif
+            }
+
+            #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                if (fx == 6)
+                    Softmax();
+            #elif defined(Softmax)
+                Softmax();
+            #endif
+        }
+    #endif
+
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS)
             outputs = new float[_numberOfOutputs];
@@ -1761,6 +1968,38 @@ public:
         }
         Serial.println("----------------------");
     }
+
+        #if defined(USE_INTERNAL_EEPROM)
+            void NeuralNetwork::Layer::print_INTERNAL_EEPROM()
+            {
+                Serial.print(_numberOfInputs);
+                Serial.print("x");
+                Serial.print(_numberOfOutputs);
+                #if defined(ACTIVATION__PER_LAYER)
+                    Serial.print("| F(x):");
+                    Serial.print(get_EEPROM_value<byte>(me->address));
+                #endif
+                Serial.print("| bias:");
+                Serial.print(get_EEPROM_value<DFLOAT>(me->address), DFLOAT_LEN);
+                Serial.println();
+                DFLOAT tmp_ijweight; 
+                for (int i = 0; i < _numberOfOutputs; i++)
+                {
+                    Serial.print(i + 1);
+                    Serial.print(" ");
+                    for (int j = 0; j < _numberOfInputs; j++)
+                    {
+                        tmp_ijweight = get_EEPROM_value<DFLOAT>(me->address);
+                        Serial.print(" W:");
+                        if (tmp_ijweight > 0 ) Serial.print(" ");
+                        Serial.print(tmp_ijweight, DFLOAT_LEN);
+                        Serial.print(" ");
+                    }
+                    Serial.println("");
+                }
+                Serial.println("----------------------");
+            }
+        #endif
 
     #endif
 
