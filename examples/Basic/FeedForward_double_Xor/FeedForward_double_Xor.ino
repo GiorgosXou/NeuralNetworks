@@ -1,12 +1,12 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
-#define _1_OPTIMIZE B11010010 // https://github.com/GiorgosXou/NeuralNetworks#macro-properties
+#define _1_OPTIMIZE B01010010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {3, 9, 9, 1};
 float *output; // 4th layer's output(s)
 
-// Default Input data
+// Default Test/Input data
 const float inputs[8][3] = {
   {0, 0, 0}, // = 0
   {0, 0, 1}, // = 1
@@ -18,11 +18,11 @@ const float inputs[8][3] = {
   {1, 1, 1}  // = 1
 };
 
-// It is 1 for each layer [Pretrained Biases ]
-const PROGMEM float biases[] = {1, 1, 0.99308};
+// 1 for each layer-layer [Pretrained Biases ]
+float biases[] = {1, 1, 0.99308};
 
 // It is 3*9 + 9*9 + 9*1  [Pretrained weights]
-const PROGMEM float weights[] = {
+float weights[] = {
   -0.676266,  3.154561, -1.76689 ,
    1.589422, -2.340522,  1.447924,
    0.291685, -1.222407,  0.669717,

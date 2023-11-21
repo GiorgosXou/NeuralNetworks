@@ -1,5 +1,5 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
-#define _1_OPTIMIZE B11010110 // https://github.com/GiorgosXou/NeuralNetworks#macro-properties
+#define _1_OPTIMIZE B11010110 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 
 #include <NeuralNetwork.h>
 
@@ -32,8 +32,8 @@ const PROGMEM float weights[] = {
  2.2179170, 4.3427660,-1.0707080,-4.3444080,-2.7079850,-1.4452590,-2.9488280, 3.1879660,-2.2935330
 }; // 22240 bytes = 72% of Arduino-UNO's programmable memory (?)
 
-// Images of handwritten Numbers in byte form.
-const PROGMEM byte NumbersInPixels[2][784] = {
+// Images of handwritten Numbers in byte form. 
+const PROGMEM byte NumbersInPixels[2][784] = { 
 {
 0,0,0,0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,0,0,0,
 0,0,0,0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,0,0,0,
