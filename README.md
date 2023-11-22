@@ -9,7 +9,7 @@
 Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs) easily and effectively on any Arduino board and other microcontrollers.
 
 # 📚 Summary
-| NN Functions | Input Type (x)|Output Type (Y) | Action |
+| NN<span>&nbsp;</span>Functions | Input<span>&nbsp;</span>Type<span>&nbsp;</span>(x)|Output<span>&nbsp;</span>Type<span>&nbsp;</span>(Y) |<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|
 | ------ | ------ | ------ | ------ |
 | ```BackProp(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| - | <details><summary>Trains the Neural-network</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
 | ```*FeedForward(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| <details><summary>Returns the output of it</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
