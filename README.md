@@ -346,6 +346,9 @@ Here most of the resources I came across the internet, I recomend you to have a 
 * * * _**```StackOverflow:```**_
 * * * * [PROGMEM : pgm_read_float_near() equivalent for double? (Arduino Due)](https://arduino.stackexchange.com/a/94783/77085 '2023-11-22 12:35:08 AM')
 * * * * [warning: inline variables are only available with ‘-std=c++17’ or ‘-std=gnu++17’ how to suppress it? \[closed\]](https://stackoverflow.com/questions/72181312/warning-inline-variables-are-only-available-with-std-c17-or-std-gnu17 '2023-11-22 12:40:45 AM')
+* **```Neural Network Related```**
+* * _**```General:```**_
+* * * [Large values of weights in neural network](https://stackoverflow.com/questions/43253009/large-values-of-weights-in-neural-network '2023-11-30 03:25:35 PM')
 
 <br>
 
