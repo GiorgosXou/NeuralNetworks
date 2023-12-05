@@ -38,6 +38,7 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Better overall code.
 - - ```-``` Other training methods.
 - - ```-``` More Activation Functions.
+- - ```-``` [Support for fixed-point arithmetics](https://github.com/GiorgosXou/NeuralNetworks/discussions/15).
 - - ```-``` Different weight initialization methods.
 - - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM) and [FRAM](https://en.wikipedia.org/wiki/Ferroelectric_RAM).
 - - ```-``` Even more properties, for many different needs.
