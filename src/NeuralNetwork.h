@@ -1419,7 +1419,7 @@ public:
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         bool NeuralNetwork::save(String file) 
         {
-            File myFile = SD.open(file, FILE_WRITE);
+            File myFile = SD.open(file, O_WRITE | O_CREAT);
             if (myFile){
                 int totalNumOfWeights = 0;
                 myFile.println("        "); // yes... it needs those spaces
