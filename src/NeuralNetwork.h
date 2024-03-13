@@ -90,7 +90,11 @@
 #define MSG9
 #define MSG10
 #define MSG11
+#define MSG12
+#define MSG13
 #define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤\n
+
+#define F_MACRO  
 
 #define ATOL atol
 #define LLONG long
@@ -128,7 +132,7 @@
     #if ((_1_OPTIMIZE bitor B11110111) == B11111111)
         #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
         #undef MSG4
-        #define MSG4 \n⌥▌" [1] B00001000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
+        #define MSG4 \n⌥▌" [1] B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111011) == B11111111)
@@ -172,7 +176,7 @@
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
     #if defined(USE_64_BIT_DOUBLE)
         #undef MSG7
-        #define MSG7 \n⌥▌" [1] B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+        #define MSG7 \n⌥▌" [1] B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
     #else
         #define ESP_SUPPORTS_SIMD
         #include "esp_dsp.h"
@@ -183,7 +187,7 @@
     #if ((_2_OPTIMIZE bitor B01111111) == B11111111)
         #if defined(REDUCE_RAM_WEIGHTS_COMMON)
             #undef MSG3
-            #define MSG3 \n⌥▌" [_] B00110000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+            #define MSG3 \n⌥▌" [_] B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
         #endif
         #define NO_BACKPROP
         #define USE_INTERNAL_EEPROM
@@ -207,7 +211,7 @@
 
     #if ((_2_OPTIMIZE bitor B10111111) == B11111111)
         #undef MSG11
-        #define MSG11 \n⌥▌" [2] B01000000 [*] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
+        #define MSG11 \n⌥▌" [2] B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
         #define HAS_NO_BIAS true
         #define NO_BIAS
     #endif
@@ -228,6 +232,11 @@
         #define F_MACRO F
     #endif
 #endif
+
+// REMINDER DO NOT UNCOMMENT THIS!!!!!! BECAUSE IT WILL RESULT ON ESP32-C3 NOT COMPILING WITH USE_PROGMEM or USE_INTERNAL_EEPROM AT ALL | i keep it here as a future reminder
+// #if defined(ESP_SUPPORTS_SIMD) and (defined(USE_PROGMEM) or defined(USE_INTERNAL_EEPROM))
+//     #error "There's no support for SIMD use with USE_PROGMEM or USE_INTERNAL_EEPROM yet."
+// #endif
 
 #define ACT1  0
 #define ACT2  0
@@ -682,7 +691,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 |⌥|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 |⌥|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -1316,7 +1325,7 @@ public:
 
     void NeuralNetwork::reset_Individual_Input_Counter() { Individual_Input = 0;}
 
-    DFLOAT *NeuralNetwork::FeedForward_Individual(const DFLOAT &input)
+    DFLOAT *NeuralNetwork::FeedForward_Individual(const DFLOAT &input) 
     {
         #if defined(USE_PROGMEM)
             layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
@@ -1462,7 +1471,7 @@ public:
     #if !defined (NO_BACKPROP)
         void NeuralNetwork::BackProp(const DFLOAT *expected)
         {
-            /* i dont find any reason of having this if Backprop will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too
+            /* i dont find any reason of having this if Backprop will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too | Meaning: NN.Backprop(..); \n NN.Backprop(..); without a feedforward in between
             #if defined(ACTIVATION__PER_LAYER)
                 AtlayerIndex = numberOflayers - 1;
             #endif  
@@ -1819,8 +1828,6 @@ public:
                 *bias = 1.0;
             #endif
 
-            DFLOAT _random;
-
             for (int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
@@ -1833,12 +1840,11 @@ public:
                 
                 for (int j = 0; j < _numberOfInputs; j++)
                 {
-                    _random = (random(-90000, 90000)); // Pseudo-Random Number between -90000 and 90000
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        me->weights[me->i_j] = _random / 100000;
+                        me->weights[me->i_j] = (DFLOAT)random(-90000, 90000) / 100000;
                         me->i_j++;
                     #else
-                        weights[i][j] = _random / 100000;  // Divided by 100000 = a Number between -0.90000 and 0.90000
+                        weights[i][j] = (DFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
                     #endif
                 }
             }
@@ -1861,6 +1867,7 @@ public:
         }
     #endif
 
+    // TODO: maybe create a static variable which will take a reference to a function. Once when j==0 (for output init) and once when j == _numberOfInputs -1
     void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const DFLOAT &input, const int &j)
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
@@ -1878,11 +1885,15 @@ public:
         
         for (i = 0; i < _numberOfOutputs; i++)
         {
-            if (j == 0)
-                outputs[i] = 0; // ? speed ? safe one..
+            if (j == 0){
+                #if defined(NO_BIAS)
+                    outputs[i] = 0; // ? speed ? safe one..
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
                     outputs[i] = PGM_READ_DFLOAT(&bias[i]);
                 #else
+                    outputs[i] = PGM_READ_DFLOAT(bias);
+                #endif
+            }
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 outputs[i] += input * PGM_READ_DFLOAT(&me->weights[me->i_j+j]);
@@ -1900,24 +1911,12 @@ public:
             for (i = 0; i < _numberOfOutputs; i++)
             {
                 #if defined(ACTIVATION__PER_LAYER)
-                    #if defined(NO_BIAS)
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                    #else
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i] + PGM_READ_DFLOAT(bias));  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                    #endif
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
-                    #if defined(NO_BIAS)
-                        outputs[i] = exp(outputs[i]);
-                    #else
-                        outputs[i] = exp(outputs[i] + PGM_READ_DFLOAT(bias));
-                    #endif
+                    outputs[i] = exp(outputs[i]);
                     sumOfSoftmax += outputs[i];
                 #else
-                    #if defined(NO_BIAS)
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
-                    #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + PGM_READ_DFLOAT(bias)); // if double pgm_read_dword
-                    #endif
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
                 #endif
             }
 
@@ -1947,10 +1946,15 @@ public:
         int i;
         for (i = 0; i < _numberOfOutputs; i++)
         {
-            if (j == 0)
-                outputs[i] = 0;
+            if (j == 0){
+                #if defined(NO_BIAS)
+                    outputs[i] = 0; // ? speed ? safe one..
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
                     outputs[i] = bias[i];
+                #else
+                    outputs[i] = *bias;
+                #endif
+            }
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 outputs[i] += input * me->weights[me->i_j+j];
@@ -1967,24 +1971,12 @@ public:
         if (j == _numberOfInputs -1){
             for (i = 0; i < _numberOfOutputs; i++){
                 #if defined(ACTIVATION__PER_LAYER)
-                    #if defined(NO_BIAS)
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                    #else
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i] + (*bias)); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                    #endif
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
-                    #if defined(NO_BIAS)
-                        outputs[i] = exp(outputs[i]);
-                    #else
-                        outputs[i] = exp(outputs[i] + (*bias));
-                    #endif
+                    outputs[i] = exp(outputs[i]);
                     sumOfSoftmax += outputs[i];
                 #else
-                    #if defined(NO_BIAS)
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
-                    #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
-                    #endif
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                 #endif
             }
 
@@ -1999,8 +1991,8 @@ public:
     }
 
 
-    #if defined (USE_INTERNAL_EEPROM)
-        void NeuralNetwork::Layer::FdF_Individual_iEEPROM(const DFLOAT &input, const int &j)
+    #if defined (USE_INTERNAL_EEPROM) 
+        void NeuralNetwork::Layer::FdF_Individual_iEEPROM(const DFLOAT &input, const int &j) // Not my proudest implementation, ngl... but it does the job for now
         {
             // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
             if (j == 0){ // if it is the first input then create output array (for the output layer of this current layer)
@@ -2038,11 +2030,15 @@ public:
 
             DFLOAT tmp_jweight;
             int i;
-            for (i = 0; i < _numberOfOutputs; i++)
+            for (i = 0; i < _numberOfOutputs; i++) 
             {
-                if (j == 0)
-                    outputs[i] = 0;
-
+                if (j == 0){
+                    #if defined(NO_BIAS)
+                        outputs[i] = 0;
+                    #else
+                        outputs[i] = *bias;
+                    #endif
+                }
                 outputs[i] += input * EEPROM.get(me->address + j*sizeof(DFLOAT), tmp_jweight);
                 me->address += _numberOfInputs * sizeof(DFLOAT); 
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
@@ -2057,24 +2053,12 @@ public:
             if (j == _numberOfInputs -1){
                 for (i = 0; i < _numberOfOutputs; i++){
                     #if defined(ACTIVATION__PER_LAYER)
-                        #if defined(NO_BIAS)
-                            outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                        #else
-                            outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i] + (*bias)); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                        #endif
+                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                     #elif defined(Softmax)
-                        #if defined(NO_BIAS)
-                            outputs[i] = exp(outputs[i]);
-                        #else
-                            outputs[i] = exp(outputs[i] + (*bias));
-                        #endif
+                        outputs[i] = exp(outputs[i]);
                         sumOfSoftmax += outputs[i];
                     #else
-                        #if defined(NO_BIAS)
-                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
-                        #else
-                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
-                        #endif
+                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                     #endif
                 }
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2106,32 +2090,26 @@ public:
             #endif
             for (int i = 0; i < _numberOfOutputs; i++)
             {
-                outputs[i] = 0; // #2
+                #if defined(NO_BIAS)
+                    outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
                     outputs[i] = get_EEPROM_value<DFLOAT>(me->address); 
+                #else
+                    outputs[i] = tmp_bias;
+                #endif
+
                 for (int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
                 {
                     outputs[i] += inputs[j] * get_EEPROM_value<DFLOAT>(me->address);
                 }
+
                 #if defined(ACTIVATION__PER_LAYER)
-                    #if defined(NO_BIAS)
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i]);
-                    #else
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i] + tmp_bias);
-                    #endif
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i]);
                 #elif defined(Softmax)
-                    #if defined(NO_BIAS)
-                        outputs[i] = exp(outputs[i]);
-                    #else
-                        outputs[i] = exp(outputs[i] + tmp_bias);
-                    #endif
+                    outputs[i] = exp(outputs[i]);
                     sumOfSoftmax += outputs[i];
                 #else
-                    #if defined(NO_BIAS)
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
-                    #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + tmp_bias);
-                    #endif
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
                 #endif
             }
 
@@ -2154,9 +2132,14 @@ public:
         //feed forwards
         for (int i = 0; i < _numberOfOutputs; i++)
         {
-            outputs[i] = 0; // #2
+            #if defined(NO_BIAS)
+                outputs[i] = 0;
             #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
                 outputs[i] = PGM_READ_DFLOAT(&bias[i]);
+            #else
+                outputs[i] = PGM_READ_DFLOAT(bias);
+            #endif
+
             for (int j = 0; j < _numberOfInputs; j++) 
             {
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2167,24 +2150,12 @@ public:
                 #endif
             }
             #if defined(ACTIVATION__PER_LAYER)
-                #if defined(NO_BIAS)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                #else
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + PGM_READ_DFLOAT(bias));
-                #endif
+                outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
             #elif defined(Softmax)
-                #if defined(NO_BIAS)
-                    outputs[i] = exp(outputs[i]);
-                #else
-                    outputs[i] = exp(outputs[i] + PGM_READ_DFLOAT(bias));
-                #endif
+                outputs[i] = exp(outputs[i]);
                 sumOfSoftmax += outputs[i];
             #else
-                #if defined(NO_BIAS)
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
-                #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + PGM_READ_DFLOAT(bias)); // if double pgm_read_dword
-                #endif
+                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
             #endif
         }
 
@@ -2206,15 +2177,28 @@ public:
         //feed forwards
         for (int i = 0; i < _numberOfOutputs; i++)
         {
-            outputs[i] = 0;
-            #if !defined(ESP_SUPPORTS_SIMD)
+            #if defined(ESP_SUPPORTS_SIMD)
+                #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    dsps_dotprod_f32(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                #else
+                    dsps_dotprod_f32(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); 
+                    me->i_j+= _numberOfInputs;
+                #endif
+
                 #if defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
                     outputs[i] += bias[i];
                 #elif !defined(NO_BIAS)
                     outputs[i] += *bias;
                 #endif
+            #else
+                #if defined(NO_BIAS)
+                    outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
                     outputs[i] = bias[i];
+                #else
+                    outputs[i] = *bias;
+                #endif
+
                 for (int j = 0; j < _numberOfInputs; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2223,34 +2207,16 @@ public:
                     #else
                         outputs[i] += inputs[j] * weights[i][j]; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
                     #endif
-                    
                 }
-            #elif !defined(REDUCE_RAM_WEIGHTS_LVL2)
-                dsps_dotprod_f32(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
-            #else
-                dsps_dotprod_f32(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); 
-                me->i_j+= _numberOfInputs;
             #endif
 
             #if defined(ACTIVATION__PER_LAYER)
-                #if defined(NO_BIAS)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
-                #else
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i] + (*bias)); //if softmax then calls the SoftmaxSum
-                #endif
+                outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
             #elif defined(Softmax)
-                #if defined(NO_BIAS)
-                    outputs[i] = exp(outputs[i]);
-                #else
-                    outputs[i] = exp(outputs[i] + (*bias));
-                #endif
+                outputs[i] = exp(outputs[i]);
                 sumOfSoftmax += outputs[i];
             #else
-                #if defined(NO_BIAS)
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
-                #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i] + (*bias)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output) + (bias of current layer))
-                #endif
+                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
             #endif
         }
 
@@ -2426,7 +2392,7 @@ public:
                         bias_Delta *= gamma;
                     #endif
 
-                    for (int j = 0; j < _numberOfInputs; j++)
+                    for (int j = 0; j < _numberOfInputs; j++) // TODO: 2024-03-12 07:03:29 AM this could go into a seperate common function
                     {
                         preLgamma[j] += gamma * weights[i][j];
                         weights[i][j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
