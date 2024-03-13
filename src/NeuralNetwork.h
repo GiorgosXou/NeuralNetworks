@@ -211,6 +211,12 @@
         #define HAS_NO_BIAS true
         #define NO_BIAS
     #endif
+    #if ((_2_OPTIMIZE bitor B11101111) == B11111111)
+        #undef MSG13
+        #define MSG13 \n⌥▌" [2] B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
+        #undef F_MACRO
+        #define F_MACRO F
+    #endif
 #endif
 
 #define ACT1  0
@@ -1638,7 +1644,7 @@ public:
         #endif
 
         Serial.println();
-        Serial.println("----------------------");
+        Serial.println(F_MACRO("----------------------"));
 
         for (int i = 0; i < numberOflayers; i++)
         {
@@ -2384,110 +2390,115 @@ public:
     void NeuralNetwork::Layer::print()
     { 
         Serial.print(_numberOfInputs);
-        Serial.print("x");
+        Serial.print(F_MACRO("x"));
         Serial.print(_numberOfOutputs);
         #if !defined(NO_BIAS)
-            Serial.print("| bias:");
+            Serial.print(F_MACRO("| bias:"));
             Serial.print(*bias, DFLOAT_LEN);
         #endif
         #if defined(ACTIVATION__PER_LAYER)
-            Serial.print("| F(x):");
+            Serial.print(F_MACRO("| F(x):"));
             Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
         #endif
         Serial.println();
 
         for (int i = 0; i < _numberOfOutputs; i++)
         {
+                Serial.print(F_MACRO("   B:"));
             Serial.print(i + 1);
-            Serial.print(" ");
+            Serial.print(F_MACRO(" "));
             for (int j = 0; j < _numberOfInputs; j++)
             {
-                Serial.print(" W:");
+                Serial.print(F_MACRO(" W:"));
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    if (me->weights[me->i_j] > 0) Serial.print(" "); // dont even bothered to opt. here lol
+                    if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
                     Serial.print(me->weights[me->i_j], DFLOAT_LEN);
                     me->i_j++;
                 #else
-                    if (weights[i][j] > 0) Serial.print(" ");
+                    if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
                     Serial.print(weights[i][j], DFLOAT_LEN);
                 #endif
-                Serial.print(" ");
+                Serial.print(F_MACRO(" "));
             }
-            Serial.println("");
+            Serial.println();
         }
-        Serial.println("----------------------");
+        Serial.println(F_MACRO("----------------------"));
 
     }
 
     void NeuralNetwork::Layer::print_PROGMEM()
     {
+        Serial.print(F_MACRO("PROGMEM "));
         Serial.print(_numberOfInputs);
-        Serial.print("x");
+        Serial.print(F_MACRO("x"));
         Serial.print(_numberOfOutputs);
         #if !defined(NO_BIAS)
-            Serial.print("| bias:");
+            Serial.print(F_MACRO("| bias:"));
             Serial.print(PGM_READ_DFLOAT(bias), DFLOAT_LEN);
         #endif
         #if defined(ACTIVATION__PER_LAYER)
-            Serial.print("| F(x):");
+            Serial.print(F_MACRO("| F(x):"));
             Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
         #endif
         Serial.println();
 
         for (int i = 0; i < _numberOfOutputs; i++)
         {
+                Serial.print(F_MACRO("   B:"));
             Serial.print(i + 1);
             Serial.print(" ");
             for (int j = 0; j < _numberOfInputs; j++)
             {
                 //weights[i][j] = (DFLOAT)j;
-                Serial.print(" W:");
+                Serial.print(F_MACRO(" W:"));
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    if (PGM_READ_DFLOAT(&me->weights[me->i_j]) > 0) Serial.print(" "); // if gratter than 10 too or something would be nice
+                    if (PGM_READ_DFLOAT(&me->weights[me->i_j]) > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
                     Serial.print(PGM_READ_DFLOAT(&me->weights[me->i_j]), DFLOAT_LEN);
                     me->i_j++;
                 #else
-                    if (PGM_READ_DFLOAT(&weights[i][j]) > 0 ) Serial.print(" ");
+                    if (PGM_READ_DFLOAT(&weights[i][j]) > 0 ) Serial.print(F_MACRO(" "));
                     Serial.print(PGM_READ_DFLOAT(&weights[i][j]), DFLOAT_LEN);
                 #endif
-                Serial.print(" ");
+                Serial.print(F_MACRO(" "));
             }
-            Serial.println("");
+            Serial.println();
         }
-        Serial.println("----------------------");
+        Serial.println(F_MACRO("----------------------"));
     }
 
         #if defined(USE_INTERNAL_EEPROM)
             void NeuralNetwork::Layer::print_INTERNAL_EEPROM()
             {
+                Serial.print(F_MACRO("EEPROM "));
                 Serial.print(_numberOfInputs);
-                Serial.print("x");
+                Serial.print(F_MACRO("x"));
                 Serial.print(_numberOfOutputs);
                 #if defined(ACTIVATION__PER_LAYER)
-                    Serial.print("| F(x):");
+                    Serial.print(F_MACRO("| F(x):"));
                     Serial.print(get_EEPROM_value<byte>(me->address));
                 #endif
                 #if !defined(NO_BIAS)
-                    Serial.print("| bias:");
+                    Serial.print(F_MACRO("| bias:"));
                     Serial.print(get_EEPROM_value<DFLOAT>(me->address), DFLOAT_LEN);
                 #endif
                 Serial.println();
                 DFLOAT tmp_ijweight; 
                 for (int i = 0; i < _numberOfOutputs; i++)
                 {
+                        Serial.print(F_MACRO("   B:"));
                     Serial.print(i + 1);
-                    Serial.print(" ");
+                    Serial.print(F_MACRO(" "));
                     for (int j = 0; j < _numberOfInputs; j++)
                     {
                         tmp_ijweight = get_EEPROM_value<DFLOAT>(me->address);
-                        Serial.print(" W:");
-                        if (tmp_ijweight > 0 ) Serial.print(" ");
+                        Serial.print(F_MACRO(" W:"));
+                        if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
                         Serial.print(tmp_ijweight, DFLOAT_LEN);
-                        Serial.print(" ");
+                        Serial.print(F_MACRO(" "));
                     }
-                    Serial.println("");
+                    Serial.println();
                 }
-                Serial.println("----------------------");
+                Serial.println(F_MACRO("----------------------"));
             }
         #endif
 
