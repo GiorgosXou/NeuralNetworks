@@ -1,11 +1,12 @@
 /*
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION THIS EXAMPLE BARELY FITS THE RAM OF ARDUINO UNO. EXPIRIMENT WITH CAUTION ON IT* | THIS IS RESULT OF NO B01000000 OPTIMIZATION
 */
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #include <SD.h>               // https://www.arduino.cc/reference/en/libraries/sd/
-#define FILENAME "/MYWEIGHTS" // make sure the name is simple and starts with /
+#define FILENAME   "/WEIGHTS" // * make sure the name is SMALL, simple and starts with /
 #define _1_OPTIMIZE B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define ACTIVATION__PER_LAYER // DEFAULT KEYWORD for allowing the use of any Activation-Function per "Layer-to-Layer".
         #define Sigmoid // 0     Says to the compiler to compile the Sigmoid Activation-Function 
@@ -14,11 +15,10 @@
 #include <NeuralNetwork.h>
           NeuralNetwork *NN;
 
-unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3 input neurons (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
-byte Actv_Functions[] = {   1, 1, 0}; // 1 = Tanh and 0 = Sigmoid (just as a proof of consept)
+unsigned int layers[] = {3, 7, 1}; // 3 layers: (1st)layer with 3 input neurons 2nd layer 7 hidden neurons and (3th)layer with 1 output neuron
+byte Actv_Functions[] = {   1, 0}; // 1 = Tanh and 0 = Sigmoid (just as a proof of consept)
 
-float *output; // 4th layer's output
-File  myFile ; // File object
+float *output; // 3th layer's output
 
 //Default Inputs/Training-Data
 const float inputs[8][3] = {
@@ -37,12 +37,12 @@ const float expectedOutput[8][1] = {{0}, {1}, {1}, {0}, {1}, {0}, {0}, {1}}; // 
 void initialize()
 {
   Serial.begin(9600);
-  Serial.print("Initializing SD");
-  if (!SD.begin()) { 
-    Serial.println(", failed!"); 
+  Serial.print(F("Initializing SD"));
+  if (!SD.begin()) { // !!! MAKE SURE to change CS-pin to the one you use eg. for Arduino UNO is ...begin(4)
+    Serial.println(F(", failed!"));
     exit(0);
   }
-  Serial.println(", done.");  
+  Serial.println(F(", done."));
   randomSeed(millis()); // Just for testing the NN later at loop()
 }
 
@@ -50,7 +50,7 @@ void initialize()
 void train_and_save_NN()
 {
   NN = new NeuralNetwork(layers,NumberOf(layers),Actv_Functions); //Initialization of NeuralNetwork object
-  Serial.println("Training the NN");
+  Serial.println(F("Training the NN"));
   do{
     for (int j = 0; j < NumberOf(inputs); j++) // Epoch
     {
@@ -59,14 +59,14 @@ void train_and_save_NN()
     }
 
     // Prints the MSError.
-    Serial.print("MSE: "); 
+    Serial.print(F("MSE: "));
     Serial.println(NN->MeanSqrdError,6);
 
     // Loops through each epoch Until MSE goes  < 0.003
   }while(NN->getMeanSqrdError(NumberOf(inputs)) > 0.003);
   
   NN->save(FILENAME); // Saves the NN into the FILENAME
-  Serial.println("Done");
+  Serial.println(F("Done"));
 }
 
 
