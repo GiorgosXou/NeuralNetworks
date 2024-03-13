@@ -211,6 +211,16 @@
         #define HAS_NO_BIAS true
         #define NO_BIAS
     #endif
+
+    #if ((_2_OPTIMIZE bitor B11011111) == B11111111)
+        #if defined(NO_BIAS)
+            #error "You can't have both NO_BIAS and MULTIPLE_BIASES_PER_LAYER."
+        #endif
+        #undef MSG12
+        #define MSG12 \n⌥▌" [2] B00100000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
+        #define MULTIPLE_BIASES_PER_LAYER
+    #endif
+
     #if ((_2_OPTIMIZE bitor B11101111) == B11111111)
         #undef MSG13
         #define MSG13 \n⌥▌" [2] B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
@@ -708,7 +718,7 @@ private:
         unsigned int _numberOfOutputs; // # of neurons in the current  layer.
 
         #if !defined(NO_BIAS)
-            IS_CONST DFLOAT *bias;     // bias    of this     layer  || Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
+            IS_CONST DFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
         #endif
         DFLOAT *outputs;               // outputs of this     layer  [1D Array] pointers.
         
@@ -1164,21 +1174,32 @@ public:
             unsigned int weightsFromPoint = 0;
         #endif
 
+        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference" | 2024-03-12 04:01:04 PM todo γιατι οπως μου ειχε πει "ενα ροζ συννεφακι": "κανε ενα-ενα τα πραγματα, οχι ολα μαζι..."
+            unsigned int biasesFromPoint = 0;
+        #endif
+
         for (int i = 0; i < numberOflayers; i++)
         {
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
                 #if defined(NO_BIAS)
                     layers[i] = Layer(layer_[i], layer_[i + 1], HAS_NO_BIAS, this);
+                #elif defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                    layers[i] = Layer(layer_[i], layer_[i + 1], &default_Bias[biasesFromPoint],this);
                 #else
                     layers[i] = Layer(layer_[i], layer_[i + 1], &default_Bias[i],this);
                 #endif
             #else
                 #if defined(NO_BIAS)
                     layers[i] = Layer(layer_[i], layer_[i + 1], &default_Weights[weightsFromPoint], this);
+                #elif defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                    layers[i] = Layer(layer_[i], layer_[i + 1], &default_Weights[weightsFromPoint], &default_Bias[biasesFromPoint],this);
                 #else
                     layers[i] = Layer(layer_[i], layer_[i + 1], &default_Weights[weightsFromPoint], &default_Bias[i],this);
                 #endif
                 weightsFromPoint += layer_[i] * layer_[i + 1];
+            #endif
+            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                biasesFromPoint += layer_[i + 1];
             #endif
             
         }
@@ -1483,10 +1504,13 @@ public:
                     #endif
                     myFile.println(layers[n]._numberOfInputs); 
                     myFile.println(layers[n]._numberOfOutputs); 
-                    #if !defined(NO_BIAS)
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         myFile.println(*((LLONG*)(&*layers[n].bias))); 
                     #endif
                     for(int i=0; i<layers[n]._numberOfOutputs; i++){
+                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                            myFile.println(*((LLONG*)(&layers[n].bias[i]))); 
+                        #endif
                         for(int j=0; j<layers[n]._numberOfInputs; j++){
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                 myFile.println(*((LLONG*)(&weights[totalNumOfWeights]))); // I would had used i_j but I have totalNumOfWeights so... :)
@@ -1550,9 +1574,13 @@ public:
                     tmp_layerInputs  = myFile.readStringUntil('\n').toInt();
                     tmp_layerOutputs = myFile.readStringUntil('\n').toInt();
                     #if !defined(NO_BIAS)
-                        tmp  = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                        tmp_bias         = new DFLOAT;
-                        *tmp_bias        = *((DFLOAT*)(&tmp));
+                        #if !defined(MULTIPLE_BIASES_PER_LAYER)
+                            tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                            tmp_bias  = new DFLOAT;
+                            *tmp_bias = *((DFLOAT*)(&tmp));
+                        #else
+                            tmp_bias  = new DFLOAT[tmp_layerOutputs];
+                        #endif
                     #endif
 
                     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
@@ -1566,18 +1594,34 @@ public:
 
                     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
                         for(int j=0; j<tmp_layerOutputs; j++){
+                            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                layers[i].bias[j] = *((DFLOAT*)(&tmp));
+                            #endif
                             layers[i].weights[j] = new DFLOAT[tmp_layerInputs];
                             for(int k=0; k<tmp_layerInputs; k++){
                                 tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
                                 layers[i].weights[j][k] =  *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
                             }
                         }
-                    #else
-                        for(int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
-                            tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                    #else // I won't elif here cause I want to have a clear image of the "division" below
+                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                            for(int j=0; j<tmp_layerOutputs; j++){
+                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                tmp_bias[j] = *((DFLOAT*)(&tmp));
+                                for(int k=0; k<tmp_layerInputs; k++){
+                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                    weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                    count_ij++;
+                                }
+                            }
+                        #else
+                            for(int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
+                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
                                 weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
                                 count_ij++;
-                        }
+                            }
+                        #endif
                     #endif
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
                         #if defined(NO_BIAS)
@@ -1613,10 +1657,13 @@ public:
                 #if defined(ACTIVATION__PER_LAYER)
                     put_EEPROM_value(atAddress, ActFunctionPerLayer[n]);
                 #endif
-                #if !defined(NO_BIAS)
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     put_EEPROM_value(atAddress, *layers[n].bias);
                 #endif
                 for(int i=0; i<layers[n]._numberOfOutputs; i++){
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                        put_EEPROM_value(atAddress, layers[n].bias[i]);
+                    #endif
                     for(int j=0; j<layers[n]._numberOfInputs; j++){
                         #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
                             put_EEPROM_value(atAddress, layers[n].weights[i][j]);
@@ -1696,8 +1743,8 @@ public:
             #endif
             
 
-            #if !defined(NO_BIAS)
-                bias = default_Bias; //                          ##1    Bias as Default Bias.
+            #if !defined(NO_BIAS) // TODO: REDUCE_RAM_BIASES "common reference"
+                bias = default_Bias; //                          ##1    Bias as Default Bias. Biases if defined MULTIPLE_BIASES_PER_LAYER | A reference
             #endif
             weights = new IS_CONST DFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (DFLOAT) weights.
 
@@ -1725,7 +1772,7 @@ public:
         #endif
         
         #if !defined(NO_BIAS)
-            bias = default_Bias; //                          ##1    Bias as Default Bias.
+            bias = default_Bias; //                          ##1    Bias as Default Bias. Biases if defined MULTIPLE_BIASES_PER_LAYER | A reference
         #endif
     }
 
@@ -1747,7 +1794,9 @@ public:
             #if !defined(REDUCE_RAM_WEIGHTS_COMMON)      
                 weights = new DFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (DFLOAT) weights.
             #endif
-            #if !defined(NO_BIAS)
+            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                bias = new DFLOAT[_numberOfOutputs];                       // ##1    New          Biases
+            #elif !defined(NO_BIAS)
                 bias = new DFLOAT;                                             // ##1    New          Bias   .
                 *bias = 1.0;
             #endif
@@ -1758,6 +1807,10 @@ public:
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
                     weights[i] = new DFLOAT[_numberOfInputs];
+                #endif
+
+                #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                    bias[i] = (DFLOAT)random(-90000, 90000) / 100000;
                 #endif
                 
                 for (int j = 0; j < _numberOfInputs; j++)
@@ -1809,6 +1862,9 @@ public:
         {
             if (j == 0)
                 outputs[i] = 0; // ? speed ? safe one..
+                #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                    outputs[i] = PGM_READ_DFLOAT(&bias[i]);
+                #else
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 outputs[i] += input * PGM_READ_DFLOAT(&me->weights[me->i_j+j]);
@@ -1875,6 +1931,8 @@ public:
         {
             if (j == 0)
                 outputs[i] = 0;
+                #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                    outputs[i] = bias[i];
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 outputs[i] += input * me->weights[me->i_j+j];
@@ -1934,12 +1992,15 @@ public:
                 #if defined(ACTIVATION__PER_LAYER)
                     me->F1 = get_EEPROM_value<byte>(me->address);
                 #endif
-                #if !defined(NO_BIAS)
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     bias = new DFLOAT(get_EEPROM_value<DFLOAT>(me->address));
                 #endif
             }else{
-                me->address += sizeof(DFLOAT) + SIZEOF_FX;
+                #if defined(MULTIPLE_BIASES_PER_LAYER)
             }
+            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                bias = new DFLOAT(get_EEPROM_value<DFLOAT>(me->address));
+            #endif
 
             DFLOAT tmp_jweight;
             int i;
@@ -1950,7 +2011,13 @@ public:
 
                 outputs[i] += input * EEPROM.get(me->address + j*sizeof(DFLOAT), tmp_jweight);
                 me->address += _numberOfInputs * sizeof(DFLOAT); 
+                #if defined(MULTIPLE_BIASES_PER_LAYER) // This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
+                    *bias = get_EEPROM_value<DFLOAT>(me->address);
+                #endif
             }
+            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                delete bias;
+            #endif
 
             // when all individual inputs get summed and multiplied by their weights in their outputs, then pass them from the activation function
             if (j == _numberOfInputs -1){
@@ -1976,7 +2043,7 @@ public:
                         #endif
                     #endif
                 }
-                #if !defined(NO_BIAS)
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     delete bias;
                 #endif
 
@@ -2000,12 +2067,14 @@ public:
                 byte fx = get_EEPROM_value<byte>(me->address); 
             #endif
 
-            #if !defined(NO_BIAS)
+            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 DFLOAT tmp_bias = get_EEPROM_value<DFLOAT>(me->address); 
             #endif
             for (int i = 0; i < _numberOfOutputs; i++)
             {
                 outputs[i] = 0; // #2
+                #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                    outputs[i] = get_EEPROM_value<DFLOAT>(me->address); 
                 for (int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
                 {
                     outputs[i] += inputs[j] * get_EEPROM_value<DFLOAT>(me->address);
@@ -2052,6 +2121,8 @@ public:
         for (int i = 0; i < _numberOfOutputs; i++)
         {
             outputs[i] = 0; // #2
+            #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                outputs[i] = PGM_READ_DFLOAT(&bias[i]);
             for (int j = 0; j < _numberOfInputs; j++) 
             {
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2103,6 +2174,13 @@ public:
         {
             outputs[i] = 0;
             #if !defined(ESP_SUPPORTS_SIMD)
+                #if defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                    outputs[i] += bias[i];
+                #elif !defined(NO_BIAS)
+                    outputs[i] += *bias;
+                #endif
+                #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                    outputs[i] = bias[i];
                 for (int j = 0; j < _numberOfInputs; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2268,7 +2346,9 @@ public:
                     #else
                         gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]);
                     #endif
-                    #if !defined(NO_BIAS)
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
+                    #elif !defined(NO_BIAS)
                         bias_Delta *= gamma;
                     #endif
 
@@ -2306,7 +2386,9 @@ public:
                     #else
                         gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]);
                     #endif
-                    #if !defined(NO_BIAS)
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
+                    #elif !defined(NO_BIAS)
                         bias_Delta *= gamma;
                     #endif
 
@@ -2318,7 +2400,7 @@ public:
                 }
             #endif
             
-            #if !defined(NO_BIAS)
+            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 *bias -= bias_Delta * me->LearningRateOfBiases;
             #endif
         }
@@ -2344,7 +2426,9 @@ public:
                         gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
                     #endif
 
-                    #if !defined(NO_BIAS)
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
+                    #elif !defined(NO_BIAS)
                         bias_Delta *= gamma;
                     #endif
 
@@ -2365,7 +2449,10 @@ public:
                     #else
                         gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
                     #endif
-                    #if !defined(NO_BIAS)
+
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
+                    #elif !defined(NO_BIAS)
                         bias_Delta *= gamma;
                     #endif
 
@@ -2378,7 +2465,7 @@ public:
                 }
             #endif
 
-            #if !defined(NO_BIAS)
+            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 *bias -= bias_Delta * me->LearningRateOfBiases;
             #endif
         }
@@ -2392,7 +2479,7 @@ public:
         Serial.print(_numberOfInputs);
         Serial.print(F_MACRO("x"));
         Serial.print(_numberOfOutputs);
-        #if !defined(NO_BIAS)
+        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
             Serial.print(F_MACRO("| bias:"));
             Serial.print(*bias, DFLOAT_LEN);
         #endif
@@ -2404,7 +2491,10 @@ public:
 
         for (int i = 0; i < _numberOfOutputs; i++)
         {
+            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                 Serial.print(F_MACRO("   B:"));
+                Serial.println(bias[i], DFLOAT_LEN);
+            #endif
             Serial.print(i + 1);
             Serial.print(F_MACRO(" "));
             for (int j = 0; j < _numberOfInputs; j++)
@@ -2432,7 +2522,7 @@ public:
         Serial.print(_numberOfInputs);
         Serial.print(F_MACRO("x"));
         Serial.print(_numberOfOutputs);
-        #if !defined(NO_BIAS)
+        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
             Serial.print(F_MACRO("| bias:"));
             Serial.print(PGM_READ_DFLOAT(bias), DFLOAT_LEN);
         #endif
@@ -2444,7 +2534,10 @@ public:
 
         for (int i = 0; i < _numberOfOutputs; i++)
         {
+            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                 Serial.print(F_MACRO("   B:"));
+                Serial.println(PGM_READ_DFLOAT(&bias[i]), DFLOAT_LEN);
+            #endif
             Serial.print(i + 1);
             Serial.print(" ");
             for (int j = 0; j < _numberOfInputs; j++)
@@ -2477,7 +2570,7 @@ public:
                     Serial.print(F_MACRO("| F(x):"));
                     Serial.print(get_EEPROM_value<byte>(me->address));
                 #endif
-                #if !defined(NO_BIAS)
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     Serial.print(F_MACRO("| bias:"));
                     Serial.print(get_EEPROM_value<DFLOAT>(me->address), DFLOAT_LEN);
                 #endif
@@ -2485,7 +2578,10 @@ public:
                 DFLOAT tmp_ijweight; 
                 for (int i = 0; i < _numberOfOutputs; i++)
                 {
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("   B:"));
+                        Serial.println(get_EEPROM_value<DFLOAT>(me->address), DFLOAT_LEN);
+                    #endif
                     Serial.print(i + 1);
                     Serial.print(F_MACRO(" "));
                     for (int j = 0; j < _numberOfInputs; j++)
