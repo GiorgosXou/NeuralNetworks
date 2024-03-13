@@ -1,4 +1,5 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
+#define _2_OPTIMIZE B00000000 // Enable B01.. for NO_BIAS or B001.. for MULTIPLE_BIASES_PER_LAYER
 #define _1_OPTIMIZE B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define Tanh                  // Comment this line to use Sigmoid (the default) activation function
 

@@ -1,7 +1,7 @@
 /*
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
 */
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
 #define IN_EEPROM_ADDRESS 0   // The position at which the NN will be saved at the internal EEPROM
@@ -9,19 +9,6 @@
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {3, 9, 9, 1};
-float *output; // 4th layer's output(s)
-
-// Default Test/Input data
-const float inputs[8][3] = {
-  {0, 0, 0}, // = 0
-  {0, 0, 1}, // = 1
-  {0, 1, 0}, // = 1
-  {0, 1, 1}, // = 0
-  {1, 0, 0}, // = 1
-  {1, 0, 1}, // = 0
-  {1, 1, 0}, // = 0
-  {1, 1, 1}  // = 1
-};
 
 // 1 for each layer-layer [Pretrained Biases ]
 float biases[] = {1, 1, 0.99308};
@@ -48,15 +35,7 @@ float weights[] = {
   -1.344488,  2.618552,  0.642735, -0.947158, -0.286999,  3.797427, -2.443925, -0.833397, -1.654542,
   -0.138234, -0.931373, -0.183022, -0.493784, -0.784119, -0.275703, -2.113665,  0.761188, -0.810006,
 
-  -0.049101,
-  -6.781154,
-   0.14872 ,
-  -2.332737,
-  -4.983434,
-  -1.396086,
-   10.86302,
-  -5.551509,
-  -1.648114
+  -0.049101, -6.781154,  0.14872 , -2.332737, -4.983434, -1.396086,  10.86302, -5.551509, -1.648114
 };
 
 
