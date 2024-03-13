@@ -1334,7 +1334,25 @@ public:
             Individual_Input=0;
 
             #if defined(USE_INTERNAL_EEPROM)
-                address += SIZEOF_FX + sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                #if defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(ACTIVATION__PER_LAYER)
+                        address += SIZEOF_FX + layers[0]._numberOfOutputs * sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                    #else
+                        address +=             layers[0]._numberOfOutputs * sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                    #endif
+                #elif defined(NO_BIAS)
+                    #if defined(ACTIVATION__PER_LAYER)
+                        address += SIZEOF_FX + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                    #else
+                        address +=           + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                    #endif
+                #else
+                    #if defined(ACTIVATION__PER_LAYER)
+                        address += SIZEOF_FX + sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                    #else
+                        address +=           + sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                    #endif
+                #endif
             #endif
         
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
@@ -1997,6 +2015,22 @@ public:
                 #endif
             }else{
                 #if defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(ACTIVATION__PER_LAYER)
+                        me->address += SIZEOF_FX; 
+                    #endif
+                #else
+                    #if defined(NO_BIAS)
+                        #if defined(ACTIVATION__PER_LAYER)
+                            me->address += SIZEOF_FX 
+                        #endif
+                    #else
+                        #if defined(ACTIVATION__PER_LAYER)
+                            me->address += SIZEOF_FX + sizeof(DFLOAT); 
+                        #else
+                            me->address += sizeof(DFLOAT); 
+                        #endif
+                    #endif
+                #endif
             }
             #if defined(MULTIPLE_BIASES_PER_LAYER)
                 bias = new DFLOAT(get_EEPROM_value<DFLOAT>(me->address));
