@@ -1,5 +1,5 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-#define _1_OPTIMIZE B01010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define CUSTOM_AF1 my_sigmoid // My "custom" activation function
 #define CUSTOM_DF1            // Comment to disable Derivative function
 
