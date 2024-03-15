@@ -10,7 +10,7 @@
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {3, 5, 1}; // 3 layers (1st)layer with 3 input neurons (2nd)layer 5 hidden neurons each and (3rd)layer with 1 output neuron
-double *output; // 4th layer's output(s) 
+double *output; // 3rd layer's output(s)
 
 //Default Inputs/Training-Data
 const double inputs[8][3] = {
@@ -53,7 +53,7 @@ void setup()
   for (int i = 0; i < NumberOf(inputs); i++)
   {
     output = NN.FeedForward(inputs[i]); // FeedForwards the input[i]-array through the NN | returns the predicted output(s)
-    Serial.print(Round(output[0]));
+    Serial.print(round(output[0]));
     Serial.print(" ≅ ");
     Serial.println(output[0], 15);      // Prints the first 15 digits after the comma (B00000001).
   }
