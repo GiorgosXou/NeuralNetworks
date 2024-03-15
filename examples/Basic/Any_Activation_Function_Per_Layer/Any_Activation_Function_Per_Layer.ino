@@ -57,6 +57,6 @@ void setup()
     Serial.println(output[0], 7);          // Prints the first 7 digits of the output after the comma.
   }
 
-  //NN.print(); // Prints the weights and biases of each layer
+  NN.print(); // Prints the weights and biases of each layer
 }
 void loop() {}
