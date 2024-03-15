@@ -44,13 +44,15 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️ Examples
+***✨ ([See also](#🚆-training)): training with Tensorflow section)***
 
 - ***`🔤 Basic:`***
 - - [Using a NN inside the loop](./examples/Basic/Run_In_Loop/Run_In_Loop.ino 'Run_In_Loop')
 - - [Pre-trained NN behaving as a 3-input-xor circuit](./examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino 'FeedForward_double_Xor.ino')
 - - [Training a NN to behave as a 3-input-xor circuit][EXAMPLE_DOUBLE_XOR_BACKPROP_INO]
-- - [Training a NN to behave as a single xor-gate](./examples/Basic/Backpropagation_Single_Xor/Backpropagation_Single_Xor.ino 'Backpropagation_Single_Xor_Gate.ino')
-- - [Using multiple Activation Functions per Layer](./examples/Basic/Run_In_Loop/Run_In_Loop.ino 'Any_Activation_Function_Per_Layer.ino')
+- - [Training a NN to behave as a single xor-gate](./examples/Basic/Backpropagation_Single_Xor/Backpropagation_Single_Xor.ino 'Backpropagation_Single_Xor.ino')
+- - [Using multiple Activ.-functions per layer-to-layer](./examples/Basic/Any_Activation_Function_Per_Layer/Any_Activation_Function_Per_Layer.ino 'Any_Activation_Function_Per_Layer.ino')
+- - [Using multiple biases per layer-to-layer](./examples/Basic/Multiple_biases/Multiple_biases.ino 'Multiple_biases.ino')
 - ***`💾 Media:`***
 - - [Save NN into SD and load it into RAM after restart](./examples/Media/Save_load_NN_from_SD/Save_load_NN_from_SD.ino 'Save_load_NN_from_SD.ino')
 - - [Saving a NN into the internal EEPROM for later use](./examples/Media/Save_NN_to_internal_EEPROM/Save_NN_to_internal_EEPROM.ino 'Save_NN_to_internal_EEPROM.ino')
@@ -64,8 +66,9 @@ Understanding the Basics of a Neural Network:
 
 # ⚠️ Important
 - If you have an error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
+- Wherever you see the term `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
 - I am **NOT a professional** in any of those fields, even though I did this [...] I'm stupid in many cases too.
-- If you don't want to [`USE_64_BIT_DOUBLE`](#define-macro-properties) *(which I also suggest you not to use)*, then [**make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/en/pmwiki.php?n=Reference/Float):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), **on the Arduino, double is the same size as float.**"*
+- If you don't want to [`USE_64_BIT_DOUBLE`](#define-macro-properties) *(which I also suggest you not to use)*, then [**make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/reference/en/language/variables/data-types/float/):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), **on the Arduino, double is the same size as float.**"*
 
 
 # 🔬 Tested on
@@ -78,9 +81,9 @@ Understanding the Basics of a Neural Network:
 - Uses software-emulated EEPROM, so don't expect EEPROM-examples\functionalities to work on it </details>
 <details><summary><strong>ATtiny85</strong></summary>
 
-- doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) (i think..?)
+- Doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) (i think..?)
 - If you want to use "Serial" on an ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
-- [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on an ATtiny85 doesn't work properly for some reasons, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths Work! [...] <sup><sub>(since the first release I haven't tested it again on the ATtiny85 at least yet, so I am not sure)</sub></sup>
+- [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on an ATtiny85 won't work properly _(due to SRAM limitations, unless NN too small)_, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths will Work! [...] <sup><sub>(since the first release I haven't tested it again on the ATtiny85 at least yet, so I am not 100% sure)</sub></sup>
 </details>
 
 
@@ -96,6 +99,7 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 |<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_1_OPTIMIZE B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, &LRw, &LRb, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
+|<details><summary>`NeuralNetwork(*layer_, *default_Weights, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if [`NO_BIAS`](#define-macro-properties) enabled</details>|
 |<details><summary>`NeuralNetwork(*layer_, *default_Weights, *default_Bias, &NumberOflayers, *_ActFunctionPerLayer)`</summary>(:</details>|
 
 ```c++
@@ -220,7 +224,7 @@ byte Actv_Functions[] = {   1, ..., 2, 0};
 <br>
 
 ##  `#define` Cutstom Functions
-*([See example][EXAMPLE_CUSTOM_FUNCTIONS_INO])* You can define up to 5, every custom function comes after every each non-custom one *(numerically)* eg:
+*([See also example][EXAMPLE_CUSTOM_FUNCTIONS_INO])* You can define up to 5. Every custom function, comes after every each non-custom one *(numerically)* eg:
 ```c++
 #define ACTIVATION__PER_LAYER
         #define Sigmoid // 0
@@ -240,10 +244,11 @@ Define derivative-functions, by just definening `..._DFX`:
 ```
 And then use them in your sketch like:
 ```c++
+// CUSTOM_DF1 is optional ...
 #define ACTIVATION__PER_LAYER
         #define Tanh
-        #define CUSTOM_AF1 my_sigmoid // My "custom" activation function
-        #define CUSTOM_DF1            // Comment to disable Derivative function
+        #define CUSTOM_AF1 my_sigmoid 
+        #define CUSTOM_DF1
 
 #include <NeuralNetwork.h>
 
@@ -257,6 +262,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 
 // Tanh > ... > Tanh > my_sigmoid
 ```
+**IMPORTANT NOTE:** Be careful commenting in front of `#define`, see issue #29
 
 
 
@@ -283,7 +289,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 |```DFLOAT*```      |NN.```weights```|If [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
 |```Layer*```      |NN.```layers``` | Layers of NN|
 ||<center>**Layer's Variables**</center>||
-|```DFLOAT*```      |NN.layers[i].```bias```| The bias of an individual layer[i] |
+|```DFLOAT*```      |NN.layers[i].```bias```| <details><summary>The bias of an individual layer[i], unless...</summary>[`NO_BIAS` or `MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled.</details>|
 |```DFLOAT*```      |NN.layers[i].```outputs```[]| The Output array of an individual layer[i]|
 |```DFLOAT**```     |NN.layers[i].```weights```[][]|if not [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
 |```DFLOAT*```      |NN.layers[i].```preLgamma```[]| The γ-error of previous layer[i-1] |
@@ -303,14 +309,17 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```B00000000``` | |   Nothing | |
 | ```B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights and biases</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
 | ```B01000000``` |<sup><sub>⚠️</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>For each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. Reduces RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|  
-| ```B00100000``` |<sup><sub>🔴</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
-| ```B00010000``` | | <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
+| ```B00100000``` |<sup><sub>❌</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
+| ```B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
 | ```B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable yet.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
-| ```B00000100``` |<sup><sub>*</sub></sup> |<details><summary>Reduces RAM</summary>by using a static reference to the NN-object for layers \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. Note that when using multiple NN-**objects** interchangeably in your sketch, you should always before update `NN.me`</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
-| ```B00000010``` | |<details><summary>**Recomended** \| Disables MSE</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
-| ```B00000001``` |<sup><sub>*</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
+| ```B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should always update `NN.me` before using the next one</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
+| ```B00000010``` |<sup><sub>📌</sub></sup>|<details><summary>Disables MSE function</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
+| ```B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
 |  **_2_OPTIMIZE** | |  ||
-| ```B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU, see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
+| ```B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
+| ```B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
+| ```B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
+| ```B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
   
 
 <br>
@@ -318,16 +327,110 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 Please don't use keywords to define optimizations, use _X_OPTIMIZE
 - ⚠️ = Backpropagation is not allowed
 - 🟢 = Always enabled <sub><sup>(not switchable yet.)</sup></sub>
-- 🔴 = Not yet implimented
+- ❌ = Not yet implimented
+- 📌 = Recommended
 
 <br>
 
 
-### A THANK YOU!
-I want  to **really thanks** [Underpower Jet](https://www.youtube.com/channel/UCWbkocGpP_8R5ZS1VpuusRA) for his amazing [tutorial](https://www.youtube.com/watch?v=L_PByyJ9g-I), by bringing it more to the surface. Because after all the videos and links I came across, he was the one that made the most significant difference to my understanding of backpropagation in neural networks. Plus, I would like to thanks: [giant_neural_network](https://www.youtube.com/channel/UCrBzGHKmGDcwLFnQGHJ3XYg) for [this](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) and [this](https://www.youtube.com/watch?v=vF0zqCkbsEU&t=12s), [ 3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw) for [this](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi), the authors of **[✨ this](https://www.researchgate.net/publication/353753323_Evaluation_of_a_wireless_low-energy_mote_with_fuzzy_algorithms_and_neural_networks_for_remote_environmental_monitoring)** scientific article for referencing me, Arduino community and everyone else who gave me the oportunity to learn and make this library possible to exist [...] 
+# 🚆 Training
+To train a neural-network, you can use Tensorflow to do so. Here's a basic python example:
+
+```python
+# pip install tensorflow
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import LearningRateScheduler
+import tensorflow as tf
+import numpy as np
+
+
+# Define if you want to use biases
+IS_BIASED = True
+
+# Enable 32-bit floating-point precision
+tf.keras.backend.set_floatx('float32')
+
+# Define the XOR gate inputs and outputs
+inputs  = np.array([
+    [ 0, 0, 0 ], 
+    [ 0, 0, 1 ], 
+    [ 0, 1, 0 ], 
+    [ 0, 1, 1 ], 
+    [ 1, 0, 0 ], 
+    [ 1, 0, 1 ], 
+    [ 1, 1, 0 ], 
+    [ 1, 1, 1 ]
+], dtype = np.float32)
+outputs = np.array([[0], [1], [1], [0], [1], [0], [0], [1]], dtype = np.float32)
+input_size = 3
+
+# Create a simple convolutional neural network
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(input_size,)), # Input layer (no bias) 
+    tf.keras.layers.Dense(3, activation='sigmoid', use_bias=IS_BIASED), # Dense  3 units 
+    tf.keras.layers.Dense(1, activation='sigmoid', use_bias=IS_BIASED)  # Output 1 unit 
+])
+
+# Compile the model
+optimizer = Adam(learning_rate=0.031)
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(inputs, outputs, epochs=900, verbose=0)
+
+# Evaluate the model on the training data
+loss, accuracy = model.evaluate(inputs, outputs)
+print(f"Model accuracy: {accuracy * 100:.2f}%")
+
+# Predict XOR gate outputs
+predictions = model.predict(inputs)
+print("Predictions:")
+for i in range(len(inputs)):
+    print(f"Input: {inputs[i]}, Predicted Output: {predictions[i][0]:.7f}")
+
+# Print biases and weights
+# (IMPORTANT NOTE! they are printed as w[i][j] not w[j][i] | outputs * inputs)
+print()
+weights_biases = model.get_weights()
+
+if IS_BIASED:
+    print("#define _2_OPTIMIZE B00100000 // MULTIPLE_BIASES_PER_LAYER \n")
+    print('float biases[] = {')
+    for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
+        print('  ', end='')
+        for j in range(0, w.shape[1]):
+            print(b[j], end=', ')
+        print()
+    print('};\n')
+else:
+    print("#define _2_OPTIMIZE B01000000 // NO_BIAS \n")
+
+print('float weights[] = {', end="")
+for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
+    print()
+    for j in range(0, w.shape[1]):
+        print('  ', end='')
+        for i in range(0, w.shape[0]):
+            print(w[i][j], end=', ')
+        print()
+print('};\n')
+```
+
+<br>
+
+**IMPORTANT NOTE:** See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+
+*([see also examples](#✏️-examples) on how to train a NN directly on an MCU)* 
+
+<br>
+
+
+## A HUGE THANK YOU!
+I want to **really thanks** [Underpower Jet](https://www.youtube.com/channel/UCWbkocGpP_8R5ZS1VpuusRA) for his amazing [tutorial](https://www.youtube.com/watch?v=L_PByyJ9g-I), by bringing it more to the surface. Because after all the videos and links I came across, he was the one that made the most significant difference to my understanding of backpropagation in neural networks. Plus, I would like to thanks: [giant_neural_network](https://www.youtube.com/channel/UCrBzGHKmGDcwLFnQGHJ3XYg) for [this](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) and [this](https://www.youtube.com/watch?v=vF0zqCkbsEU&t=12s), [ 3Blue1Brown](https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw) for [this](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi), the authors of **[✨ this](https://www.researchgate.net/publication/353753323_Evaluation_of_a_wireless_low-energy_mote_with_fuzzy_algorithms_and_neural_networks_for_remote_environmental_monitoring)** scientific article for referencing me, Ivo Ljubičić for using my library for his [✨ master thesis](https://repozitorij.fsb.unizg.hr/en/islandora/object/fsb%3A5928), Arduino community and everyone else who gave me the oportunity to learn and make this library possible to exist [...] 
 
 # 💗 Donation 
-if you want me to continue support this library, learn and bring more functionalities to it, it would be really helpfull if you would consider donating, even the least amount of **0.01$** would be really appreciated! **Monero address:** <sup>`87PVyQ8Vt768hnvVyR9Qw1NyGzDea4q9Zd6AuwHb8tQBU9VdRYjRoBL7Ya8yRPVQakW2pjt2UWEtzYoxiRd7xpuB4XSJVAW`</sup>
+**Please** consider donating something, even as little as 10 cents would be really appreciated
+| Monero address: <sup>`87PVyQ8Vt768hnvVyR9Qw1NyGzDea4q9Zd6AuwHb8tQBU9VdRYjRoBL7Ya8yRPVQakW2pjt2UWEtzYoxiRd7xpuB4XSJVAW`</sup>
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) 
 
@@ -337,6 +440,7 @@ Here most of the resources I came across the internet, I recomend you to have a 
 
 **```22\11\2023```** 
 * **```Code Related:```**
+* * [Handy C++ "cheat sheet"](https://en.cppreference.com/w/cpp/keyword '2024-03-13 04:08:32 PM reserved c++ keywords')
 * * _**```Macros:```**_
 * * * Do not put comments in front of #define whatever
 * * * [is #ifdef \_\_SD\_H\_\_ considered a bad practice?](https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice '2023-11-22 12:32:04 AM')
