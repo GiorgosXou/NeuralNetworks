@@ -44,7 +44,7 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️ Examples
-***✨ ([See also](#👨‍💻-training)): training with Tensorflow section)***
+***✨ ([See also](#-training)): training with Tensorflow section)***
 
 - ***`🔤 Basic:`***
 - - [Using a NN inside the loop](./examples/Basic/Run_In_Loop/Run_In_Loop.ino 'Run_In_Loop')
