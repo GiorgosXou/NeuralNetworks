@@ -23,10 +23,10 @@ Understanding the Basics of a Neural Network:
 - ##### ``` Current```
 - - ```+``` Use of activation-functions per layer-to-layer.
 - - ```+``` Optimizations based on [user's preference](#define-macro-properties). 
-- - ```+``` Support for [custom activation functions](#define-cutstom-functions).
+- - ```+``` Support for [custom activation functions](#define-custom-functions).
 - - ```+``` [Basic ESP32-S3 SIMD acceleration.](https://github.com/GiorgosXou/NeuralNetworks/blob/5cd31c9a29853899c36b5ca7d0d8cf5e9cb3422e/src/NeuralNetwork.h#L1964-L1967 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
 - - ```+``` MSE/BCE/CCE [loss-functions](#dfloat-loss-functions).
-- - ```+``` Support for [double precision](#define-cutstom-functions).
+- - ```+``` Support for [double precision](#define-custom-functions).
 - - ```+``` Many [activation-functions](#dfloat-activation-functions).
 - - ```+``` [Use of storage medias.](## 'Such as SD, PROGMEM, EEPROM')
 - - ```+``` [Exceptional solutions.](## 'eg. look at FeedForward_Individual')
@@ -223,7 +223,7 @@ byte Actv_Functions[] = {   1, ..., 2, 0};
 
 <br>
 
-##  `#define` Cutstom Functions
+##  `#define` Custom Functions
 *([See also example][EXAMPLE_CUSTOM_FUNCTIONS_INO])* You can define up to 5. Every custom function, comes after every each non-custom one *(numerically)* eg:
 ```c++
 #define ACTIVATION__PER_LAYER
