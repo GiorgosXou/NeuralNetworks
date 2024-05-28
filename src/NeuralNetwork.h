@@ -834,120 +834,22 @@ private:
         void print_PROGMEM();
         void print();
     };  
-    //just like "static DFLOAT *wights" [...]  i might have a function to switch?
+
+
+public:
+    //just like "static DFLOAT *wights" [...]  i might have a function to switch? | 2024-05-28 07:21:09 PM UPDATE: not sure what I meant back then... comment was moved here since `inline` change (this date), see also issue #35
+    // this is the part where we declare an array-of-pointers-to-(activation and derivative) functions 
     #if defined(ACTIVATION__PER_LAYER)
-
         typedef DFLOAT (Layer::*method_function) (const DFLOAT &);
-        inline static const method_function (activation_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
-                &Layer::Sigmoid,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
-                &Layer::Tanh,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
-                &Layer::ReLU, 
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
-                &Layer::LeakyELU, 
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
-                &Layer::ELU, 
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-                &Layer::SELU, 
-            #endif        
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
-                &Layer::SoftmaxSum, 
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Identity)            
-                &Layer::Identity,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(BinaryStep)            
-                &Layer::BinaryStep,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softplus)            
-                &Layer::Softplus,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SiLU)            
-                &Layer::SiLU,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(GELU)            
-                &Layer::GELU,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Mish)            
-                &Layer::Mish,
-            #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Gaussian)            
-                &Layer::Gaussian,
-            #endif
-
-            #if defined(CUSTOM_AF1)            
-                &Layer::CUSTOM_AF1,
-            #endif
-            #if defined(CUSTOM_AF2)            
-                &Layer::CUSTOM_AF2,
-            #endif
-            #if defined(CUSTOM_AF3)            
-                &Layer::CUSTOM_AF3,
-            #endif
-            #if defined(CUSTOM_AF4)            
-                &Layer::CUSTOM_AF4,
-            #endif
-            #if defined(CUSTOM_AF5)            
-                &Layer::CUSTOM_AF5,
-            #endif
-        };
+        static const method_function activation_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
         #if !defined(NO_BACKPROP)
-            inline static const method_function (derivative_Function_ptrs)[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
-                #if defined(Sigmoid)
-                    &Layer::SigmoidDer,
-                #endif
-                #if defined(Tanh)
-                    &Layer::TanhDer,
-                #endif
-                #if defined(ReLU)
-                    &Layer::ReLUDer, 
-                #endif
-                #if defined(LeakyELU)
-                    &Layer::LeakyELUDer, 
-                #endif
-                #if defined(ELU)
-                    &Layer::ELUDer, 
-                #endif
-                #if defined(SELU)
-                    &Layer::SELUDer, 
-                #endif   
-                #if defined(Softmax)
-                    &Layer::SoftmaxDer, 
-                #endif     
-                #if defined(Identity)            
-                    &Layer::IdentityDer,
-                #endif         
-
-                #if defined(CUSTOM_DF1)            
-                    &Layer::CUSTOM_DF1,
-                #endif
-                #if defined(CUSTOM_DF2)            
-                    &Layer::CUSTOM_DF2,
-                #endif
-                #if defined(CUSTOM_DF3)            
-                    &Layer::CUSTOM_DF3,
-                #endif
-                #if defined(CUSTOM_DF4)            
-                    &Layer::CUSTOM_DF4,
-                #endif
-                #if defined(CUSTOM_DF5)            
-                    &Layer::CUSTOM_DF5,
-                #endif
-            };
+            static const method_function derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
         #endif  
         //https://stackoverflow.com/a/31708674/11465149
         //http://www.cs.technion.ac.il/users/yechiel/c++-faq/array-memfnptrs.html // ??? [x]
     #endif
-    
 
-public:
+
     #if defined(REDUCE_RAM_STATIC_REFERENCE)
         static NeuralNetwork *me;
     #endif
@@ -1748,7 +1650,114 @@ public:
 
 #pragma region Layer.cpp
 
-    // Initialization of the array-of-pointers-to-(activation and derivative) functions without `inline`. see also issue #35 
+    // Initialization of the array-of-pointers-to-(activation and derivative) functions without `inline`. see also issue #35
+    // Additionally: in case of any future `const` to `constexpr` take a look here https://stackoverflow.com/a/40272829/11465149
+    #if defined(ACTIVATION__PER_LAYER)
+        const NeuralNetwork::method_function NeuralNetwork::activation_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
+                &NeuralNetwork::Layer::Sigmoid,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
+                &NeuralNetwork::Layer::Tanh,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
+                &NeuralNetwork::Layer::ReLU,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
+                &NeuralNetwork::Layer::LeakyELU,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
+                &NeuralNetwork::Layer::ELU,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
+                &NeuralNetwork::Layer::SELU,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
+                &NeuralNetwork::Layer::SoftmaxSum,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Identity)
+                &NeuralNetwork::Layer::Identity,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(BinaryStep)
+                &NeuralNetwork::Layer::BinaryStep,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softplus)
+                &NeuralNetwork::Layer::Softplus,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SiLU)
+                &NeuralNetwork::Layer::SiLU,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(GELU)
+                &NeuralNetwork::Layer::GELU,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Mish)
+                &NeuralNetwork::Layer::Mish,
+            #endif
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Gaussian)
+                &NeuralNetwork::Layer::Gaussian,
+            #endif
+
+            #if defined(CUSTOM_AF1)
+                &NeuralNetwork::Layer::CUSTOM_AF1,
+            #endif
+            #if defined(CUSTOM_AF2)
+                &NeuralNetwork::Layer::CUSTOM_AF2,
+            #endif
+            #if defined(CUSTOM_AF3)
+                &NeuralNetwork::Layer::CUSTOM_AF3,
+            #endif
+            #if defined(CUSTOM_AF4)
+                &NeuralNetwork::Layer::CUSTOM_AF4,
+            #endif
+            #if defined(CUSTOM_AF5)
+                &NeuralNetwork::Layer::CUSTOM_AF5,
+            #endif
+        };
+        #if !defined(NO_BACKPROP)
+            const NeuralNetwork::method_function NeuralNetwork::derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
+                #if defined(Sigmoid)
+                    &NeuralNetwork::Layer::SigmoidDer,
+                #endif
+                #if defined(Tanh)
+                    &NeuralNetwork::Layer::TanhDer,
+                #endif
+                #if defined(ReLU)
+                    &NeuralNetwork::Layer::ReLUDer,
+                #endif
+                #if defined(LeakyELU)
+                    &NeuralNetwork::Layer::LeakyELUDer,
+                #endif
+                #if defined(ELU)
+                    &NeuralNetwork::Layer::ELUDer,
+                #endif
+                #if defined(SELU)
+                    &NeuralNetwork::Layer::SELUDer,
+                #endif
+                #if defined(Softmax)
+                    &NeuralNetwork::Layer::SoftmaxDer,
+                #endif
+                #if defined(Identity)
+                    &NeuralNetwork::Layer::IdentityDer,
+                #endif
+
+                #if defined(CUSTOM_DF1)
+                    &NeuralNetwork::Layer::CUSTOM_DF1,
+                #endif
+                #if defined(CUSTOM_DF2)
+                    &NeuralNetwork::Layer::CUSTOM_DF2,
+                #endif
+                #if defined(CUSTOM_DF3)
+                    &NeuralNetwork::Layer::CUSTOM_DF3,
+                #endif
+                #if defined(CUSTOM_DF4)
+                    &NeuralNetwork::Layer::CUSTOM_DF4,
+                #endif
+                #if defined(CUSTOM_DF5)
+                    &NeuralNetwork::Layer::CUSTOM_DF5,
+                #endif
+            };
+        #endif
+    #endif
 
 
 
