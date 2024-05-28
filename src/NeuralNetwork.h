@@ -54,6 +54,8 @@
 #ifndef NeuralNetwork_h
 #define NeuralNetwork_h
 
+#define __NN_VERSION__ "VERSION: 2.1.X"\n
+
 // - That gives you access to the standard types and constants of the Arduino language.
 #include "Arduino.h"
 
@@ -92,7 +94,7 @@
 #define MSG11
 #define MSG12
 #define MSG13
-#define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤\n
+#define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤
 
 #define F_MACRO  
 
@@ -691,7 +693,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |⌥|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |⌥|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
