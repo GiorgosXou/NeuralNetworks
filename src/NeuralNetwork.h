@@ -744,7 +744,7 @@ private:
         // Default Constractor                                                         .
         //      #0 Constructor                                                         .
         //      #1 Constructor With default/("probably") preptained, weights and biases.
-        Layer();
+        Layer() {};
         #if !defined(USE_PROGMEM) 
             // ^^^^^ I keep this USE_PROGMEM instead of NO_BACKPROP because that way if I add a NeuralNetwork::feedforward_PROGMEM, with -fpermisive someone will be able to use both RAM-NN and PROGMEM-NN at the same time
             Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN = NULL); // #0  | defined(NO_BIAS) is there 2024-03-02
@@ -1748,7 +1748,8 @@ public:
 
 #pragma region Layer.cpp
 
-    NeuralNetwork::Layer::Layer() {}
+    // Initialization of the array-of-pointers-to-(activation and derivative) functions without `inline`. see also issue #35 
+
 
 
     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
