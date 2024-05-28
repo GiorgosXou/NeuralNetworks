@@ -124,6 +124,8 @@
         #define REDUCE_RAM_WEIGHTS_COMMON
         #define REDUCE_RAM_WEIGHTS_LVL2
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]
+        #undef MSG3
+        #define MSG3 \n⌥▌" [1] B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
     #elif ((_1_OPTIMIZE bitor B11011111) == B11111111)
         #undef MSG3
         #define MSG3 \n⌥▌" [1] B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
