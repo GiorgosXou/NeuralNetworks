@@ -81,6 +81,7 @@ Understanding the Basics of a Neural Network:
 - Uses software-emulated EEPROM, so don't expect EEPROM-examples\functionalities to work on it </details>
 <details><summary><strong>ATtiny85</strong></summary>
 
+- `NN.print()` Function is disabled!
 - Doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) (i think..?)
 - If you want to use "Serial" on an ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
 - [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on an ATtiny85 won't work properly _(due to SRAM limitations, unless NN too small)_, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths will Work! [...] <sup><sub>(since the first release I haven't tested it again on the ATtiny85 at least yet, so I am not 100% sure)</sub></sup>
@@ -308,7 +309,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | :------: | :------: | ------ | ------ | 
 | ```B00000000``` | |   Nothing | |
 | ```B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights and biases</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
-| ```B01000000``` |<sup><sub>⚠️</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>For each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. Reduces RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|  
+| ```B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|  
 | ```B00100000``` |<sup><sub>❌</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
 | ```B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
 | ```B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable yet.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
@@ -393,6 +394,7 @@ for i in range(len(inputs)):
 print()
 weights_biases = model.get_weights()
 
+print("#define _1_OPTIMIZE B01000000 // Highly-Recommended Optimization For RAM \n")
 if IS_BIASED:
     print("#define _2_OPTIMIZE B00100000 // MULTIPLE_BIASES_PER_LAYER \n")
     print('float biases[] = {')
