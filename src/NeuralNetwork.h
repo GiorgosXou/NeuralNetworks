@@ -37,7 +37,7 @@
 
     #if defined(__AVR_ATtiny85__)
         #undef MSG0
-        #define MSG0 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Last time i tried backpropagation on an ATtiny85 I had Issues [...]"
+        #define MSG0 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
     #endif
 #endif
 
