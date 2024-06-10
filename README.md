@@ -394,7 +394,7 @@ for i in range(len(inputs)):
 print()
 weights_biases = model.get_weights()
 
-print("#define _1_OPTIMIZE B01000000 // Highly-Recommended Optimization For RAM \n")
+print("#define _1_OPTIMIZE B01000000 // Highly-Recommended Optimization For RAM")
 if IS_BIASED:
     print("#define _2_OPTIMIZE B00100000 // MULTIPLE_BIASES_PER_LAYER \n")
     print('float biases[] = {')
