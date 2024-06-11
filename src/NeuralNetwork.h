@@ -37,7 +37,7 @@
 
     #if defined(__AVR_ATtiny85__)
         #undef MSG0
-        #define MSG0 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
+        #define MSG0 \n- "////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
     #endif
 #endif
 
@@ -94,7 +94,7 @@
 #define MSG11
 #define MSG12
 #define MSG13
-#define LOVE \n❤ 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 ❤
+#define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
 
@@ -111,13 +111,13 @@
         #undef IS_CONST
         #define IS_CONST const
         #undef MSG1
-        #define MSG1 \n⌥▌" [1] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
+        #define MSG1 \n- " [1] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
     #endif
     #if ((_1_OPTIMIZE bitor B10111111) == B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
         #define NO_BACKPROP
         #undef MSG2
-        #define MSG2 \n⌥▌" [1] B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
+        #define MSG2 \n- " [1] B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
     #endif  
     
     #if ((_1_OPTIMIZE bitor B11101111) == B11111111)
@@ -125,10 +125,10 @@
         #define REDUCE_RAM_WEIGHTS_LVL2
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]
         #undef MSG3
-        #define MSG3 \n⌥▌" [1] B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
+        #define MSG3 \n- " [1] B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
     #elif ((_1_OPTIMIZE bitor B11011111) == B11111111)
         #undef MSG3
-        #define MSG3 \n⌥▌" [1] B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
+        #define MSG3 \n- " [1] B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
         //#define REDUCE_RAM_WEIGHTS_COMMON
         //#define REDUCE_RAM_WEIGHTS_LVL1
     #endif
@@ -136,19 +136,19 @@
     #if ((_1_OPTIMIZE bitor B11110111) == B11111111)
         #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
         #undef MSG4
-        #define MSG4 \n⌥▌" [1] B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
+        #define MSG4 \n- " [1] B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111011) == B11111111)
         #define REDUCE_RAM_STATIC_REFERENCE
         #undef MSG5
-        #define MSG5 \n⌥▌" [1] B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
+        #define MSG5 \n- " [1] B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111101) == B11111111)
         #define DISABLE_MSE
         #undef MSG6
-        #define MSG6 \n⌥▌" [1] B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
+        #define MSG6 \n- " [1] B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
     #endif
 
     #if ((_1_OPTIMIZE bitor B11111110) == B11111111)
@@ -171,7 +171,7 @@
         }
 
         #undef MSG7
-        #define MSG7 \n⌥▌" [1] B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Not all MCUs support 64bit\8byte double (USE_64_BIT_DOUBLE)."
+        #define MSG7 \n- " [1] B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Not all MCUs support 64bit\8byte double (USE_64_BIT_DOUBLE)."
     #endif
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
@@ -180,7 +180,7 @@
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
     #if defined(USE_64_BIT_DOUBLE)
         #undef MSG7
-        #define MSG7 \n⌥▌" [1] B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+        #define MSG7 \n- " [1] B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
     #else
         #define ESP_SUPPORTS_SIMD
         #include "esp_dsp.h"
@@ -191,7 +191,7 @@
     #if ((_2_OPTIMIZE bitor B01111111) == B11111111)
         #if defined(REDUCE_RAM_WEIGHTS_COMMON)
             #undef MSG3
-            #define MSG3 \n⌥▌" [_] B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+            #define MSG3 \n- " [_] B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
         #endif
         #define NO_BACKPROP
         #define USE_INTERNAL_EEPROM
@@ -202,10 +202,10 @@
         #endif
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
-            #define MSG9 \n⌥▌" [2] B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
+            #define MSG9 \n- " [2] B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
         #endif
         #undef MSG8
-        #define MSG8 \n⌥▌" [2] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
+        #define MSG8 \n- " [2] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
         #if !defined(EEPROM_h) || !defined(__EEPROM_H__) 
             // for some reason it says 'EEPROM' was not declared in this scope even though i #include it below. So it needs it at the sketch i guess too
             #include <EEPROM.h>
@@ -215,7 +215,7 @@
 
     #if ((_2_OPTIMIZE bitor B10111111) == B11111111)
         #undef MSG11
-        #define MSG11 \n⌥▌" [2] B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
+        #define MSG11 \n- " [2] B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
         #define HAS_NO_BIAS true
         #define NO_BIAS
     #endif
@@ -225,13 +225,13 @@
             #error "You can't have both NO_BIAS and MULTIPLE_BIASES_PER_LAYER."
         #endif
         #undef MSG12
-        #define MSG12 \n⌥▌" [2] B00100000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
+        #define MSG12 \n- " [2] B00100000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
         #define MULTIPLE_BIASES_PER_LAYER
     #endif
 
     #if ((_2_OPTIMIZE bitor B11101111) == B11111111)
         #undef MSG13
-        #define MSG13 \n⌥▌" [2] B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
+        #define MSG13 \n- " [2] B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
         #undef F_MACRO
         #define F_MACRO F
     #endif
@@ -319,7 +319,7 @@
     #define ACTIVATION 
     #define ACTIVATION_FUNCTION Sigmoid
     #define Sigmoid Sigmoid
-    #define A1 |‣ Sigmoid 
+    #define A1 |> Sigmoid 
 #endif
 #if defined(Tanh) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A2
@@ -332,7 +332,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Tanh
     #define Tanh Tanh
-    #define A2 |‣ Tanh
+    #define A2 |> Tanh
 #endif
 #if defined(ReLU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A3
@@ -346,7 +346,7 @@
     #define ACTIVATION_FUNCTION ReLU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ReLU ReLU
-    #define A3 |‣ ReLU 
+    #define A3 |> ReLU 
 #endif
 #if defined(LeakyELU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A4
@@ -360,7 +360,7 @@
     #define ACTIVATION_FUNCTION LeakyELU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define LeakyELU LeakyELU
-    #define A4 |‣ LeakyELU 
+    #define A4 |> LeakyELU 
 #endif
 #if defined(ELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A5
@@ -374,7 +374,7 @@
     #define ACTIVATION_FUNCTION ELU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ELU ELU
-    #define A5 |‣ ELU 
+    #define A5 |> ELU 
 #endif
 #if defined(SELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A6
@@ -387,7 +387,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SELU
     #define SELU SELU
-    #define A6 |‣ SELU
+    #define A6 |> SELU
 #endif
 #if defined(Softmax)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A7
@@ -400,7 +400,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softmax
     #define Softmax Softmax
-    #define A7 |‣ Softmax
+    #define A7 |> Softmax
 #endif
 #if defined(Identity)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A8
@@ -413,7 +413,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Identity
     #define Identity Identity
-    #define A8 |‣ Identity
+    #define A8 |> Identity
 #endif
 #if defined(BinaryStep) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
@@ -429,7 +429,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION BinaryStep
     #define BinaryStep BinaryStep
-    #define A9 |‣ BinaryStep 
+    #define A9 |> BinaryStep 
 #endif
 #if defined(Softplus)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
@@ -445,7 +445,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softplus
     #define Softplus Softplus
-    #define A10 |‣ Softplus 
+    #define A10 |> Softplus 
 #endif
 #if defined(SiLU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
@@ -461,7 +461,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SiLU
     #define SiLU SiLU
-    #define A11 |‣ SiLU 
+    #define A11 |> SiLU 
 #endif
 #if defined(GELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
@@ -477,7 +477,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION GELU
     #define GELU GELU
-    #define A12 |‣ GELU 
+    #define A12 |> GELU 
 #endif
 #if defined(Mish)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
@@ -493,7 +493,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Mish
     #define Mish Mish
-    #define A13 |‣ Mish 
+    #define A13 |> Mish 
 #endif
 #if defined(Gaussian)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
@@ -509,7 +509,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Gaussian
     #define Gaussian Gaussian
-    #define A14 |‣ Gaussian 
+    #define A14 |> Gaussian 
 #endif
 
 #define CONCATENATE_WITHOUT_SPACE(x, y) CONCATENATE_IMPL(x, y)
@@ -536,11 +536,11 @@
         #undef NB
         #undef NB_CA1
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
-        #define NB_CA1 |‣ CUSTOM_AF1
+        #define NB_CA1 |> CUSTOM_AF1
     #endif
     #define CACT1 1
     #define ACTIVATION_FUNCTION CUSTOM_AF1
-    #define CA1 |‣ CUSTOM_AF1
+    #define CA1 |> CUSTOM_AF1
 #endif
 #if defined(CUSTOM_AF2)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA2
@@ -563,11 +563,11 @@
         #undef NB
         #undef NB_CA2
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
-        #define NB_CA2 |‣ CUSTOM_AF2
+        #define NB_CA2 |> CUSTOM_AF2
     #endif
     #define CACT2 1
     #define ACTIVATION_FUNCTION CUSTOM_AF2
-    #define CA2 |‣ CUSTOM_AF2
+    #define CA2 |> CUSTOM_AF2
 #endif
 #if defined(CUSTOM_AF3)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA3
@@ -590,11 +590,11 @@
         #undef NB
         #undef NB_CA3
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
-        #define NB_CA3 |‣ CUSTOM_AF3
+        #define NB_CA3 |> CUSTOM_AF3
     #endif
     #define CACT3 1
     #define ACTIVATION_FUNCTION CUSTOM_AF3
-    #define CA3 |‣ CUSTOM_AF3
+    #define CA3 |> CUSTOM_AF3
 #endif
 #if defined(CUSTOM_AF4)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA4
@@ -617,11 +617,11 @@
         #undef NB
         #undef NB_CA4
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
-        #define NB_CA4 |‣ CUSTOM_AF4
+        #define NB_CA4 |> CUSTOM_AF4
     #endif
     #define CACT4 1
     #define ACTIVATION_FUNCTION CUSTOM_AF4
-    #define CA4 |‣ CUSTOM_AF4
+    #define CA4 |> CUSTOM_AF4
 #endif
 #if defined(CUSTOM_AF5)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef CA5
@@ -644,11 +644,11 @@
         #undef NB
         #undef NB_CA5
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
-        #define NB_CA5 |‣ CUSTOM_AF5
+        #define NB_CA5 |> CUSTOM_AF5
     #endif
     #define CACT5 1
     #define ACTIVATION_FUNCTION CUSTOM_AF5
-    #define CA5 |‣ CUSTOM_AF5
+    #define CA5 |> CUSTOM_AF5
 #endif
 
 
@@ -660,11 +660,11 @@
         // ACTIVATE ALL FUNCTIONS
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
-        #define AL |‣ "(ALL_ACTIVATION_FUNCTIONS)"
+        #define AL |> "(ALL_ACTIVATION_FUNCTIONS)"
         #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
         #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
         #undef MSG10
-        #define MSG10 \n⌥▌"////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
+        #define MSG10 \n- "////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
     #else
         //ENABLE DEFAULT ACTIVATION FUNCTION
         // i will also create a mechanism to show #error if more than one is defined with B opperations?
@@ -674,7 +674,7 @@
         #define ACTIVATION //Sigmoid default but for more than one you must declare it
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
-        #define A1 |‣ Sigmoid 
+        #define A1 |> Sigmoid 
     #endif
 #endif
 
@@ -695,7 +695,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |⌥|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
