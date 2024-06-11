@@ -4,8 +4,8 @@
 - CAUTION (B00000001) NOT ALL MCUs SUPPORT 8BYTE DOUBLE PRECISION (eg. Arduino UNO doesn't support B00000001)
 */
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-#define _1_OPTIMIZE B00010001 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
-#define Tanh                  // Comment this line to use Sigmoid (default)Activation Function
+#define _1_OPTIMIZE 0B00010001 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define Tanh                   // Comment this line to use Sigmoid (default)Activation Function
 
 #include <NeuralNetwork.h>
 

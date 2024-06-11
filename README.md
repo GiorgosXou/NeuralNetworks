@@ -97,7 +97,7 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 | ------ | 
 |<details><summary>`NeuralNetwork()`</summary>Default Constructors</details>|
 |<details><summary>`NeuralNetwork(String file)`</summary>Available if `#include <SD.h>`, lets you load NN from SD</details>|
-|<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_1_OPTIMIZE B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
+|<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_1_OPTIMIZE 0B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, &LRw, &LRb, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, *default_Weights, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if [`NO_BIAS`](#define-macro-properties) enabled</details>|
@@ -124,7 +124,7 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 | ```BackProp(x) ```| DFLOAT Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
 |`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`</details>|
 |`save(x)`| String \ int|bool \ int| <details><summary>Saves NN to storage media</summary> </details>|
-|`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE B10000000](#define-macro-properties) prints from PROGMEM)_</details>|
+|`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM)_</details>|
 
 <br>
 
@@ -302,25 +302,25 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 ## ```#define``` MACRO Properties
 
 ```c++
-#define _1_OPTIMIZE B00000000
+#define _1_OPTIMIZE 0B00000000
 ```
 
 |  _1_OPTIMIZE | | Action |  Keyword |
 | :------: | :------: | ------ | ------ | 
-| ```B00000000``` | |   Nothing | |
-| ```B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights and biases</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
-| ```B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|  
-| ```B00100000``` |<sup><sub>❌</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
-| ```B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
-| ```B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable yet.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
-| ```B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should always update `NN.me` before using the next one</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
-| ```B00000010``` |<sup><sub>📌</sub></sup>|<details><summary>Disables MSE function</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
-| ```B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
+| ```0B00000000``` | |   Nothing | |
+| ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights and biases</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
+| ```0B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|  
+| ```0B00100000``` |<sup><sub>❌</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
+| ```0B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
+| ```0B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable yet.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
+| ```0B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should always update `NN.me` before using the next one</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
+| ```0B00000010``` |<sup><sub>📌</sub></sup>|<details><summary>Disables MSE function</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
+| ```0B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
 |  **_2_OPTIMIZE** | |  ||
-| ```B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
-| ```B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
-| ```B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
-| ```B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
+| ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
+| ```0B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
+| ```0B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
+| ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
   
 
 <br>
@@ -394,9 +394,9 @@ for i in range(len(inputs)):
 print()
 weights_biases = model.get_weights()
 
-print("#define _1_OPTIMIZE B01000000 // Highly-Recommended Optimization For RAM")
+print("#define _1_OPTIMIZE 0B01000000 // Highly-Recommended Optimization For RAM")
 if IS_BIASED:
-    print("#define _2_OPTIMIZE B00100000 // MULTIPLE_BIASES_PER_LAYER \n")
+    print("#define _2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER \n")
     print('float biases[] = {')
     for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
         print('  ', end='')
@@ -405,7 +405,7 @@ if IS_BIASED:
         print()
     print('};\n')
 else:
-    print("#define _2_OPTIMIZE B01000000 // NO_BIAS \n")
+    print("#define _2_OPTIMIZE 0B01000000 // NO_BIAS \n")
 
 print('float weights[] = {', end="")
 for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
@@ -420,7 +420,7 @@ print('};\n')
 
 <br>
 
-**IMPORTANT NOTE:** See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+**IMPORTANT NOTE:** See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
 
 *([see also examples](#✏️-examples) on how to train a NN directly on an MCU)* 
 

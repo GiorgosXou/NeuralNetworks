@@ -1,8 +1,8 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 
-#define _1_OPTIMIZE B00010000 //  https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
-#define SELU                  // Comment   this line and ...
-//#define ELU                 // Uncomment this line to use ELU Activation Function
+#define _1_OPTIMIZE 0B00010000 //  https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define SELU                   // Comment   this line and ...
+//#define ELU                  // Uncomment this line to use ELU Activation Function
 
 #include <NeuralNetwork.h>
 

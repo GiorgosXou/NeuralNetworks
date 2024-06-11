@@ -1,5 +1,5 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
-#define _1_OPTIMIZE B11010010 // B1000000 For PROGMEM see also https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B11010010 // 0B1000000 For PROGMEM see also https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 
 #include <NeuralNetwork.h>
 

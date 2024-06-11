@@ -5,10 +5,10 @@
 - CAUTION THIS EXAMPLE BARELY FITS THE RAM OF ARDUINO UNO. EXPIRIMENT WITH CAUTION ON IT* | THIS IS RESULT OF NO B01000000 OPTIMIZATION
 */
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-#include <SD.h>               // https://www.arduino.cc/reference/en/libraries/sd/
-#define FILENAME   "/WEIGHTS" // * make sure the name is SMALL, simple and starts with /
-#define _1_OPTIMIZE B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
-#define ACTIVATION__PER_LAYER // DEFAULT KEYWORD for allowing the use of any Activation-Function per "Layer-to-Layer".
+#include <SD.h>                // https://www.arduino.cc/reference/en/libraries/sd/
+#define FILENAME   "/WEIGHTS"  // * make sure the name is SMALL, simple and starts with /
+#define _1_OPTIMIZE 0B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define ACTIVATION__PER_LAYER  // DEFAULT KEYWORD for allowing the use of any Activation-Function per "Layer-to-Layer".
         #define Sigmoid // 0     Says to the compiler to compile the Sigmoid Activation-Function 
         #define Tanh    // 1     Says to the compiler to compile the Tanh    Activation-Function 
 

@@ -105,53 +105,53 @@
 #define PGM_READ_DFLOAT pgm_read_float
 #define IS_CONST
 #if defined(_1_OPTIMIZE)
-    #if ((_1_OPTIMIZE bitor B01111111) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #define USE_PROGMEM
         #define NO_BACKPROP
         #undef IS_CONST
         #define IS_CONST const
         #undef MSG1
-        #define MSG1 \n- " [1] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
+        #define MSG1 \n- " [1] 0B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
     #endif
-    #if ((_1_OPTIMIZE bitor B10111111) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
         #define NO_BACKPROP
         #undef MSG2
-        #define MSG2 \n- " [1] B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
+        #define MSG2 \n- " [1] 0B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
     #endif  
     
-    #if ((_1_OPTIMIZE bitor B11101111) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B11101111) == 0B11111111)
         #define REDUCE_RAM_WEIGHTS_COMMON
         #define REDUCE_RAM_WEIGHTS_LVL2
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]
         #undef MSG3
-        #define MSG3 \n- " [1] B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
-    #elif ((_1_OPTIMIZE bitor B11011111) == B11111111)
+        #define MSG3 \n- " [1] 0B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
+    #elif ((_1_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #undef MSG3
-        #define MSG3 \n- " [1] B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
+        #define MSG3 \n- " [1] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
         //#define REDUCE_RAM_WEIGHTS_COMMON
         //#define REDUCE_RAM_WEIGHTS_LVL1
     #endif
 
-    #if ((_1_OPTIMIZE bitor B11110111) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B11110111) == 0B11111111)
         #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
         #undef MSG4
-        #define MSG4 \n- " [1] B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
+        #define MSG4 \n- " [1] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
     #endif
 
-    #if ((_1_OPTIMIZE bitor B11111011) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B11111011) == 0B11111111)
         #define REDUCE_RAM_STATIC_REFERENCE
         #undef MSG5
-        #define MSG5 \n- " [1] B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
+        #define MSG5 \n- " [1] 0B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
     #endif
 
-    #if ((_1_OPTIMIZE bitor B11111101) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B11111101) == 0B11111111)
         #define DISABLE_MSE
         #undef MSG6
-        #define MSG6 \n- " [1] B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
+        #define MSG6 \n- " [1] 0B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
     #endif
 
-    #if ((_1_OPTIMIZE bitor B11111110) == B11111111)
+    #if ((_1_OPTIMIZE bitor 0B11111110) == 0B11111111)
         #undef ATOL 
         #undef LLONG 
         #undef DFLOAT_LEN 
@@ -171,7 +171,7 @@
         }
 
         #undef MSG7
-        #define MSG7 \n- " [1] B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Not all MCUs support 64bit\8byte double (USE_64_BIT_DOUBLE)."
+        #define MSG7 \n- " [1] 0B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Not all MCUs support 64bit\8byte double (USE_64_BIT_DOUBLE)."
     #endif
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
@@ -180,7 +180,7 @@
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
     #if defined(USE_64_BIT_DOUBLE)
         #undef MSG7
-        #define MSG7 \n- " [1] B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+        #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
     #else
         #define ESP_SUPPORTS_SIMD
         #include "esp_dsp.h"
@@ -188,10 +188,10 @@
 #endif
 
 #if defined(_2_OPTIMIZE)
-    #if ((_2_OPTIMIZE bitor B01111111) == B11111111)
+    #if ((_2_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #if defined(REDUCE_RAM_WEIGHTS_COMMON)
             #undef MSG3
-            #define MSG3 \n- " [_] B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+            #define MSG3 \n- " [_] 0B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
         #endif
         #define NO_BACKPROP
         #define USE_INTERNAL_EEPROM
@@ -202,10 +202,10 @@
         #endif
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
-            #define MSG9 \n- " [2] B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
+            #define MSG9 \n- " [2] 0B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
         #endif
         #undef MSG8
-        #define MSG8 \n- " [2] B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
+        #define MSG8 \n- " [2] 0B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
         #if !defined(EEPROM_h) || !defined(__EEPROM_H__) 
             // for some reason it says 'EEPROM' was not declared in this scope even though i #include it below. So it needs it at the sketch i guess too
             #include <EEPROM.h>
@@ -213,25 +213,25 @@
         #endif
     #endif
 
-    #if ((_2_OPTIMIZE bitor B10111111) == B11111111)
+    #if ((_2_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #undef MSG11
-        #define MSG11 \n- " [2] B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
+        #define MSG11 \n- " [2] 0B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
         #define HAS_NO_BIAS true
         #define NO_BIAS
     #endif
 
-    #if ((_2_OPTIMIZE bitor B11011111) == B11111111)
+    #if ((_2_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #if defined(NO_BIAS)
             #error "You can't have both NO_BIAS and MULTIPLE_BIASES_PER_LAYER."
         #endif
         #undef MSG12
-        #define MSG12 \n- " [2] B00100000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
+        #define MSG12 \n- " [2] 0B00100000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
         #define MULTIPLE_BIASES_PER_LAYER
     #endif
 
-    #if ((_2_OPTIMIZE bitor B11101111) == B11111111)
+    #if ((_2_OPTIMIZE bitor 0B11101111) == 0B11111111)
         #undef MSG13
-        #define MSG13 \n- " [2] B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
+        #define MSG13 \n- " [2] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
         #undef F_MACRO
         #define F_MACRO F
     #endif
