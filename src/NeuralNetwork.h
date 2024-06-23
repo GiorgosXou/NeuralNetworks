@@ -45,8 +45,12 @@
 #if defined(As__AVR_ATtinyX__) // or etc.
     #define As__No_Common_Serial_Support
 #endif
+
+#define SD_NN_WRITE_MODE O_WRITE | O_CREAT
 #if defined(ESP32)
     #define AS_SOFTWARE_EMULATED_EEPROM
+    #undef SD_NN_WRITE_MODE
+    #define SD_NN_WRITE_MODE "w"
 #endif
 
 
@@ -1426,7 +1430,7 @@ public:
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         bool NeuralNetwork::save(String file) 
         {
-            File myFile = SD.open(file, O_WRITE | O_CREAT);
+            File myFile = SD.open(file, SD_NN_WRITE_MODE);
             if (myFile){
                 int totalNumOfWeights = 0;
                 myFile.println("        "); // yes... it needs those spaces
@@ -1454,7 +1458,7 @@ public:
                         }
                     }
                 }
-                myFile.seek(0); // that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below
+                myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
                 myFile.print(totalNumOfWeights);
                 myFile.close();
             }
