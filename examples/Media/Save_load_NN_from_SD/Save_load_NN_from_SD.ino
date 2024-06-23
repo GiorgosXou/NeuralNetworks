@@ -1,11 +1,12 @@
 /*
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
-- CAUTION THIS EXAMPLE BARELY FITS THE RAM OF ARDUINO UNO. EXPIRIMENT WITH CAUTION ON IT* | THIS IS RESULT OF NO B01000000 OPTIMIZATION
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS, FLOAT\DOUBLE\INT-MODE OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS, FLOAT\DOUBLE\INT-MODE OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS, FLOAT\DOUBLE\INT-MODE OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION THIS EXAMPLE BARELY FITS THE RAM OF ARDUINO UNO. EXPIRIMENT WITH CAUTION ON IT* | THIS IS MAINLY THE RESULT OF NOT USING B01000000 RAM-OPTIMIZATION ...
 */
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #include <SD.h>                // https://www.arduino.cc/reference/en/libraries/sd/
+#define CS_SDPIN   4           // !!! MAKE SURE to change CS-pin to the one you use eg. for Arduino UNO is ...begin(4)
 #define FILENAME   "/WEIGHTS"  // * make sure the name is SMALL, simple and starts with /
 #define _1_OPTIMIZE 0B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define ACTIVATION__PER_LAYER  // DEFAULT KEYWORD for allowing the use of any Activation-Function per "Layer-to-Layer".
@@ -38,7 +39,7 @@ void initialize()
 {
   Serial.begin(9600);
   Serial.print(F("Initializing SD"));
-  if (!SD.begin()) { // !!! MAKE SURE to change CS-pin to the one you use eg. for Arduino UNO is ...begin(4)
+  if (!SD.begin(CS_SDPIN)) { // !!! MAKE SURE to change CS-pin to the one you use eg. for Arduino UNO is ...begin(4)
     Serial.println(F(", failed!"));
     exit(0);
   }
