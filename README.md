@@ -26,7 +26,7 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Optimizations based on [user's preference](#define-macro-properties). 
 - - ```+``` Support for [custom activation functions](#define-custom-functions).
 - - ```+``` [Basic ESP32-S3 SIMD acceleration.](https://github.com/GiorgosXou/NeuralNetworks/blob/5cd31c9a29853899c36b5ca7d0d8cf5e9cb3422e/src/NeuralNetwork.h#L1964-L1967 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
-- - ```+``` Both 16 and 8 bit, int quantization.
+- - ```+``` Both 16 and 8 bit, [int quantization](#int-quantization).
 - - ```+``` MSE/BCE/CCE [loss-functions](#dfloat-loss-functions).
 - - ```+``` Support for [double precision](#define-custom-functions).
 - - ```+``` Many [activation-functions](#dfloat-activation-functions).
