@@ -3,6 +3,7 @@
 [EXAMPLE_FEED_INDIVIDUAL_INO]: ./examples/Other/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
 [EXAMPLE_IN_EEPROM_INO]: ./examples/Media/FeedForward_from_internal_EEPROM/FeedForward_from_internal_EEPROM.ino
 [EXAMPLE_DOUBLE_XOR_BACKPROP_INO]: ./examples/Basic/Backpropagation_double_Xor/Backpropagation_double_Xor.ino
+[EXAMPLE_INT_QUANTIZED_XOR_INO]: ./examples/Other/Int_quantized_double_Xor_PROGMEM/Int_quantized_double_Xor_PROGMEM.ino
 
 
 # Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
@@ -11,9 +12,9 @@ Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs
 # 📚 Summary
 | NN<span>&nbsp;</span>Functions | Input<span>&nbsp;</span>Type<span>&nbsp;</span>(x)|Output<span>&nbsp;</span>Type<span>&nbsp;</span>(Y) |<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|
 | ------ | ------ | ------ | ------ |
-| ```BackProp(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| - | <details><summary>Trains the Neural-network</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
-| ```*FeedForward(x)```| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| [DFLOAT](#define-macro-properties '"float" or "double" based on preference') Array| <details><summary>Returns the output of it</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
-|```getMeanSqrdError(x)```| Unsigned Int| [DFLOAT](#define-macro-properties '"float" or "double" based on preference')| <details><summary> Returns the Mean Squared Error</summary> MSE, is SSE (Sum Squared Error) divided by the Product of number-οf-οutputs and inputs-per-epoch aka batch-size. </details>|
+| ```BackProp(x)```| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| - | <details><summary>Trains the Neural-network</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
+| ```*FeedForward(x)```| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| <details><summary>Returns the output of it</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
+|```getMeanSqrdError(x)```| Unsigned Int| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference')| <details><summary> Returns the Mean Squared Error</summary> MSE, is SSE (Sum Squared Error) divided by the Product of number-οf-οutputs and inputs-per-epoch aka batch-size. </details>|
 
 Understanding the Basics of a Neural Network:  
 [```EXM```][EXAMPLE_DOUBLE_XOR_BACKPROP_INO] [```0```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So) [```1```](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi) [```2```](https://www.youtube.com/watch?v=L_PByyJ9g-I) [```3```](https://www.youtube.com/watch?v=H-ybCx8gt-8) [```4```](https://www.youtube.com/watch?v=I74ymkoNTnw) [```5```](https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464) [```6```](https://www.youtube.com/channel/UCgBncpylJ1kiVaPyP-PZauQ) [```7```](https://www.youtube.com/watch?v=An5z8lR8asY) [```8```](http://neuralnetworksanddeeplearning.com/chap1.html) [```9```](https://www.lifehacker.com.au/2016/03/translating-mathematical-notations-into-code-you-can-use/) [```10```](https://en.m.wikipedia.org/wiki/Backpropagation) [```11```](https://en.wikipedia.org/wiki/Activation_function)
@@ -25,6 +26,7 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Optimizations based on [user's preference](#define-macro-properties). 
 - - ```+``` Support for [custom activation functions](#define-custom-functions).
 - - ```+``` [Basic ESP32-S3 SIMD acceleration.](https://github.com/GiorgosXou/NeuralNetworks/blob/5cd31c9a29853899c36b5ca7d0d8cf5e9cb3422e/src/NeuralNetwork.h#L1964-L1967 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
+- - ```+``` Both 16 and 8 bit, int quantization.
 - - ```+``` MSE/BCE/CCE [loss-functions](#dfloat-loss-functions).
 - - ```+``` Support for [double precision](#define-custom-functions).
 - - ```+``` Many [activation-functions](#dfloat-activation-functions).
@@ -38,6 +40,8 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Better overall code.
 - - ```-``` Other training methods.
 - - ```-``` More Activation Functions.
+- - ```-``` Training with int quantization.
+- - ```-``` [Support for convolutional layers.](https://github.com/GiorgosXou/NeuralNetworks/issues/33)
 - - ```-``` [Support for fixed-point arithmetics](https://github.com/GiorgosXou/NeuralNetworks/discussions/15).
 - - ```-``` Different weight initialization methods.
 - - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM) and [FRAM](https://en.wikipedia.org/wiki/Ferroelectric_RAM).
@@ -59,21 +63,22 @@ Understanding the Basics of a Neural Network:
 - - [Running NN mostly via internal EEPROM (not RAM)][EXAMPLE_IN_EEPROM_INO]
 - - [Running NN mostly via programmable memmory](./examples/Media/FeedForward_double_Xor_PROGMEM/FeedForward_double_Xor_PROGMEM.ino 'FeedForward_double_Xor_PROGMEM.ino')
 - ***`🎲 Other:`***
+- - [Pre-trained `int8_t`-quantized NN ✨][EXAMPLE_INT_QUANTIZED_XOR_INO]
 - - [Using a custom function made by you][EXAMPLE_CUSTOM_FUNCTIONS_INO]
 - - [Support for 8Byte "double" instead of "float"](./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino 'Precision_for_8byte_double ')
 - - [Recognizing handwritten digits (MNIST) ✨][EXAMPLE_FEED_INDIVIDUAL_INO]
 
 
 # ⚠️ Important
-- If you have an error with 'POINTER_REGS' Click [Here](https://forum.arduino.cc/index.php?topic=613857.0)
-- Wherever you see the term `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
-- I am **NOT a professional** in any of those fields, even though I did this [...] I'm stupid in many cases too.
+- I am **NOT a professional** in any of those fields...
+- In case of error with 'POINTER_REGS' click [here](https://forum.arduino.cc/index.php?topic=613857.0)
+- `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
 - If you don't want to [`USE_64_BIT_DOUBLE`](#define-macro-properties) *(which I also suggest you not to use)*, then [**make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/reference/en/language/variables/data-types/float/):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), **on the Arduino, double is the same size as float.**"*
 
 
 # 🔬 Tested on
 
-<details><summary><strong>Arduino Uno</strong></summary>
+<details><summary><strong>Arduino UNO</strong></summary>
 
 - Everything seems to work fine </details>
 <details><summary><strong>ESP32-C3</strong></summary>
@@ -91,7 +96,7 @@ Understanding the Basics of a Neural Network:
 <br>
 
 # ⚙️ Functions, Variables  ...
-Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
+Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
 
 | (NN) Neural-Network's Constructors |
 | ------ | 
@@ -104,8 +109,8 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 |<details><summary>`NeuralNetwork(*layer_, *default_Weights, *default_Bias, &NumberOflayers, *_ActFunctionPerLayer)`</summary>(:</details>|
 
 ```c++
- IS_CONST DFLOAT *default_Bias
- IS_CONST DFLOAT *default_Weights
+ IS_CONST IDFLOAT *default_Bias
+ IS_CONST IDFLOAT *default_Weights
  byte *_ActFunctionPerLayer = NULL
  const unsigned int *layer_
  const unsigned int &NumberOflayers
@@ -119,11 +124,11 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 ##  ```Type``` Main Functions
 | NN Functions | Input<span>&nbsp;</span>Type<span>&nbsp;</span>(x)|Output<span>&nbsp;</span>Type<span>&nbsp;</span>(Y) |<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>| 
 | ------ | ------ | ------ | ------ |
-|`FeedForward_Individual(x)`|DFLOAT| DFLOAT Array|<details><summary>RAM Optimized FeedForward</summary>"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. <sup>(Almost no RAM usage for input layer, see also: [example][EXAMPLE_FEED_INDIVIDUAL_INO])</sup></details>|
-| ```*FeedForward(x) ```| DFLOAT Array| DFLOAT Array| <details><summary>Returns the output of the NN</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
-| ```BackProp(x) ```| DFLOAT Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
+|`FeedForward_Individual(x)`|[DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference')| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array|<details><summary>RAM Optimized FeedForward</summary>"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. <sup>(Almost no RAM usage for input layer, see also: [example][EXAMPLE_FEED_INDIVIDUAL_INO])</sup></details>|
+| ```*FeedForward(x) ```| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| <details><summary>Returns the output of the NN</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
+| ```BackProp(x) ```| [DFLOAT](##%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
 |`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`</details>|
-|`save(x)`| String \ int|bool \ int| <details><summary>Saves NN to storage media</summary> </details>|
+|`save(x)`| String \ int|bool \ int| <details><summary>Saves NN to storage media</summary> SD or internal-EEPROM</details>|
 |`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM)_</details>|
 
 <br>
@@ -151,7 +156,7 @@ To use any of the variables below,  you first need to ```#define```  a loss func
 <br>
 
 ##  ```DFLOAT``` Activation Functions
-Because of *(my uncertainty and)* the strict RAM optimization that allows the library to use one array that stores only the values after the activation instead of two arrays storing values before and after the activation, the use of some derivative functions in backpropagation are not supported by this library at this moment, as also seen by the MACRO ```NO_BACKPROP``` below. This means that if you want to use and  ```#define``` any function from 8-13 under the section *"```NO_BACKPROP``` support"* , you won't be able to use backpropagation.
+Due to *(my uncertainty and)* the strict RAM optimization that allows the library to use one array that stores only the values after the activation instead of two arrays storing values before and after the activation, the use of some derivative functions in backpropagation are not supported by this library at this moment, as also seen by the MACRO ```NO_BACKPROP``` below. This means that if you want to use and  ```#define``` any function from 8-13 under the section *"```NO_BACKPROP``` support"* , you won't be able to use backpropagation.
 
 ||  <span>&nbsp;&nbsp;</span>Enabling<span>&nbsp;</span>MACRO<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>| <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Activation<span>&nbsp;</span>Functions<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|  <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Returns<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> |
 | :------: | ------ | ------ | ------ |
@@ -287,12 +292,12 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 |```byte*```      |NN.```ActFunctionPerLayer``` |if ```ACTIVATION__PER_LAYER``` defined|
 |```DFLOAT```       |NN.```LearningRateOfWeights```|The Learning-Rate-Of-Weights |
 |```DFLOAT```       |NN.```LearningRateOfBiases```| The Learning-Rate-Of-Biases|
-|```DFLOAT*```      |NN.```weights```|If [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
+|```IDFLOAT*```      |NN.```weights```|If [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
 |```Layer*```      |NN.```layers``` | Layers of NN|
 ||<center>**Layer's Variables**</center>||
-|```DFLOAT*```      |NN.layers[i].```bias```| <details><summary>The bias of an individual layer[i], unless...</summary>[`NO_BIAS` or `MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled.</details>|
+|```IDFLOAT*```      |NN.layers[i].```bias```| <details><summary>The bias of an individual layer[i], unless...</summary>[`NO_BIAS` or `MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled.</details>|
 |```DFLOAT*```      |NN.layers[i].```outputs```[]| The Output array of an individual layer[i]|
-|```DFLOAT**```     |NN.layers[i].```weights```[][]|if not [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
+|```IDFLOAT**```     |NN.layers[i].```weights```[][]|if not [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
 |```DFLOAT*```      |NN.layers[i].```preLgamma```[]| The γ-error of previous layer[i-1] |
 |```unsigned int```|NN.layers[i].```_numberOfInputs```| The Layer[i]'s Number Of inputs\nodes|
 |```unsigned int```|NN.layers[i].```_numberOfOutputs```| The number-Of-Outputs for an individual layer[i]|
@@ -321,11 +326,13 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
 | ```0B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
 | ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
+| ```0B00001000```  |<sup><sub>📌</sub></sup>|<details><summary>Use `int16_t` quantization</summary> Weights and biases are stored as `int16_t` *(2-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily convert back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `float` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
+| ```0B00000100```  |<sup><sub></sub></sup>|<details><summary>Use `int8_t ` quantization</summary>Weights and biases are stored as `int8_t` *(1-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily convert back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `int16_t` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
   
 
 <br>
 
-Please don't use keywords to define optimizations, use _X_OPTIMIZE
+Don't use keywords to define optimizations, it won't work, use _X_OPTIMIZE
 - ⚠️ = Backpropagation is not allowed
 - 🟢 = Always enabled <sub><sup>(not switchable yet.)</sup></sub>
 - ❌ = Not yet implimented
@@ -418,9 +425,141 @@ for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
 print('};\n')
 ```
 
+### Int quantization
+
+ Assuming you already have either enabled [`int16_t`](## '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](## '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , is set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
+```cpp
+// FLOAT RANGE FOR INT16 = (100.0) - (-100.0) = 200.0 | MAX - MIN
+// FLOAT RANGE FOR INT8  = ( 25.5) - (- 25.5) =  51.0 | MAX - MIN
+```
+
+You can change that by defining your own value in your sketch, like:
+```cpp
+#define Q_FLOAT_RANGE 40.0 // (20.0) - (-20.0) = 40.0 | Ensure you used a dot!
+```
+
+<details><summary>Now click here's to see the full <b>int-quantization training example</b></summary>
+
+```python
+# pip install tensorflow
+from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
+import numpy as np
+
+
+IS_BIASED  = True      # Define if you want to use biases
+IS_PROGMEM = True      # Use PROGMEM or not
+INT_RANGE  = 65535     # Range of int16_t -32768 to 32767 | for int8_t use 255 
+FP__RANGE  = 200.0     # Range of weights -100   to 100   | for int8_t use 51
+TYPE_NAME  = 'int16_t' # or 'int8_t'
+
+
+def quantize_float32_to_int(w):
+    S = (FP__RANGE) / (INT_RANGE)
+    return round(w / S) # + Z
+
+def int_to_float32(q):
+    return np.float32(np.float32(FP__RANGE) / (INT_RANGE)) * np.float32(q)
+
+
+# Enable 32-bit floating-point precision
+tf.keras.backend.set_floatx('float32')
+
+# Define the XOR gate inputs and outputs
+inputs = np.array([
+    [0, 0, 0], 
+    [0, 0, 1], 
+    [0, 1, 0], 
+    [0, 1, 1], 
+    [1, 0, 0], 
+    [1, 0, 1], 
+    [1, 1, 0], 
+    [1, 1, 1]
+], dtype=np.float32)
+outputs = np.array([[0], [1], [1], [0], [1], [0], [0], [1]], dtype=np.float32)
+input_size = 3
+
+# Create a simple convolutional neural network
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(input_size,)),  # Input layer (no bias)
+    tf.keras.layers.Dense(3, activation='sigmoid', use_bias=IS_BIASED),  # Dense 3 units
+    tf.keras.layers.Dense(1, activation='sigmoid', use_bias=IS_BIASED)  # Output 1 unit
+])
+
+# Compile the model
+optimizer = Adam(learning_rate=0.031)
+model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(inputs, outputs, epochs=1000, verbose=0)
+
+# Evaluate the model on the training data
+loss, accuracy = model.evaluate(inputs, outputs)
+print(f"original Model accuracy: {accuracy * 100:.2f}%")
+
+weights_biases = model.get_weights()
+
+if IS_PROGMEM:
+    print("\n#define _1_OPTIMIZE 0B11000000 // PROGMEM + Highly-Recommended Optimization For RAM")
+else:
+    print("\n#define _1_OPTIMIZE 0B01000000 // Highly-Recommended Optimization For RAM")
+
+# Quantize float32 biases to intX_t, print and then back to float32
+# (IMPORTANT NOTE! they are printed as w[i][j] not w[j][i] | outputs * inputs)
+if IS_BIASED:
+    if TYPE_NAME == 'int16_t':
+        print("#define _2_OPTIMIZE 0B00101000 // MULTIPLE_BIASES_PER_LAYER + int16_t quantization \n")
+    else:
+        print("#define _2_OPTIMIZE 0B00100100 // MULTIPLE_BIASES_PER_LAYER + int8_t quantization \n")
+    print(('const PROGMEM ' if IS_PROGMEM else '') + TYPE_NAME + ' biases[] = {')
+    for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
+        print('  ', end='')
+        for j in range(0, w.shape[1]):
+            print(quantize_float32_to_int(b[j]), end=', ')
+            b[j] = int_to_float32(quantize_float32_to_int(b[j]))
+        print()
+    print('};\n')
+else:
+    if TYPE_NAME == 'int16_t':
+        print("#define _2_OPTIMIZE 0B01001000 // NO_BIAS + int16_t quantization \n")
+    else:
+        print("#define _2_OPTIMIZE 0B01000100 // NO_BIAS + int8_t quantization \n")
+
+# Quantize float32 weights to intX_t, print and then back to float32
+print(('const PROGMEM ' if IS_PROGMEM else '') + TYPE_NAME + ' weights[] = {', end="")
+for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
+    print()
+    for j in range(0, w.shape[1]):
+        print('  ', end='')
+        for i in range(0, w.shape[0]):
+            print(quantize_float32_to_int(w[i][j]), end=', ')
+            w[i][j] = int_to_float32(quantize_float32_to_int(w[i][j]))
+        print()
+print('};\n')
+
+# Load quantized weights for NN evaluation
+model.set_weights(weights_biases)
+
+# Evaluate the model on the training data
+loss, accuracy = model.evaluate(inputs, outputs)
+print(f"{TYPE_NAME} Model accuracy: {accuracy * 100:.2f}%")
+
+# Print predictions
+print(f"{TYPE_NAME} Predictions:")
+predictions = model.predict(inputs)
+for i in range(len(inputs)):
+    print(f"Input: {inputs[i]}, Predicted Output: {predictions[i][0]:.7f}")
+```
+
+</details>
+
+*([See also: pretrained-quantized-ino-example][EXAMPLE_INT_QUANTIZED_XOR_INO])*
+
+
 <br>
 
-**IMPORTANT NOTE:** See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+> [!IMPORTANT]  
+> See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
 
 *([see also examples](#✏️-examples) on how to train a NN directly on an MCU)* 
 
