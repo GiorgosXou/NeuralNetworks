@@ -98,15 +98,18 @@
 #define MSG11
 #define MSG12
 #define MSG13
+#define MSG14
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
+
+#define MULTIPLY_BY_INT_IF_QUANTIZATION
 
 #define ATOL atol
 #define LLONG long
 #define DFLOAT float
 #define DFLOAT_LEN 7
-#define PGM_READ_DFLOAT pgm_read_float
+#define PGM_READ_IDFLOAT pgm_read_float
 #define IS_CONST
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
@@ -160,13 +163,13 @@
         #undef LLONG 
         #undef DFLOAT_LEN 
         #undef DFLOAT 
-        #undef PGM_READ_DFLOAT 
+        #undef PGM_READ_IDFLOAT 
         #define USE_64_BIT_DOUBLE
         #define ATOL atoll
         #define LLONG long long
         #define DFLOAT_LEN 15
         #define DFLOAT double
-        #define PGM_READ_DFLOAT pgm_read_double
+        #define PGM_READ_IDFLOAT pgm_read_double
 
         double pgm_read_double(const double* address) {
             double result;
@@ -180,16 +183,10 @@
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
 
-// Disable SIMD parallel processing if double precision is enabled
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
-    #if defined(USE_64_BIT_DOUBLE)
-        #undef MSG7
-        #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
-    #else
-        #define ESP_SUPPORTS_SIMD
-        #include "esp_dsp.h"
-    #endif
-#endif
+#define IDFLOAT DFLOAT
+
+// If not USE_INT_QUANTIZATION then the line bellow is used for SD save
+#define CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(value) *((LLONG*)(&value))
 
 #if defined(_2_OPTIMIZE)
     #if ((_2_OPTIMIZE bitor 0B01111111) == 0B11111111)
@@ -238,6 +235,67 @@
         #define MSG13 \n- " [2] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
         #undef F_MACRO
         #define F_MACRO F
+    #endif
+
+    #if (((_2_OPTIMIZE bitor 0B11110111) == 0B11111111) or ((_2_OPTIMIZE bitor 0B11111011) == 0B11111111)) 
+        #if (((_2_OPTIMIZE bitor 0B11110111) == 0B11111111) and ((_2_OPTIMIZE bitor 0B11111011) == 0B11111111)) 
+            #error "You can't use both int16_t and int8_t! use either 16 or 8."
+        #endif
+        #if defined(USE_64_BIT_DOUBLE)
+            #error "You can't USE_64_BIT_DOUBLE precision with USE_INT_QUANTIZATION."
+        #endif
+        #undef MSG14
+        #undef IDFLOAT
+        #undef PGM_READ_IDFLOAT 
+        #undef MULTIPLY_BY_INT_IF_QUANTIZATION
+        #undef CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION
+        #if (_2_OPTIMIZE bitor 0B11110111) == 0B11111111
+            #define MSG14 \n- " [2] 0B00001000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using int16_t quantization (NO_BACKPROP yet)."
+            #define IDFLOAT int16_t
+        #else
+            #define MSG14 \n- " [2] 0B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using int8_t quantization (NO_BACKPROP yet)."
+            #define IDFLOAT int8_t
+        #endif
+        #define NO_BACKPROP
+        #define USE_INT_QUANTIZATION
+        #define PGM_READ_IDFLOAT pgm_read_ ## IDFLOAT
+
+        IDFLOAT PGM_READ_IDFLOAT(const IDFLOAT* address) {
+            IDFLOAT result;
+            memcpy_P(&result, address, sizeof(IDFLOAT));
+            return result;
+        }
+
+        // FLOAT RANGE = (100.0) - (-100.0) | MAX - MIN
+        // INT   RANGE = (32767) - (-32768) | MAX - MIN
+        #if (_2_OPTIMIZE bitor 0B11110111) == 0B11111111
+            #if !defined(Q_FLOAT_RANGE)
+                #define Q_FLOAT_RANGE 200.0
+            #endif
+            #define Q_INT_RANGE 65535
+        #else
+            #if !defined(Q_FLOAT_RANGE)
+                #define Q_FLOAT_RANGE 51.0
+            #endif
+            #define Q_INT_RANGE 255
+        #endif
+        #define MULTIPLY_BY_INT_IF_QUANTIZATION * (Q_FLOAT_RANGE/Q_INT_RANGE)
+
+        #define CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(value) value
+    #endif
+#endif
+
+// Disable SIMD parallel processing if double-precision or int-quntization is enabled
+#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
+    #if defined(USE_64_BIT_DOUBLE)
+        #undef MSG7
+        #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+    #elif defined(USE_INT_QUANTIZATION)
+        #undef MSG7
+        #define MSG7 \n- " [2] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
+    #else
+        #define ESP_SUPPORTS_SIMD
+        #include "esp_dsp.h"
     #endif
 #endif
 
@@ -699,7 +757,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -735,15 +793,15 @@ private:
         unsigned int _numberOfOutputs; // # of neurons in the current  layer.
 
         #if !defined(NO_BIAS)
-            IS_CONST DFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
+            IS_CONST IDFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
         #endif
         DFLOAT *outputs;               // outputs of this     layer  [1D Array] pointers.
         
         //#if defined(REDUCE_RAM_WEIGHTS_LVL1)
-        //    DFLOAT *weights;         // weights of this     layer  [1D Array] pointers.                             #(used if     #REDUCE_RAM_WEIGHTS_LVL1   defined)         
+        //    IDFLOAT *weights;         // weights of this     layer  [1D Array] pointers.                             #(used if     #REDUCE_RAM_WEIGHTS_LVL1   defined)         
         //#endif
         #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-            IS_CONST DFLOAT **weights; // weights of this     layer  [2D Array] pointers.                             #(used if NOT #REDUCE_RAM_WEIGHTS_COMMON defined) 
+            IS_CONST IDFLOAT **weights; // weights of this     layer  [2D Array] pointers.                             #(used if NOT #REDUCE_RAM_WEIGHTS_COMMON defined) 
         #endif
         #if !defined(NO_BACKPROP)
             DFLOAT *preLgamma;         // gamma   of previous layer  [1D Array] pointers.
@@ -759,11 +817,11 @@ private:
         #endif
 
         #if defined(NO_BIAS)
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Weights, NeuralNetwork * const NN = NULL); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
+            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, NeuralNetwork * const NN = NULL); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
             Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, bool has_no_bias, NeuralNetwork * const NN = NULL); // has_no_bias is something the compiler 99% will optimize\remove | This is just a trick for distinguishing the constructors from the one who auto-generates the weights
         #else
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN = NULL); //                                       #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN = NULL); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
+            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN = NULL); //                                       #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
+            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN = NULL); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
         #endif
 
 
@@ -845,7 +903,7 @@ private:
 
 
 public:
-    //just like "static DFLOAT *wights" [...]  i might have a function to switch? | 2024-05-28 07:21:09 PM UPDATE: not sure what I meant back then... comment was moved here since `inline` change (this date), see also issue #35
+    //just like "static IDFLOAT *wights" [...]  i might have a function to switch? | 2024-05-28 07:21:09 PM UPDATE: not sure what I meant back then... comment was moved here since `inline` change (this date), see also issue #35
     // this is the part where we declare an array-of-pointers-to-(activation and derivative) functions 
     #if defined(ACTIVATION__PER_LAYER)
         typedef DFLOAT (Layer::*method_function) (const DFLOAT &);
@@ -866,7 +924,7 @@ public:
     // need to add a function for those who want to switch/redirect the pointer to a deferent weight Array... maybe? ... Why not?!? lol.
     // issues with multiple NNs too ...
     #if defined(REDUCE_RAM_WEIGHTS_LVL2) 
-        IS_CONST DFLOAT *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
+        IS_CONST IDFLOAT *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
         int i_j = 0; 
     #endif   
 
@@ -938,9 +996,9 @@ public:
         #endif
     #endif
     #if defined(NO_BIAS)
-        NeuralNetwork(const unsigned int *layer_, IS_CONST DFLOAT *default_Weights, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
+        NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
     #else
-        NeuralNetwork(const unsigned int *layer_, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
+        NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
     #endif
     // NeuralNetwork(const unsigned int *layer_, const PROGMEM DFLOAT *default_Weights, const PROGMEM DFLOAT *default_Bias, const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
     
@@ -1069,9 +1127,9 @@ public:
 
 
     #if defined(NO_BIAS)
-        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST DFLOAT *default_Weights, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
+        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
     #else
-        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
+        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
     #endif
     {
         isAllocdWithNew = false;
@@ -1255,21 +1313,21 @@ public:
             #if defined(USE_INTERNAL_EEPROM)
                 #if defined(MULTIPLE_BIASES_PER_LAYER)
                     #if defined(ACTIVATION__PER_LAYER)
-                        address += SIZEOF_FX + layers[0]._numberOfOutputs * sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                        address += SIZEOF_FX + layers[0]._numberOfOutputs * sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
                     #else
-                        address +=             layers[0]._numberOfOutputs * sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                        address +=             layers[0]._numberOfOutputs * sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
                     #endif
                 #elif defined(NO_BIAS)
                     #if defined(ACTIVATION__PER_LAYER)
-                        address += SIZEOF_FX + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                        address += SIZEOF_FX + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
                     #else
-                        address +=           + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                        address +=           + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
                     #endif
                 #else
                     #if defined(ACTIVATION__PER_LAYER)
-                        address += SIZEOF_FX + sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                        address += SIZEOF_FX + sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
                     #else
-                        address +=           + sizeof(DFLOAT) + (sizeof(DFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
+                        address +=           + sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
                     #endif
                 #endif
             #endif
@@ -1442,17 +1500,17 @@ public:
                     myFile.println(layers[n]._numberOfInputs); 
                     myFile.println(layers[n]._numberOfOutputs); 
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        myFile.println(*((LLONG*)(&*layers[n].bias))); 
+                        myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(*layers[n].bias)); 
                     #endif
                     for(int i=0; i<layers[n]._numberOfOutputs; i++){
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            myFile.println(*((LLONG*)(&layers[n].bias[i]))); 
+                            myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i])); 
                         #endif
                         for(int j=0; j<layers[n]._numberOfInputs; j++){
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                myFile.println(*((LLONG*)(&weights[totalNumOfWeights]))); // I would had used i_j but I have totalNumOfWeights so... :)
+                                myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
                             #else
-                                myFile.println(*((LLONG*)(&layers[n].weights[i][j]))); 
+                                myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j])); 
                             #endif
                             totalNumOfWeights++;
                         }
@@ -1478,7 +1536,7 @@ public:
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     int count_ij = 0;
                     i_j = 0;
-                    weights = new DFLOAT[myFile.readStringUntil('\n').toInt()];
+                    weights = new IDFLOAT[myFile.readStringUntil('\n').toInt()];
                 #else
                     myFile.readStringUntil('\n').toInt(); // Skipping line
                 #endif
@@ -1499,9 +1557,13 @@ public:
                 unsigned int tmp_layerOutputs;
 
                 #if !defined(NO_BIAS)
-                    DFLOAT *tmp_bias;
+                    IDFLOAT *tmp_bias;
                 #endif
-                LLONG tmp;
+                #if !defined(USE_INT_QUANTIZATION)
+                    LLONG tmp;
+                #else
+                    IDFLOAT tmp; // any intX_t
+                #endif
 
                 for (int i = 0; i < numberOflayers; i++)
                 {
@@ -1512,11 +1574,16 @@ public:
                     tmp_layerOutputs = myFile.readStringUntil('\n').toInt();
                     #if !defined(NO_BIAS)
                         #if !defined(MULTIPLE_BIASES_PER_LAYER)
-                            tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                            tmp_bias  = new DFLOAT;
-                            *tmp_bias = *((DFLOAT*)(&tmp));
+                            #if !defined(USE_INT_QUANTIZATION)
+                                tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                tmp_bias  = new DFLOAT;
+                                *tmp_bias = *((DFLOAT*)(&tmp));
+                            #else
+                                tmp_bias  = new IDFLOAT;
+                                *tmp_bias = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                            #endif
                         #else
-                            tmp_bias  = new DFLOAT[tmp_layerOutputs];
+                            tmp_bias  = new IDFLOAT[tmp_layerOutputs];
                         #endif
                     #endif
 
@@ -1526,36 +1593,56 @@ public:
                         #else
                             layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
                         #endif
-                        layers[i].weights = new DFLOAT *[tmp_layerOutputs];
+                        layers[i].weights = new IDFLOAT *[tmp_layerOutputs];
                     #endif
 
                     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
                         for(int j=0; j<tmp_layerOutputs; j++){
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                layers[i].bias[j] = *((DFLOAT*)(&tmp));
+                                #if !defined(USE_INT_QUANTIZATION)
+                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                    layers[i].bias[j] = *((DFLOAT*)(&tmp));
+                                #else
+                                    layers[i].bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                #endif
                             #endif
-                            layers[i].weights[j] = new DFLOAT[tmp_layerInputs];
+                            layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
                             for(int k=0; k<tmp_layerInputs; k++){
-                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                layers[i].weights[j][k] =  *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                #if !defined(USE_INT_QUANTIZATION)
+                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                    layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                #else
+                                    layers[i].weights[j][k] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                #endif
                             }
                         }
                     #else // I won't elif here cause I want to have a clear image of the "division" below
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
                             for(int j=0; j<tmp_layerOutputs; j++){
-                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                tmp_bias[j] = *((DFLOAT*)(&tmp));
-                                for(int k=0; k<tmp_layerInputs; k++){
+                                #if !defined(USE_INT_QUANTIZATION)
                                     tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                    weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                    tmp_bias[j] = *((DFLOAT*)(&tmp));
+                                #else
+                                    tmp_bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                #endif
+                                for(int k=0; k<tmp_layerInputs; k++){
+                                    #if !defined(USE_INT_QUANTIZATION)
+                                        tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                        weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                    #else
+                                        weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                    #endif
                                     count_ij++;
                                 }
                             }
                         #else
                             for(int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
-                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                #if !defined(USE_INT_QUANTIZATION)
+                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                    weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                #else
+                                    weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                #endif
                                 count_ij++;
                             }
                         #endif
@@ -1771,9 +1858,9 @@ public:
 
     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
         #if defined(NO_BIAS)
-            NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Weights, NeuralNetwork * const NN )
+            NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, NeuralNetwork * const NN )
         #else
-            NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Weights, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN )
+            NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN )
         #endif
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
@@ -1791,7 +1878,7 @@ public:
             #if !defined(NO_BIAS) // TODO: REDUCE_RAM_BIASES "common reference"
                 bias = default_Bias; //                          ##1    Bias as Default Bias. Biases if defined MULTIPLE_BIASES_PER_LAYER | A reference
             #endif
-            weights = new IS_CONST DFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (DFLOAT) weights.
+            weights = new IS_CONST IDFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (IDFLOAT) weights.
 
             for (int i = 0; i < _numberOfOutputs; i++)              // [matrix] (_numberOfOutputs * _numberOfInputs)
                 weights[i] = &default_Weights[i * _numberOfInputs]; // Passing Default weights to ##1 weights by reference.  
@@ -1802,7 +1889,7 @@ public:
     #if defined(NO_BIAS)
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, bool has_no_bias, NeuralNetwork * const NN) // has_no_bias is something the compiler i'm 99% sure it will optimize\remove
     #else
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST DFLOAT *default_Bias, NeuralNetwork * const NN )
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN )
     #endif
     {
         _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
@@ -1823,7 +1910,7 @@ public:
 
     #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN ) // TODO: IDFLOAT support 
         {
 
             _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
@@ -1837,32 +1924,32 @@ public:
                 outputs = new DFLOAT[_numberOfOutputs];                     // ##1    New Array of Outputs.
             #endif 
             #if !defined(REDUCE_RAM_WEIGHTS_COMMON)      
-                weights = new DFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (DFLOAT) weights.
+                weights = new IDFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (IDFLOAT) weights.
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                bias = new DFLOAT[_numberOfOutputs];                       // ##1    New          Biases
+                bias = new IDFLOAT[_numberOfOutputs];                       // ##1    New          Biases
             #elif !defined(NO_BIAS)
-                bias = new DFLOAT;                                             // ##1    New          Bias   .
-                *bias = 1.0;
+                bias = new IDFLOAT;                                         // ##1    New          Bias   .
+                *bias = 1.0; // SuS cause IDFLOAT
             #endif
 
             for (int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-                    weights[i] = new DFLOAT[_numberOfInputs];
+                    weights[i] = new IDFLOAT[_numberOfInputs];
                 #endif
 
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                    bias[i] = (DFLOAT)random(-90000, 90000) / 100000;
+                    bias[i] = (IDFLOAT)random(-90000, 90000) / 100000;
                 #endif
                 
                 for (int j = 0; j < _numberOfInputs; j++)
                 {
-                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        me->weights[me->i_j] = (DFLOAT)random(-90000, 90000) / 100000;
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
+                        me->weights[me->i_j] = (IDFLOAT)random(-90000, 90000) / 100000;
                         me->i_j++;
                     #else
-                        weights[i][j] = (DFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
+                        weights[i][j] = (IDFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
                     #endif
                 }
             }
@@ -1907,16 +1994,16 @@ public:
                 #if defined(NO_BIAS)
                     outputs[i] = 0; // ? speed ? safe one..
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = PGM_READ_DFLOAT(&bias[i]);
+                    outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #else
-                    outputs[i] = PGM_READ_DFLOAT(bias);
+                    outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
             }
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                outputs[i] += input * PGM_READ_DFLOAT(&me->weights[me->i_j+j]);
+                outputs[i] += input * PGM_READ_IDFLOAT(&me->weights[me->i_j+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
             #else
-                outputs[i] += input * PGM_READ_DFLOAT(&weights[i][j]); // if double pgm_read_dword 
+                outputs[i] += input * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION; // if double pgm_read_dword 
             #endif
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2021,7 +2108,7 @@ public:
                     me->F1 = get_EEPROM_value<byte>(me->address);
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    bias = new DFLOAT(get_EEPROM_value<DFLOAT>(me->address));
+                    bias = new IDFLOAT(get_EEPROM_value<IDFLOAT>(me->address));
                 #endif
             }else{
                 #if defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2035,18 +2122,18 @@ public:
                         #endif
                     #else
                         #if defined(ACTIVATION__PER_LAYER)
-                            me->address += SIZEOF_FX + sizeof(DFLOAT); 
+                            me->address += SIZEOF_FX + sizeof(IDFLOAT); 
                         #else
-                            me->address += sizeof(DFLOAT); 
+                            me->address += sizeof(IDFLOAT); 
                         #endif
                     #endif
                 #endif
             }
             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                bias = new DFLOAT(get_EEPROM_value<DFLOAT>(me->address));
+                bias = new IDFLOAT(get_EEPROM_value<IDFLOAT>(me->address));
             #endif
 
-            DFLOAT tmp_jweight;
+            IDFLOAT tmp_jweight;
             int i;
             for (i = 0; i < _numberOfOutputs; i++) 
             {
@@ -2054,13 +2141,13 @@ public:
                     #if defined(NO_BIAS)
                         outputs[i] = 0;
                     #else
-                        outputs[i] = *bias;
+                        outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #endif
                 }
-                outputs[i] += input * EEPROM.get(me->address + j*sizeof(DFLOAT), tmp_jweight);
-                me->address += _numberOfInputs * sizeof(DFLOAT); 
+                outputs[i] += input * EEPROM.get(me->address + j*sizeof(IDFLOAT), tmp_jweight) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                me->address += _numberOfInputs * sizeof(IDFLOAT); 
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
-                    *bias = get_EEPROM_value<DFLOAT>(me->address);
+                    *bias = get_EEPROM_value<IDFLOAT>(me->address);
                 #endif
             }
             #if defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2104,21 +2191,21 @@ public:
             #endif
 
             #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                DFLOAT tmp_bias = get_EEPROM_value<DFLOAT>(me->address); 
+                IDFLOAT tmp_bias = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
             #endif
             for (int i = 0; i < _numberOfOutputs; i++)
             {
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = get_EEPROM_value<DFLOAT>(me->address); 
+                    outputs[i] = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
                 #else
                     outputs[i] = tmp_bias;
                 #endif
 
                 for (int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
                 {
-                    outputs[i] += inputs[j] * get_EEPROM_value<DFLOAT>(me->address);
+                    outputs[i] += inputs[j] * get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 }
 
                 #if defined(ACTIVATION__PER_LAYER)
@@ -2153,18 +2240,18 @@ public:
             #if defined(NO_BIAS)
                 outputs[i] = 0;
             #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                outputs[i] = PGM_READ_DFLOAT(&bias[i]);
+                outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
             #else
-                outputs[i] = PGM_READ_DFLOAT(bias);
+                outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
             #endif
 
             for (int j = 0; j < _numberOfInputs; j++) 
             {
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    outputs[i] += inputs[j] * PGM_READ_DFLOAT(&me->weights[me->i_j]);
+                    outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     me->i_j++;
                 #else
-                    outputs[i] += inputs[j] * PGM_READ_DFLOAT(&weights[i][j]);
+                    outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
             }
             #if defined(ACTIVATION__PER_LAYER)
@@ -2203,8 +2290,8 @@ public:
                     me->i_j+= _numberOfInputs;
                 #endif
 
-                #if defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] += bias[i];
+                #if defined(MULTIPLE_BIASES_PER_LAYER) // No need for MULTIPLY_BY_INT_IF_QUANTIZATION because there's no SIMD support for it// TODO: REDUCE_RAM_BIASES "common reference" 
+                    outputs[i] += bias[i]; 
                 #elif !defined(NO_BIAS)
                     outputs[i] += *bias;
                 #endif
@@ -2212,18 +2299,18 @@ public:
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = bias[i];
+                    outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #else
-                    outputs[i] = *bias;
+                    outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
 
                 for (int j = 0; j < _numberOfInputs; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        outputs[i] += inputs[j] * me->weights[me->i_j];
+                        outputs[i] += inputs[j] * me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION;
                         me->i_j++;
                     #else
-                        outputs[i] += inputs[j] * weights[i][j]; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
+                        outputs[i] += inputs[j] * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
                     #endif
                 }
             #endif
@@ -2494,12 +2581,15 @@ public:
     #if !defined(As__No_Common_Serial_Support) // then Compile:
     void NeuralNetwork::Layer::print()
     { 
+        #if defined(USE_INT_QUANTIZATION)
+            Serial.print(F_MACRO("INT_Q "));
+        #endif
         Serial.print(_numberOfInputs);
         Serial.print(F_MACRO("x"));
         Serial.print(_numberOfOutputs);
         #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
             Serial.print(F_MACRO("| bias:"));
-            Serial.print(*bias, DFLOAT_LEN);
+            Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
         #endif
         #if defined(ACTIVATION__PER_LAYER)
             Serial.print(F_MACRO("| F(x):"));
@@ -2511,7 +2601,7 @@ public:
         {
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                 Serial.print(F_MACRO("   B:"));
-                Serial.println(bias[i], DFLOAT_LEN);
+                Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
             #endif
             Serial.print(i + 1);
             Serial.print(F_MACRO(" "));
@@ -2520,11 +2610,11 @@ public:
                 Serial.print(F_MACRO(" W:"));
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
-                    Serial.print(me->weights[me->i_j], DFLOAT_LEN);
+                    Serial.print(me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     me->i_j++;
                 #else
                     if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
-                    Serial.print(weights[i][j], DFLOAT_LEN);
+                    Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
                 Serial.print(F_MACRO(" "));
             }
@@ -2536,13 +2626,17 @@ public:
 
     void NeuralNetwork::Layer::print_PROGMEM()
     {
-        Serial.print(F_MACRO("PROGMEM "));
+        #if defined(USE_INT_QUANTIZATION)
+            Serial.print(F_MACRO("INT_Q PROGMEM "));
+        #else
+            Serial.print(F_MACRO("PROGMEM "));
+        #endif
         Serial.print(_numberOfInputs);
         Serial.print(F_MACRO("x"));
         Serial.print(_numberOfOutputs);
         #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
             Serial.print(F_MACRO("| bias:"));
-            Serial.print(PGM_READ_DFLOAT(bias), DFLOAT_LEN);
+            Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
         #endif
         #if defined(ACTIVATION__PER_LAYER)
             Serial.print(F_MACRO("| F(x):"));
@@ -2554,7 +2648,7 @@ public:
         {
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                 Serial.print(F_MACRO("   B:"));
-                Serial.println(PGM_READ_DFLOAT(&bias[i]), DFLOAT_LEN);
+                Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
             #endif
             Serial.print(i + 1);
             Serial.print(" ");
@@ -2563,12 +2657,12 @@ public:
                 //weights[i][j] = (DFLOAT)j;
                 Serial.print(F_MACRO(" W:"));
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    if (PGM_READ_DFLOAT(&me->weights[me->i_j]) > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                    Serial.print(PGM_READ_DFLOAT(&me->weights[me->i_j]), DFLOAT_LEN);
+                    if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                    Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     me->i_j++;
                 #else
-                    if (PGM_READ_DFLOAT(&weights[i][j]) > 0 ) Serial.print(F_MACRO(" "));
-                    Serial.print(PGM_READ_DFLOAT(&weights[i][j]), DFLOAT_LEN);
+                    if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
+                    Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
                 Serial.print(F_MACRO(" "));
             }
@@ -2580,7 +2674,11 @@ public:
         #if defined(USE_INTERNAL_EEPROM)
             void NeuralNetwork::Layer::print_INTERNAL_EEPROM()
             {
-                Serial.print(F_MACRO("EEPROM "));
+                #if defined(USE_INT_QUANTIZATION)
+                    Serial.print(F_MACRO("INT_Q EEPROM "));
+                #else
+                    Serial.print(F_MACRO("EEPROM "));
+                #endif
                 Serial.print(_numberOfInputs);
                 Serial.print(F_MACRO("x"));
                 Serial.print(_numberOfOutputs);
@@ -2590,21 +2688,21 @@ public:
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     Serial.print(F_MACRO("| bias:"));
-                    Serial.print(get_EEPROM_value<DFLOAT>(me->address), DFLOAT_LEN);
+                    Serial.print(get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
                 Serial.println();
-                DFLOAT tmp_ijweight; 
+                DFLOAT tmp_ijweight; // Reminder: don't change it to IDFLOAT
                 for (int i = 0; i < _numberOfOutputs; i++)
                 {
                     #if defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("   B:"));
-                        Serial.println(get_EEPROM_value<DFLOAT>(me->address), DFLOAT_LEN);
+                        Serial.println(get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     Serial.print(i + 1);
                     Serial.print(F_MACRO(" "));
                     for (int j = 0; j < _numberOfInputs; j++)
                     {
-                        tmp_ijweight = get_EEPROM_value<DFLOAT>(me->address);
+                        tmp_ijweight = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                         Serial.print(F_MACRO(" W:"));
                         if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
                         Serial.print(tmp_ijweight, DFLOAT_LEN);
