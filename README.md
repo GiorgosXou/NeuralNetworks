@@ -551,15 +551,16 @@ for i in range(len(inputs)):
     print(f"Input: {inputs[i]}, Predicted Output: {predictions[i][0]:.7f}")
 ```
 
+*([See also: pretrained-quantized-ino-example][EXAMPLE_INT_QUANTIZED_XOR_INO])*
+
 </details>
 
-*([See also: pretrained-quantized-ino-example][EXAMPLE_INT_QUANTIZED_XOR_INO])*
 
 
 <br>
 
-> [!IMPORTANT]  
-> See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+
+**IMPORTANT NOTE:** See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
 
 *([see also examples](#✏️-examples) on how to train a NN directly on an MCU)* 
 
