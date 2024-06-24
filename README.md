@@ -778,7 +778,7 @@ Here most of the resources I came across the internet, I recomend you to have a 
 </p>
 
 
-**Please** consider donating something, even the least amount would be really appreciated
+**Please** consider donating something, even the least amount would be really appreciated. I need it.
 | Monero address: <sup>`87PVyQ8Vt768hnvVyR9Qw1NyGzDea4q9Zd6AuwHb8tQBU9VdRYjRoBL7Ya8yRPVQakW2pjt2UWEtzYoxiRd7xpuB4XSJVAW`</sup>
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) 
