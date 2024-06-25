@@ -438,7 +438,7 @@ You can change that by defining your own value in your sketch, like:
 #define Q_FLOAT_RANGE 40.0 // (20.0) - (-20.0) = 40.0 | Ensure you used a dot!
 ```
 
-<details><summary>Now click here's to see the full <b>int-quantization training example</b></summary>
+<details><summary>Now click here to see the full <b>int-quantization training example</b></summary>
 
 ```python
 # pip install tensorflow
