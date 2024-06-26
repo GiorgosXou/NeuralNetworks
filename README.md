@@ -427,7 +427,7 @@ print('};\n')
 
 ### Int quantization
 
- Assuming you already have either enabled [`int16_t`](## '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](## '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , is set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
+ Assuming you already have either enabled [`int16_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , is set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
 ```cpp
 // FLOAT RANGE FOR INT16 = (100.0) - (-100.0) = 200.0 | MAX - MIN
 // FLOAT RANGE FOR INT8  = ( 25.5) - (- 25.5) =  51.0 | MAX - MIN
