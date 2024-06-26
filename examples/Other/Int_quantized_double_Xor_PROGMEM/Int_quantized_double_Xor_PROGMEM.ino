@@ -4,7 +4,7 @@
 #include <NeuralNetwork.h>
 
 const unsigned int layers[] = {3, 3, 1};
-float *output; // 3th layer's output(s)
+float *output; // 3rd layer's output(s)
 
 // Default Test/Input data
 const float inputs[8][3] = {
