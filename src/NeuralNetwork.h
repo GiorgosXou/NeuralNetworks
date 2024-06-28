@@ -99,6 +99,7 @@
 #define MSG12
 #define MSG13
 #define MSG14
+#define MSG15
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -149,7 +150,7 @@
     #if ((_1_OPTIMIZE bitor 0B11111011) == 0B11111111)
         #define REDUCE_RAM_STATIC_REFERENCE
         #undef MSG5
-        #define MSG5 \n- " [1] 0B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Be careful with multiple NN objects."
+        #define MSG5 \n- " [1] 0B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If multiple NN objects, see: _2_OPTIMIZE 0B00000010!"
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111101) == 0B11111111)
@@ -282,6 +283,16 @@
         #define MULTIPLY_BY_INT_IF_QUANTIZATION * (Q_FLOAT_RANGE/Q_INT_RANGE)
 
         #define CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(value) value
+    #endif
+
+    #if ((_2_OPTIMIZE bitor 0B11111101) == 0B11111111)
+        #undef MSG15
+        #if defined(REDUCE_RAM_STATIC_REFERENCE)
+            #error "You don't have to define both _1_ 0B00000100 (REDUCE_RAM_STATIC_REFERENCE) and _2_ 0B00000010 (REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)."
+        #endif
+        #define MSG15 \n- " [2] 0B00000010 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If single NN object, use: _1_OPTIMIZE 0B00000100 instead."
+        #define REDUCE_RAM_STATIC_REFERENCE
+        #define REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS
     #endif
 #endif
 
@@ -757,7 +768,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -1295,6 +1306,9 @@ public:
 
     DFLOAT *NeuralNetwork::FeedForward_Individual(const DFLOAT &input) 
     {
+        #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
+            me = this;
+        #endif
         #if defined(USE_PROGMEM)
             layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
         #elif defined(USE_INTERNAL_EEPROM)
@@ -1378,6 +1392,10 @@ public:
     DFLOAT *NeuralNetwork::FeedForward(const DFLOAT *inputs)
     {
         _inputs = inputs;
+
+        #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
+            me = this;
+        #endif
         
         #if defined(REDUCE_RAM_DELETE_OUTPUTS)
             if (FIRST_TIME_FDFp == true) // is it the first time ? if not, then delete trashes
@@ -1444,6 +1462,10 @@ public:
                 AtlayerIndex = numberOflayers - 1;
             #endif  
             */
+
+            #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
+                me = this;
+            #endif
 
             layers[numberOflayers - 1].BackPropOutput(expected, layers[numberOflayers - 2].outputs); // issue because backprop einai anapoda ta weights [Fixed]
 
