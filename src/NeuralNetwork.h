@@ -58,7 +58,7 @@
 #ifndef NeuralNetwork_h
 #define NeuralNetwork_h
 
-#define __NN_VERSION__ "VERSION: 2.3.0"\n
+#define __NN_VERSION__ "VERSION: 2.3.1"\n
 
 // - That gives you access to the standard types and constants of the Arduino language.
 #include "Arduino.h"
