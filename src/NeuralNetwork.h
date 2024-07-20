@@ -1077,59 +1077,50 @@ public:
                         for (int j = 0; j < layers[i]._numberOfOutputs; j++) // because of this i wont make _numberOfOutputs/inputs private :/ or maybe.. i ll see... or i will change them to const* ... what? i've just read it again lol
                         {
                             delete[] layers[i].weights[j];
-                            layers[i].weights[j] = NULL;    
                         }
                     #endif
 
                     // #if !defined(USE_PROGMEM)
                     #if !defined(NO_BIAS)
                         delete layers[i].bias;
-                        layers[i].bias = NULL;
                     #endif
                     // #endif
 
                     #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                         delete[] layers[i].outputs;
-                        layers[i].outputs = NULL;
                     #endif
 
                     /*
                     #if defined(REDUCE_RAM_WEIGHTS_LVL1) // && !defined(USE_PROGMEM) // no need for progmem condition because progmem is never going to be initialized with new
                         delete[] layers[i].weights;
-                        layers[i].weights = NULL;
                     #endif
                     */
                 }
 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2) // && !defined(USE_PROGMEM) // no need for progmem condition because progmem is never going to be initialized with new
                     delete weights;
-                    weights = NULL;
                 #endif
             }else{
                 #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                     for (int i = 0; i < numberOflayers; i++){
                         delete[] layers[i].outputs;
-                        layers[i].outputs = NULL;
                     }
                 #endif
             }
         #elif !defined(REDUCE_RAM_DELETE_OUTPUTS)
             for (int i = 0; i < numberOflayers; i++){
                 delete[] layers[i].outputs;
-                layers[i].outputs = NULL;
             }
         #endif
 
         #if defined(ACTIVATION__PER_LAYER) && defined(SUPPORTS_SD_FUNCTIONALITY) 
             if (isAlreadyLoadedOnce){
                 delete[] ActFunctionPerLayer;
-                ActFunctionPerLayer = NULL;
             }
         #endif  
 
         if (numberOflayers !=0){
             delete[] layers;
-            layers = NULL; // 18/5/2019
         }
     }
     NeuralNetwork::~NeuralNetwork() { pdestract(); } 
@@ -1381,7 +1372,6 @@ public:
                 #endif
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     delete[] layers[i - 1].outputs;
-                    layers[i - 1].outputs = NULL;
                 #endif
             }
 
@@ -1447,7 +1437,6 @@ public:
             #endif
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 delete[] layers[i - 1].outputs;
-                layers[i - 1].outputs = NULL;
             #endif
         }
         #if defined(USE_INTERNAL_EEPROM)
@@ -1478,16 +1467,12 @@ public:
             {
                 layers[i].BackPropHidden(&layers[i + 1], layers[i - 1].outputs);
                 delete[] layers[i + 1].preLgamma;
-                layers[i + 1].preLgamma = NULL; // 18/5/2019
             }
 
             layers[0].BackPropHidden(&layers[1], _inputs);
 
             delete[] layers[1].preLgamma;
             delete[] layers[0].preLgamma;
-
-            layers[0].preLgamma = NULL;
-            layers[1].preLgamma = NULL;
         }
     #endif
 
