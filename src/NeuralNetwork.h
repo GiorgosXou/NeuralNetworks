@@ -784,7 +784,6 @@ private:
     #endif
     int Individual_Input = 0;
     bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
-    bool FIRST_TIME_FDFp = false; // determines if there are trashes left in last outputs .
     const DFLOAT *_inputs;        // Pointer to primary/first Inputs Array from Sketch    .
                                   // (Used for backpropagation)                           .
 
@@ -806,7 +805,7 @@ private:
         #if !defined(NO_BIAS)
             IS_CONST IDFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
         #endif
-        DFLOAT *outputs;               // outputs of this     layer  [1D Array] pointers.
+        DFLOAT *outputs;                // outputs of this     layer  [1D Array] pointers.
         
         //#if defined(REDUCE_RAM_WEIGHTS_LVL1)
         //    IDFLOAT *weights;         // weights of this     layer  [1D Array] pointers.                             #(used if     #REDUCE_RAM_WEIGHTS_LVL1   defined)         
@@ -1147,6 +1146,9 @@ public:
         numberOflayers = NumberOflayers - 1;
 
         layers = new Layer[numberOflayers]; // there has to be a faster way by alocating memory for example...
+        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+            layers[numberOflayers -1].outputs = NULL;
+        #endif
 
         #if defined(ACTIVATION__PER_LAYER)
             ActFunctionPerLayer = _ActFunctionPerLayer;
@@ -1208,6 +1210,9 @@ public:
             numberOflayers = NumberOflayers - 1;
 
             layers = new Layer[numberOflayers];
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                layers[numberOflayers -1].outputs = NULL;
+            #endif
 
             #if defined(ACTIVATION__PER_LAYER)
                 ActFunctionPerLayer = _ActFunctionPerLayer;
@@ -1239,6 +1244,9 @@ public:
             numberOflayers = NumberOflayers - 1;
 
             layers = new Layer[numberOflayers];
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                layers[numberOflayers -1].outputs = NULL;
+            #endif
 
             #if defined(ACTIVATION__PER_LAYER)
                 ActFunctionPerLayer = _ActFunctionPerLayer;
@@ -1299,6 +1307,9 @@ public:
                 addr += sizeof(unsigned int);
             }
             address = addr + sizeof(unsigned int);
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                layers[numberOflayers -1].outputs = NULL;
+            #endif
         }
     #endif
 
@@ -1347,12 +1358,9 @@ public:
             #endif
         
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                if (FIRST_TIME_FDFp == true) // is it the first time ? if not, then delete trashes
-                {
+                if (layers[numberOflayers - 1].outputs != NULL) // is it the first time ? if not, then delete trashes if not already deleted and nulled by user
+                { 
                     delete[] layers[numberOflayers - 1].outputs;
-                    layers[numberOflayers - 1].outputs = NULL;
-                }else{
-                    FIRST_TIME_FDFp = true;
                 }
             #endif
 
@@ -1398,12 +1406,9 @@ public:
         #endif
         
         #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            if (FIRST_TIME_FDFp == true) // is it the first time ? if not, then delete trashes
+            if (layers[numberOflayers - 1].outputs != NULL) // is it the first time ? if not, then delete trashes if not already deleted and nulled by user
             {
                 delete[] layers[numberOflayers - 1].outputs;
-                layers[numberOflayers - 1].outputs = NULL;
-            }else{
-                FIRST_TIME_FDFp = true;
             }
         #endif
 
@@ -1565,6 +1570,9 @@ public:
 
                 numberOflayers = myFile.readStringUntil('\n').toInt() - 1;
                 layers = new Layer[numberOflayers]; 
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    layers[numberOflayers -1].outputs = NULL;
+                #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
                     isAlreadyLoadedOnce = true;
