@@ -4,6 +4,7 @@
 [EXAMPLE_IN_EEPROM_INO]: ./examples/Media/FeedForward_from_internal_EEPROM/FeedForward_from_internal_EEPROM.ino
 [EXAMPLE_DOUBLE_XOR_BACKPROP_INO]: ./examples/Basic/Backpropagation_double_Xor/Backpropagation_double_Xor.ino
 [EXAMPLE_INT_QUANTIZED_XOR_INO]: ./examples/Other/Int_quantized_double_Xor_PROGMEM/Int_quantized_double_Xor_PROGMEM.ino
+[EXAMPLE_DOUBLE_PRECISION]: ./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino
 
 
 # Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
@@ -322,7 +323,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable yet.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
 | ```0B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should either update `NN.me` manually before using the next one like `NN.me = &NN2` or just use `_2_OPTIMIZE 0B00000010` instead</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
 | ```0B00000010``` |<sup><sub>📌</sub></sup>|<details><summary>Disables MSE function</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
-| ```0B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
+| ```0B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T *([see also example][EXAMPLE_DOUBLE_PRECISION])*</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
 |  **_2_OPTIMIZE** | |  ||
 | ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
 | ```0B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
