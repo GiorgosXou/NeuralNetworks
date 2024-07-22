@@ -64,6 +64,7 @@
 #include "Arduino.h"
 
 // https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
+// considering there's a scope it's looking for the library if you declare it above the #include <NeuralNetwork.h> it will enable the functionality else no.. meaning that I don't need to worry about destructor optimization #8
 #define SD_LIB_NAME <SD.h>
 #if defined(__SD_H__) || defined(SD_h) 
     #define SUPPORTS_SD_FUNCTIONALITY
@@ -782,8 +783,10 @@ private:
             byte F1; // first activation function only for use in FdF_Individual_iEEPROM
         #endif
     #endif
+    #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+        bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
+    #endif
     int Individual_Input = 0;
-    bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
     const DFLOAT *_inputs;        // Pointer to primary/first Inputs Array from Sketch    .
                                   // (Used for backpropagation)                           .
 
@@ -1050,7 +1053,9 @@ public:
 //=======================================================================================================================================================================
 #pragma region NeuralNetwork.cpp
     NeuralNetwork::NeuralNetwork() {
-        isAllocdWithNew = false;
+        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+            isAllocdWithNew = false;
+        #endif
         #if defined(REDUCE_RAM_STATIC_REFERENCE)
             me = this;
         #endif
@@ -1058,7 +1063,9 @@ public:
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork::NeuralNetwork(String file){
-            isAllocdWithNew = false;
+            #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+                isAllocdWithNew = false;
+            #endif
             #if defined(REDUCE_RAM_STATIC_REFERENCE)
                 me = this;
             #endif
@@ -1069,7 +1076,7 @@ public:
 
     void NeuralNetwork::pdestract()
     {
-        #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
+        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8 // !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
             if (isAllocdWithNew){ // Because of undefined behavior in some MCUs like ESP32-C3
                 for (int i = 0; i < numberOflayers; i++)
                 {
@@ -1086,9 +1093,9 @@ public:
                     #endif
                     // #endif
 
-                    #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
-                        delete[] layers[i].outputs;
-                    #endif
+                    // #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    delete[] layers[i].outputs;
+                    // #endif
 
                     /*
                     #if defined(REDUCE_RAM_WEIGHTS_LVL1) // && !defined(USE_PROGMEM) // no need for progmem condition because progmem is never going to be initialized with new
@@ -1133,7 +1140,9 @@ public:
         NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
     #endif
     {
-        isAllocdWithNew = false;
+        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+            isAllocdWithNew = false;
+        #endif
         numberOflayers = NumberOflayers - 1;
 
         layers = new Layer[numberOflayers]; // there has to be a faster way by alocating memory for example...
@@ -1284,7 +1293,7 @@ public:
 
         //TODO: common get function that adds to address for  EEPROM
         NeuralNetwork::NeuralNetwork(unsigned int addr){
-            // isAllocdWithNew = false; // no need because of pdestract #if condition
+            // isAllocdWithNew = false; // no need because of pdestract #if condition // also #8
             #if defined(REDUCE_RAM_STATIC_REFERENCE)
                 me = this;
             #endif
