@@ -1354,8 +1354,8 @@ public:
                     delete[] layers[numberOflayers - 1].outputs;
                 }
             #endif
-
-            for (int i = 1; i < numberOflayers; i++)
+            int i = 1;
+            for (; i < numberOflayers; i++)
             {
                 #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                     sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
@@ -1381,7 +1381,7 @@ public:
             #if defined(USE_INTERNAL_EEPROM)
                 address = tmp_addr;
             #endif
-            return  layers[numberOflayers - 1].outputs;
+            return  layers[i - 1].outputs;
         }
 
         return NULL;
@@ -1419,8 +1419,8 @@ public:
         #else
             layers[0].FeedForward(_inputs);
         #endif
-
-        for (int i = 1; i < numberOflayers; i++)
+        int i = 1;
+        for (; i < numberOflayers; i++)
         {
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                 sumOfSoftmax = 0;  //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
@@ -1443,7 +1443,7 @@ public:
             address = tmp_addr;
         #endif
 
-        return layers[numberOflayers - 1].outputs;
+        return layers[i - 1].outputs;
     }
 
 
