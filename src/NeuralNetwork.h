@@ -1078,7 +1078,8 @@ public:
     {
         #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8 // !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
             if (isAllocdWithNew){ // Because of undefined behavior in some MCUs like ESP32-C3
-                for (int i = 0; i < numberOflayers; i++)
+                int i=0;
+                while(true) // for (int i = 0; i < numberOflayers; i++)
                 {
                     #if !defined(REDUCE_RAM_WEIGHTS_COMMON) // && !defined(USE_PROGMEM)
                         for (int j = 0; j < layers[i]._numberOfOutputs; j++) // because of this i wont make _numberOfOutputs/inputs private :/ or maybe.. i ll see... or i will change them to const* ... what? i've just read it again lol
@@ -1093,15 +1094,18 @@ public:
                     #endif
                     // #endif
 
-                    // #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
-                    delete[] layers[i].outputs;
-                    // #endif
-
                     /*
                     #if defined(REDUCE_RAM_WEIGHTS_LVL1) // && !defined(USE_PROGMEM) // no need for progmem condition because progmem is never going to be initialized with new
                         delete[] layers[i].weights;
                     #endif
                     */
+
+                    // #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    if (i == numberOflayers-1){ // -1 because we need final-outputs(below) to be managed by user.
+                        break;
+                    }
+                    delete[] layers[i].outputs;
+                    // #endif
                 }
 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2) // && !defined(USE_PROGMEM) // no need for progmem condition because progmem is never going to be initialized with new
@@ -1109,13 +1113,13 @@ public:
                 #endif
             }else{
                 #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
-                    for (int i = 0; i < numberOflayers; i++){
+                    for (int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                         delete[] layers[i].outputs;
                     }
                 #endif
             }
         #elif !defined(REDUCE_RAM_DELETE_OUTPUTS)
-            for (int i = 0; i < numberOflayers; i++){
+            for (int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                 delete[] layers[i].outputs;
             }
         #endif
