@@ -71,6 +71,7 @@ Understanding the Basics of a Neural Network:
 
 # ⚠️ Important
 - I am **NOT a professional** in any of those fields...
+- <details><summary><code>delete NN</code>-object wont free last-layer's outputs!</summary>By design, the destructor won't free the last layer's outputs, allowing you to continue using these outputs through the pointer in your sketch. To fully delete the neural network and free the associated resources, make sure to either: use <code>delete[] outputs</code>, or use <code>delete[] NN->layers[NN->numberOfLayers - 1].outputs;</code> before calling <code>delete NN</code>.</details>
 - In case of error with 'POINTER_REGS' click [here](https://forum.arduino.cc/index.php?topic=613857.0)
 - `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
 - If you don't want to [`USE_64_BIT_DOUBLE`](#define-macro-properties) *(which I also suggest you not to use)*, then [**make sure** that you have used *(4-byte)(32-bit)*-precision variables when Training, Because Floats](https://www.arduino.cc/reference/en/language/variables/data-types/float/):*"...are stored as 32 bits (4 bytes) of information...get more precision by using a double (e.g. up to 15 digits), **on the Arduino, double is the same size as float.**"*
