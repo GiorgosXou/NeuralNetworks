@@ -1106,6 +1106,7 @@ public:
                     }
                     delete[] layers[i].outputs;
                     // #endif
+                    i++;
                 }
 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2) // && !defined(USE_PROGMEM) // no need for progmem condition because progmem is never going to be initialized with new
