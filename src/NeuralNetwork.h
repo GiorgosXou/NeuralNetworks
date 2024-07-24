@@ -101,6 +101,7 @@
 #define MSG13
 #define MSG14
 #define MSG15
+#define MSG16
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -294,6 +295,21 @@
         #define MSG15 \n- " [2] 0B00000010 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If single NN object, use: _1_OPTIMIZE 0B00000100 instead."
         #define REDUCE_RAM_STATIC_REFERENCE
         #define REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS
+    #endif
+#endif
+
+
+// _3_OPTIMIZE will be here <-------------------------------
+
+
+// Handle this optimization last because above might add other ones that disable NO_BACKPROP
+#if defined(_2_OPTIMIZE) and ((_2_OPTIMIZE bitor 0B11111110) == 0B11111111)
+    #undef MSG16
+    #if defined(NO_BACKPROP)
+        #define MSG16 \n- " [2] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] NO_BACKPROP is already enabled!"
+    #else
+        #define MSG16 \n- " [2] 0B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Disabled Backpropagation."
+        #define NO_BACKPROP
     #endif
 #endif
 
@@ -769,7 +785,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
