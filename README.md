@@ -104,7 +104,7 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 | (NN) Neural-Network's Constructors |
 | ------ | 
 |<details><summary>`NeuralNetwork()`</summary>Default Constructors</details>|
-|<details><summary>`NeuralNetwork(String file)`</summary>Available if `#include <SD.h>`, lets you load NN from SD</details>|
+|<details><summary>`NeuralNetwork(String file)`</summary>Available if `#include <SD.h>`, lets you load NN from SD. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
 |<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_1_OPTIMIZE 0B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, &LRw, &LRb, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
@@ -130,7 +130,7 @@ Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro
 |`FeedForward_Individual(x)`|[DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference')| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array|<details><summary>RAM Optimized FeedForward</summary>"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. **Important note:** You can't train with it. <br><sup>(Almost no RAM usage for input layer, see also: [example][EXAMPLE_FEED_INDIVIDUAL_INO])</sup></details>|
 | ```*FeedForward(x) ```| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| <details><summary>Returns the output of the NN</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
 | ```BackProp(x) ```| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
-|`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`</details>|
+|`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
 |`save(x)`| String \ int|bool \ int| <details><summary>Saves NN to storage media</summary> SD or internal-EEPROM</details>|
 |`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM)_</details>|
 
