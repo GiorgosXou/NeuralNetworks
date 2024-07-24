@@ -787,7 +787,9 @@ private:
         bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
     #endif
     int Individual_Input = 0;
-    const DFLOAT *_inputs;        // Pointer to primary/first Inputs Array from Sketch    .
+    #if !defined(NO_BACKPROP)
+        const DFLOAT *_inputs;        // Pointer to primary/first Inputs Array from Sketch    .
+    #endif
                                   // (Used for backpropagation)                           .
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
@@ -1403,7 +1405,9 @@ public:
 
     DFLOAT *NeuralNetwork::FeedForward(const DFLOAT *inputs)
     {
-        _inputs = inputs;
+        #if !defined(NO_BACKPROP)
+            _inputs = inputs;
+        #endif
 
         #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
             me = this;
@@ -1426,12 +1430,12 @@ public:
         #endif
         
         #if defined(USE_PROGMEM)
-            layers[0].FdF_PROGMEM(_inputs);
+            layers[0].FdF_PROGMEM(inputs);
         #elif defined(USE_INTERNAL_EEPROM)
             unsigned int tmp_addr = address;
-            layers[0].FdF_IN_EEPROM(_inputs);
+            layers[0].FdF_IN_EEPROM(inputs);
         #else
-            layers[0].FeedForward(_inputs);
+            layers[0].FeedForward(inputs);
         #endif
         int i = 1;
         for (; i < numberOflayers; i++)
