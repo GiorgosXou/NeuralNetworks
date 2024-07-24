@@ -2088,16 +2088,16 @@ public:
                 #if defined(NO_BIAS)
                     outputs[i] = 0; // ? speed ? safe one..
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = bias[i];
+                    outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #else
-                    outputs[i] = *bias;
+                    outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
             }
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                outputs[i] += input * me->weights[me->i_j+j];
+                outputs[i] += input * me->weights[me->i_j+j] MULTIPLY_BY_INT_IF_QUANTIZATION;
             #else
-                outputs[i] += input * weights[i][j];
+                outputs[i] += input * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION;
             #endif
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
