@@ -802,7 +802,7 @@ private:
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
         bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
     #endif
-    int Individual_Input = 0;
+    unsigned int Individual_Input = 0;
     #if !defined(NO_BACKPROP)
         const DFLOAT *_inputs;        // Pointer to primary/first Inputs Array from Sketch    .
     #endif
@@ -856,10 +856,10 @@ private:
         #endif
 
 
-        void FeedForward_Individual(const DFLOAT &input, const int &j);
-        void FdF_Individual_PROGMEM(const DFLOAT &input, const int &j);
+        void FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
+        void FdF_Individual_PROGMEM(const DFLOAT &input, const unsigned int &j);
         #if defined(USE_INTERNAL_EEPROM)
-            void FdF_Individual_iEEPROM(const DFLOAT &input, const int &j);
+            void FdF_Individual_iEEPROM(const DFLOAT &input, const unsigned int &j);
         #endif
 
         void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
@@ -956,7 +956,7 @@ public:
     // issues with multiple NNs too ...
     #if defined(REDUCE_RAM_WEIGHTS_LVL2) 
         IS_CONST IDFLOAT *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-        int i_j = 0; 
+        int i_j = 0;  // NOTE: not sure if I should make it unsigned yet considering there's --i_j; that goes to -1
     #endif   
 
     #if defined(ACTIVATION__PER_LAYER)
@@ -1096,11 +1096,11 @@ public:
     {
         #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8 // !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
             if (isAllocdWithNew){ // Because of undefined behavior in some MCUs like ESP32-C3
-                int i=0;
-                while(true) // for (int i = 0; i < numberOflayers; i++)
+                unsigned int i=0;
+                while(true) // for (unsigned int i = 0; i < numberOflayers; i++)
                 {
                     #if !defined(REDUCE_RAM_WEIGHTS_COMMON) // && !defined(USE_PROGMEM)
-                        for (int j = 0; j < layers[i]._numberOfOutputs; j++) // because of this i wont make _numberOfOutputs/inputs private :/ or maybe.. i ll see... or i will change them to const* ... what? i've just read it again lol
+                        for (unsigned int j = 0; j < layers[i]._numberOfOutputs; j++) // because of this i wont make _numberOfOutputs/inputs private :/ or maybe.. i ll see... or i will change them to const* ... what? i've just read it again lol
                         {
                             delete[] layers[i].weights[j];
                         }
@@ -1132,13 +1132,13 @@ public:
                 #endif
             }else{
                 #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
-                    for (int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
+                    for (unsigned int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                         delete[] layers[i].outputs;
                     }
                 #endif
             }
         #elif !defined(REDUCE_RAM_DELETE_OUTPUTS)
-            for (int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
+            for (unsigned int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                 delete[] layers[i].outputs;
             }
         #endif
@@ -1191,7 +1191,7 @@ public:
             unsigned int biasesFromPoint = 0;
         #endif
 
-        for (int i = 0; i < numberOflayers; i++)
+        for (unsigned int i = 0; i < numberOflayers; i++)
         {
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
                 #if defined(NO_BIAS)
@@ -1246,14 +1246,14 @@ public:
             #endif
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
-                for (int i = 0; i < numberOflayers; i++)
+                for (unsigned int i = 0; i < numberOflayers; i++)
                     i_j += layer_[i] * layer_[i + 1];
                 
                 weights = new DFLOAT[i_j];
                 i_j=0;
             #endif
 
-            for (int i = 0; i < numberOflayers; i++)
+            for (unsigned int i = 0; i < numberOflayers; i++)
             {
                 layers[i] =  Layer(layer_[i], layer_[i + 1],this);
             }
@@ -1280,14 +1280,14 @@ public:
             #endif
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
-                for (int i = 0; i < numberOflayers; i++)
+                for (unsigned int i = 0; i < numberOflayers; i++)
                     i_j += layer_[i] * layer_[i + 1];
                 
                 weights = new DFLOAT[i_j];
                 i_j=0;
             #endif
 
-            for (int i = 0; i < numberOflayers; i++)
+            for (unsigned int i = 0; i < numberOflayers; i++)
             {
                 layers[i] =  Layer(layer_[i], layer_[i + 1],this);
             }
@@ -1308,7 +1308,7 @@ public:
             // }
             // return (T)ptr;
             uint8_t ptr[sizeof(T)];
-            for (int i = 0; i < sizeof(T); ++i, ++addr) {
+            for (unsigned int i = 0; i < sizeof(T); ++i, ++addr) {
                 ptr[i] = EEPROM.read(addr);
             }
             return *reinterpret_cast<T*>(ptr);
@@ -1325,7 +1325,7 @@ public:
 
             unsigned int tmp1;
             unsigned int tmp2;
-            for (int i = 0; i < numberOflayers; i++){
+            for (unsigned int i = 0; i < numberOflayers; i++){
                 layers[i] =  Layer(EEPROM.get(addr,tmp1), EEPROM.get(addr+sizeof(unsigned int),tmp2), this);
                 addr += sizeof(unsigned int);
             }
@@ -1386,7 +1386,7 @@ public:
                     delete[] layers[numberOflayers - 1].outputs;
                 }
             #endif
-            int i = 1;
+            unsigned int i = 1;
             for (; i < numberOflayers; i++)
             {
                 #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
@@ -1453,7 +1453,7 @@ public:
         #else
             layers[0].FeedForward(inputs);
         #endif
-        int i = 1;
+        unsigned int i = 1;
         for (; i < numberOflayers; i++)
         {
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
@@ -1536,10 +1536,10 @@ public:
         {
             File myFile = SD.open(file, SD_NN_WRITE_MODE);
             if (myFile){
-                int totalNumOfWeights = 0;
+                unsigned int totalNumOfWeights = 0;
                 myFile.println("        "); // yes... it needs those spaces
                 myFile.println(numberOflayers+1); 
-                for(int n=0; n<numberOflayers; n++){
+                for(unsigned int n=0; n<numberOflayers; n++){
                     #if defined(ACTIVATION__PER_LAYER)
                         myFile.println(ActFunctionPerLayer[n]); 
                     #endif
@@ -1548,11 +1548,11 @@ public:
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(*layers[n].bias)); 
                     #endif
-                    for(int i=0; i<layers[n]._numberOfOutputs; i++){
+                    for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
                             myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i])); 
                         #endif
-                        for(int j=0; j<layers[n]._numberOfInputs; j++){
+                        for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                 myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
                             #else
@@ -1614,7 +1614,7 @@ public:
                     IDFLOAT tmp; // any intX_t
                 #endif
 
-                for (int i = 0; i < numberOflayers; i++)
+                for (unsigned int i = 0; i < numberOflayers; i++)
                 {
                     #if defined(ACTIVATION__PER_LAYER)
                         ActFunctionPerLayer[i] = myFile.readStringUntil('\n').toInt();
@@ -1646,7 +1646,7 @@ public:
                     #endif
 
                     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-                        for(int j=0; j<tmp_layerOutputs; j++){
+                        for(unsigned int j=0; j<tmp_layerOutputs; j++){
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
                                 #if !defined(USE_INT_QUANTIZATION)
                                     tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
@@ -1656,7 +1656,7 @@ public:
                                 #endif
                             #endif
                             layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
-                            for(int k=0; k<tmp_layerInputs; k++){
+                            for(unsigned int k=0; k<tmp_layerInputs; k++){
                                 #if !defined(USE_INT_QUANTIZATION)
                                     tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
                                     layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
@@ -1667,14 +1667,14 @@ public:
                         }
                     #else // I won't elif here cause I want to have a clear image of the "division" below
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            for(int j=0; j<tmp_layerOutputs; j++){
+                            for(unsigned int j=0; j<tmp_layerOutputs; j++){
                                 #if !defined(USE_INT_QUANTIZATION)
                                     tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
                                     tmp_bias[j] = *((DFLOAT*)(&tmp));
                                 #else
                                     tmp_bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
                                 #endif
-                                for(int k=0; k<tmp_layerInputs; k++){
+                                for(unsigned int k=0; k<tmp_layerInputs; k++){
                                     #if !defined(USE_INT_QUANTIZATION)
                                         tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
                                         weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
@@ -1685,7 +1685,7 @@ public:
                                 }
                             }
                         #else
-                            for(int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
+                            for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
                                 #if !defined(USE_INT_QUANTIZATION)
                                     tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
                                     weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
@@ -1725,7 +1725,7 @@ public:
             put_EEPROM_value(atAddress, numberOflayers);
             tmp_addr = atAddress;
             atAddress += (numberOflayers+1)*sizeof(unsigned int);
-            for(int n=0; n<numberOflayers; n++){
+            for(unsigned int n=0; n<numberOflayers; n++){
                 put_EEPROM_value(tmp_addr, layers[n]._numberOfInputs);
                 #if defined(ACTIVATION__PER_LAYER)
                     put_EEPROM_value(atAddress, ActFunctionPerLayer[n]);
@@ -1733,11 +1733,11 @@ public:
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     put_EEPROM_value(atAddress, *layers[n].bias);
                 #endif
-                for(int i=0; i<layers[n]._numberOfOutputs; i++){
+                for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
                     #if defined(MULTIPLE_BIASES_PER_LAYER)
                         put_EEPROM_value(atAddress, layers[n].bias[i]);
                     #endif
-                    for(int j=0; j<layers[n]._numberOfInputs; j++){
+                    for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
                         #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
                             put_EEPROM_value(atAddress, layers[n].weights[i][j]);
                         #else
@@ -1766,7 +1766,7 @@ public:
         Serial.println();
         Serial.println(F_MACRO("----------------------"));
 
-        for (int i = 0; i < numberOflayers; i++)
+        for (unsigned int i = 0; i < numberOflayers; i++)
         {
             #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM)  // not def USE_INTERNAL_EEPROM, because AtlayerIndex is not needed
                 AtlayerIndex = i;
@@ -1929,7 +1929,7 @@ public:
             #endif
             weights = new IS_CONST IDFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (IDFLOAT) weights.
 
-            for (int i = 0; i < _numberOfOutputs; i++)              // [matrix] (_numberOfOutputs * _numberOfInputs)
+            for (unsigned int i = 0; i < _numberOfOutputs; i++)              // [matrix] (_numberOfOutputs * _numberOfInputs)
                 weights[i] = &default_Weights[i * _numberOfInputs]; // Passing Default weights to ##1 weights by reference.  
         }
     #endif
@@ -1982,7 +1982,7 @@ public:
                 *bias = 1.0; // SuS cause IDFLOAT
             #endif
 
-            for (int i = 0; i < _numberOfOutputs; i++)
+            for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
                     weights[i] = new IDFLOAT[_numberOfInputs];
@@ -1992,7 +1992,7 @@ public:
                     bias[i] = (IDFLOAT)random(-90000, 90000) / 100000;
                 #endif
                 
-                for (int j = 0; j < _numberOfInputs; j++)
+                for (unsigned int j = 0; j < _numberOfInputs; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
                         me->weights[me->i_j] = (IDFLOAT)random(-90000, 90000) / 100000;
@@ -2022,7 +2022,7 @@ public:
     #endif
 
     // TODO: maybe create a static variable which will take a reference to a function. Once when j==0 (for output init) and once when j == _numberOfInputs -1
-    void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const DFLOAT &input, const int &j)
+    void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const DFLOAT &input, const unsigned int &j)
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
             if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
@@ -2035,8 +2035,7 @@ public:
         #endif
 
         //feed forwards
-        int i;
-        
+        unsigned int i;
         for (i = 0; i < _numberOfOutputs; i++)
         {
             if (j == 0){
@@ -2084,7 +2083,7 @@ public:
         }
     }
 
-    void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const int &j)
+    void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int &j)
     {
         #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
             if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
@@ -2097,7 +2096,7 @@ public:
         #endif
 
         //feed forwards
-        int i;
+        unsigned int i;
         for (i = 0; i < _numberOfOutputs; i++)
         {
             if (j == 0){
@@ -2146,7 +2145,7 @@ public:
 
 
     #if defined (USE_INTERNAL_EEPROM) 
-        void NeuralNetwork::Layer::FdF_Individual_iEEPROM(const DFLOAT &input, const int &j) // Not my proudest implementation, ngl... but it does the job for now
+        void NeuralNetwork::Layer::FdF_Individual_iEEPROM(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
         {
             // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
             if (j == 0){ // if it is the first input then create output array (for the output layer of this current layer)
@@ -2183,7 +2182,7 @@ public:
             #endif
 
             IDFLOAT tmp_jweight;
-            int i;
+            unsigned int i;
             for (i = 0; i < _numberOfOutputs; i++) 
             {
                 if (j == 0){
@@ -2242,7 +2241,7 @@ public:
             #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 IDFLOAT tmp_bias = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
             #endif
-            for (int i = 0; i < _numberOfOutputs; i++)
+            for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
@@ -2252,7 +2251,7 @@ public:
                     outputs[i] = tmp_bias;
                 #endif
 
-                for (int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
+                for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
                 {
                     outputs[i] += inputs[j] * get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 }
@@ -2284,7 +2283,7 @@ public:
         #endif
         
         //feed forwards
-        for (int i = 0; i < _numberOfOutputs; i++)
+        for (unsigned int i = 0; i < _numberOfOutputs; i++)
         {
             #if defined(NO_BIAS)
                 outputs[i] = 0;
@@ -2294,7 +2293,7 @@ public:
                 outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
             #endif
 
-            for (int j = 0; j < _numberOfInputs; j++) 
+            for (unsigned int j = 0; j < _numberOfInputs; j++) 
             {
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
@@ -2329,7 +2328,7 @@ public:
         #endif
     
         //feed forwards
-        for (int i = 0; i < _numberOfOutputs; i++)
+        for (unsigned int i = 0; i < _numberOfOutputs; i++)
         {
             #if defined(ESP_SUPPORTS_SIMD)
                 #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2353,7 +2352,7 @@ public:
                     outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
 
-                for (int j = 0; j < _numberOfInputs; j++)
+                for (unsigned int j = 0; j < _numberOfInputs; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                         outputs[i] += inputs[j] * me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION;
@@ -2515,7 +2514,7 @@ public:
                 }
 
             #else
-                for (int i = 0; i < _numberOfOutputs; i++)
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
                     //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
                     //gamma = (outputs[i] - _expected_[i]) * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // outputs[i] is f(x) not x in this case, because i wanted to delete the array of inputs before activation
@@ -2546,7 +2545,7 @@ public:
                         bias_Delta *= gamma;
                     #endif
 
-                    for (int j = 0; j < _numberOfInputs; j++) // TODO: 2024-03-12 07:03:29 AM this could go into a seperate common function
+                    for (unsigned int j = 0; j < _numberOfInputs; j++) // TODO: 2024-03-12 07:03:29 AM this could go into a seperate common function
                     {
                         preLgamma[j] += gamma * weights[i][j];
                         weights[i][j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
@@ -2596,7 +2595,7 @@ public:
                 }
 
             #else
-                for (int i = 0; i < _numberOfOutputs; i++)
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
                     #if defined(ACTIVATION__PER_LAYER)
                         gamma = frontLayer->preLgamma[i] * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
@@ -2610,7 +2609,7 @@ public:
                         bias_Delta *= gamma;
                     #endif
 
-                    for (int j = 0; j < _numberOfInputs; j++)
+                    for (unsigned int j = 0; j < _numberOfInputs; j++)
                     {
                         preLgamma[j] += gamma * weights[i][j];
                         weights[i][j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
@@ -2646,7 +2645,7 @@ public:
         #endif
         Serial.println();
 
-        for (int i = 0; i < _numberOfOutputs; i++)
+        for (unsigned int i = 0; i < _numberOfOutputs; i++)
         {
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                 Serial.print(F_MACRO("   B:"));
@@ -2654,7 +2653,7 @@ public:
             #endif
             Serial.print(i + 1);
             Serial.print(F_MACRO(" "));
-            for (int j = 0; j < _numberOfInputs; j++)
+            for (unsigned int j = 0; j < _numberOfInputs; j++)
             {
                 Serial.print(F_MACRO(" W:"));
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2693,7 +2692,7 @@ public:
         #endif
         Serial.println();
 
-        for (int i = 0; i < _numberOfOutputs; i++)
+        for (unsigned int i = 0; i < _numberOfOutputs; i++)
         {
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                 Serial.print(F_MACRO("   B:"));
@@ -2701,7 +2700,7 @@ public:
             #endif
             Serial.print(i + 1);
             Serial.print(" ");
-            for (int j = 0; j < _numberOfInputs; j++)
+            for (unsigned int j = 0; j < _numberOfInputs; j++)
             {
                 //weights[i][j] = (DFLOAT)j;
                 Serial.print(F_MACRO(" W:"));
@@ -2741,7 +2740,7 @@ public:
                 #endif
                 Serial.println();
                 DFLOAT tmp_ijweight; // Reminder: don't change it to IDFLOAT
-                for (int i = 0; i < _numberOfOutputs; i++)
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
                     #if defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("   B:"));
@@ -2749,7 +2748,7 @@ public:
                     #endif
                     Serial.print(i + 1);
                     Serial.print(F_MACRO(" "));
-                    for (int j = 0; j < _numberOfInputs; j++)
+                    for (unsigned int j = 0; j < _numberOfInputs; j++)
                     {
                         tmp_ijweight = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                         Serial.print(F_MACRO(" W:"));

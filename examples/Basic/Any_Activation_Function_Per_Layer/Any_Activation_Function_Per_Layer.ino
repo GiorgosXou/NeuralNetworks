@@ -32,7 +32,7 @@ void setup()
   NeuralNetwork NN(layers, NumberOf(layers), Actv_Functions); // Creating a Neural-Network with default learning-rates
 
   do{ 
-    for (int j=0; j < NumberOf(inputs); j++) // Epoch
+    for (unsigned int j=0; j < NumberOf(inputs); j++) // Epoch
     {
       NN.FeedForward(inputs[j]);      // FeedForwards the input arrays through the NN | stores the output array internally
       NN.BackProp(expectedOutput[j]); // "Tells" to the NN if the output was the-expected-correct one | then, "teaches" it
@@ -49,12 +49,12 @@ void setup()
   Serial.println("\n =-[OUTPUTS]-=");
 
 
-  for (int i=0; i < NumberOf(inputs); i++) //Goes through all input-arrays/Training-Data
+  for (unsigned int i=0; i < NumberOf(inputs); i++) //Goes through all input-arrays/Training-Data
   {
-    output = NN.FeedForward(inputs[i]);    // FeedForwards the input[i]-array through the NN | returns the predicted output(s)
-    Serial.print(round(output[0]));        // Prints the output Rounded.
-    Serial.print(" ≅ ");                   // Prints the symbol approximately equal. 
-    Serial.println(output[0], 7);          // Prints the first 7 digits of the output after the comma.
+    output = NN.FeedForward(inputs[i]); // FeedForwards the input[i]-array through the NN | returns the predicted output(s)
+    Serial.print(round(output[0]));     // Prints the output Rounded.
+    Serial.print(" ≅ ");                // Prints the symbol approximately equal.
+    Serial.println(output[0], 7);       // Prints the first 7 digits of the output after the comma.
   }
 
   NN.print(); // Prints the weights and biases of each layer

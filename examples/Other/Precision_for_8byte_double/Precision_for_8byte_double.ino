@@ -32,7 +32,7 @@ void setup()
   NeuralNetwork NN(layers, NumberOf(layers)); // Creating a Neural-Network with default learning-rates
 
   do{ 
-    for (int j = 0; j < NumberOf(inputs); j++) // Epoch
+    for (unsigned int j = 0; j < NumberOf(inputs); j++) // Epoch
     {
       NN.FeedForward(inputs[j]);      // FeedForwards the input arrays through the NN | stores the output array internally
       NN.BackProp(expectedOutput[j]); // "Tells" to the NN if the output was the-expected-correct one | then, "teaches" it
@@ -50,7 +50,7 @@ void setup()
 
 
   //Goes through all the input arrays
-  for (int i = 0; i < NumberOf(inputs); i++)
+  for (unsigned int i = 0; i < NumberOf(inputs); i++)
   {
     output = NN.FeedForward(inputs[i]); // FeedForwards the input[i]-array through the NN | returns the predicted output(s)
     Serial.print(round(output[0]));

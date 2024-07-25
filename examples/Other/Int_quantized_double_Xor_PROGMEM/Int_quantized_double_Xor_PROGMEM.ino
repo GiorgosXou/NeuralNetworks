@@ -40,7 +40,7 @@ void setup()
   NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with pretrained Weights and Biases
 
   //Goes through all the input arrays
-  for (int i = 0; i < NumberOf(inputs); i++)
+  for (unsigned int i = 0; i < NumberOf(inputs); i++)
   {
     output = NN.FeedForward(inputs[i]); // FeedForwards the input[i]-array through the NN  |  returns the predicted output(s)
     Serial.println(output[0], 7);       // Prints the first 7 digits after the comma

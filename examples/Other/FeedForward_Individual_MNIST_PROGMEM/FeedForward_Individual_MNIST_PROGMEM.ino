@@ -95,18 +95,19 @@ const PROGMEM byte NumbersInPixels[2][784] = {
 0,0,0,0, 0,  0, 57,252,252,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0,0,0,0,  
 }};// there was no more memory for another Number(s)InPixels for Arduino-UNO (unless you flash it without a bootloader) 
 
-int timestamp;
+unsigned int timestamp;
+
 void setup()
 {
   Serial.begin(9600);
   NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with pretrained Weights and Biases
 
   //Goes through each image
-  for (int i = 0; i < 2; i++)           
+  for (unsigned int i = 0; i < 2; i++)           
   {
     timestamp = millis();  
     // FeedForwards each Individual Pixel by first normalizing it bettween 1 and 0     
-    for (int j = 0; j < 784; j++) // and then it returns the predicted output(s).
+    for (unsigned int j = 0; j < 784; j++) // and then it returns the predicted output(s).
       output = NN.FeedForward_Individual(pgm_read_byte(&NumbersInPixels[i][j])/255.0); 
 
     Serial.println((String)"Predicted [" + (round(output[0]* 9)) + "] - Under " + (millis() - timestamp) + " milliseconds."); // (outputs[0]* 9.0) = denormalizing/converting prediction back to decimical (i think i should have used 10 instead of 9 when i was training but nvm...)

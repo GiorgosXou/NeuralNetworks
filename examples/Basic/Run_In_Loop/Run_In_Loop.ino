@@ -25,7 +25,7 @@ void setup()
   NN = new NeuralNetwork(layers,NumberOf(layers)); //Initialization of NeuralNetwork object
  
   do{
-    for (int j = 0; j < NumberOf(inputs); j++) // Epoch
+    for (unsigned int j = 0; j < NumberOf(inputs); j++) // Epoch
     {
       NN->FeedForward(inputs[j]);      // FeedForwards the input arrays through the NN | stores the output array internally
       NN->BackProp(expectedOutput[j]); // "Tells" to the NN if the output was the-expected-correct one | then, "teaches" it
