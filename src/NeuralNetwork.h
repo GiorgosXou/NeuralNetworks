@@ -1380,11 +1380,8 @@ public:
                 #endif
             #endif
         
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                if (layers[numberOflayers - 1].outputs != NULL) // is it the first time ? if not, then delete trashes if not already deleted and nulled by user
-                { 
-                    delete[] layers[numberOflayers - 1].outputs;
-                }
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
+                delete[] layers[numberOflayers - 1].outputs;
             #endif
             unsigned int i = 1;
             for (; i < numberOflayers; i++)
@@ -1429,11 +1426,8 @@ public:
             me = this;
         #endif
         
-        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            if (layers[numberOflayers - 1].outputs != NULL) // is it the first time ? if not, then delete trashes if not already deleted and nulled by user
-            {
-                delete[] layers[numberOflayers - 1].outputs;
-            }
+        #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
+            delete[] layers[numberOflayers - 1].outputs;
         #endif
 
         // Reseting the index to which layer we are back to 0, the 1st layer
