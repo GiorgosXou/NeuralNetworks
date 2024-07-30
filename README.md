@@ -82,7 +82,7 @@ Understanding the Basics of a Neural Network:
 
 <details><summary><strong>Arduino UNO</strong></summary>
 
-- Everything seems to work fine </details>
+- Don't [`USE_64_BIT_DOUBLE`](#define-macro-properties):  [`double` is the same as `float` on the UNO](https://www.arduino.cc/reference/en/language/variables/data-types/double/)</details>
 <details><summary><strong>ESP32-C3</strong></summary>
 
 - You may need to increase serial baud-rate from `9600` to `115200`
