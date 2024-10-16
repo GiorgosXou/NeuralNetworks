@@ -367,9 +367,9 @@
 #define CUSTOM_DF5_DEFINITION
 
 // STR(AX) | pragma message | A = Activation | AL = All | CA = Custom Activation
-#define A1 
-#define A2 
-#define A3 
+#define AA1 
+#define AA2 
+#define AA3 
 #define A4 
 #define A5 
 #define A6 
@@ -401,7 +401,7 @@
 
 
 #if defined(Sigmoid) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A1
+    #undef AA1
     #undef ACT1
     #undef Sigmoid
     #undef DEFAULT_ACTIVATION_FUNCTION
@@ -409,10 +409,10 @@
     #define ACTIVATION 
     #define ACTIVATION_FUNCTION Sigmoid
     #define Sigmoid Sigmoid
-    #define A1 |> Sigmoid 
+    #define AA1 |> Sigmoid 
 #endif
 #if defined(Tanh) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A2
+    #undef AA2
     #undef ACT2
     #undef Tanh
     #undef ACTIVATION
@@ -422,10 +422,10 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Tanh
     #define Tanh Tanh
-    #define A2 |> Tanh
+    #define AA2 |> Tanh
 #endif
 #if defined(ReLU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A3
+    #undef AA3
     #undef ACT3
     #undef ReLU
     #undef ACTIVATION
@@ -436,7 +436,7 @@
     #define ACTIVATION_FUNCTION ReLU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ReLU ReLU
-    #define A3 |> ReLU 
+    #define AA3 |> ReLU 
 #endif
 #if defined(LeakyELU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef A4
@@ -758,13 +758,13 @@
     #else
         //ENABLE DEFAULT ACTIVATION FUNCTION
         // i will also create a mechanism to show #error if more than one is defined with B opperations?
-        #undef A1
+        #undef AA1
         #undef Sigmoid
         #define DEFAULT_ACTIVATION_FUNCTION
         #define ACTIVATION //Sigmoid default but for more than one you must declare it
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
-        #define A1 |> Sigmoid 
+        #define AA1 |> Sigmoid 
     #endif
 #endif
 
@@ -785,7 +785,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL AA1 AA2 AA3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -1380,8 +1380,11 @@ public:
                 #endif
             #endif
         
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
-                delete[] layers[numberOflayers - 1].outputs;
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                if (layers[numberOflayers - 1].outputs != NULL) // is it the first time ? if not, then delete trashes if not already deleted and nulled by user
+                { 
+                    delete[] layers[numberOflayers - 1].outputs;
+                }
             #endif
             unsigned int i = 1;
             for (; i < numberOflayers; i++)
@@ -1426,8 +1429,11 @@ public:
             me = this;
         #endif
         
-        #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
-            delete[] layers[numberOflayers - 1].outputs;
+        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+            if (layers[numberOflayers - 1].outputs != NULL) // is it the first time ? if not, then delete trashes if not already deleted and nulled by user
+            {
+                delete[] layers[numberOflayers - 1].outputs;
+            }
         #endif
 
         // Reseting the index to which layer we are back to 0, the 1st layer
@@ -1528,179 +1534,179 @@ public:
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         bool NeuralNetwork::save(String file) 
         {
-            File myFile = SD.open(file, SD_NN_WRITE_MODE);
-            if (myFile){
-                unsigned int totalNumOfWeights = 0;
-                myFile.println("        "); // yes... it needs those spaces
-                myFile.println(numberOflayers+1); 
-                for(unsigned int n=0; n<numberOflayers; n++){
-                    #if defined(ACTIVATION__PER_LAYER)
-                        myFile.println(ActFunctionPerLayer[n]); 
-                    #endif
-                    myFile.println(layers[n]._numberOfInputs); 
-                    myFile.println(layers[n]._numberOfOutputs); 
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(*layers[n].bias)); 
-                    #endif
-                    for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
-                        #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i])); 
-                        #endif
-                        for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
-                            #else
-                                myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j])); 
-                            #endif
-                            totalNumOfWeights++;
-                        }
-                    }
-                }
-                myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
-                myFile.print(totalNumOfWeights);
-                myFile.close();
-            }
+            // File myFile = SD.open(file.c_str(), SD_NN_WRITE_MODE);
+            // if (myFile){
+            //     unsigned int totalNumOfWeights = 0;
+            //     myFile.println("        "); // yes... it needs those spaces
+            //     myFile.println(numberOflayers+1); 
+            //     for(unsigned int n=0; n<numberOflayers; n++){
+            //         #if defined(ACTIVATION__PER_LAYER)
+            //             myFile.println(ActFunctionPerLayer[n]); 
+            //         #endif
+            //         myFile.println(layers[n]._numberOfInputs); 
+            //         myFile.println(layers[n]._numberOfOutputs); 
+            //         #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+            //             myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(*layers[n].bias)); 
+            //         #endif
+            //         for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
+            //             #if defined(MULTIPLE_BIASES_PER_LAYER)
+            //                 myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i])); 
+            //             #endif
+            //             for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
+            //                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+            //                     myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
+            //                 #else
+            //                     myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j])); 
+            //                 #endif
+            //                 totalNumOfWeights++;
+            //             }
+            //         }
+            //     }
+            //     myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
+            //     myFile.print(totalNumOfWeights);
+            //     myFile.close();
+            // }
             return false;
         }
 
 
         bool NeuralNetwork::load(String file)
         {
-            if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
-                pdestract();
+            // if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
+            //     pdestract();
 
-            File myFile = SD.open(file);
-            if (myFile) {
-                isAllocdWithNew = true;
+            // File myFile = SD.open(file);
+            // if (myFile) {
+            //     isAllocdWithNew = true;
 
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    int count_ij = 0;
-                    i_j = 0;
-                    weights = new IDFLOAT[myFile.readStringUntil('\n').toInt()];
-                #else
-                    myFile.readStringUntil('\n').toInt(); // Skipping line
-                #endif
+            //     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+            //         int count_ij = 0;
+            //         i_j = 0;
+            //         weights = new IDFLOAT[myFile.readStringUntil('\n').toInt()];
+            //     #else
+            //         myFile.readStringUntil('\n').toInt(); // Skipping line
+            //     #endif
 
-                numberOflayers = myFile.readStringUntil('\n').toInt() - 1;
-                layers = new Layer[numberOflayers]; 
-                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                    layers[numberOflayers -1].outputs = NULL;
-                #endif
+            //     numberOflayers = myFile.readStringUntil('\n').toInt() - 1;
+            //     layers = new Layer[numberOflayers]; 
+            //     #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+            //         layers[numberOflayers -1].outputs = NULL;
+            //     #endif
 
-                #if defined(ACTIVATION__PER_LAYER)
-                    isAlreadyLoadedOnce = true;
-                    ActFunctionPerLayer = new byte[numberOflayers];
-                #endif  
+            //     #if defined(ACTIVATION__PER_LAYER)
+            //         isAlreadyLoadedOnce = true;
+            //         ActFunctionPerLayer = new byte[numberOflayers];
+            //     #endif  
 
-                #if defined(REDUCE_RAM_STATIC_REFERENCE)
-                    me = this;
-                #endif
+            //     #if defined(REDUCE_RAM_STATIC_REFERENCE)
+            //         me = this;
+            //     #endif
 
-                unsigned int tmp_layerInputs;
-                unsigned int tmp_layerOutputs;
+            //     unsigned int tmp_layerInputs;
+            //     unsigned int tmp_layerOutputs;
 
-                #if !defined(NO_BIAS)
-                    IDFLOAT *tmp_bias;
-                #endif
-                #if !defined(USE_INT_QUANTIZATION)
-                    LLONG tmp;
-                #else
-                    IDFLOAT tmp; // any intX_t
-                #endif
+            //     #if !defined(NO_BIAS)
+            //         IDFLOAT *tmp_bias;
+            //     #endif
+            //     #if !defined(USE_INT_QUANTIZATION)
+            //         LLONG tmp;
+            //     #else
+            //         IDFLOAT tmp; // any intX_t
+            //     #endif
 
-                for (unsigned int i = 0; i < numberOflayers; i++)
-                {
-                    #if defined(ACTIVATION__PER_LAYER)
-                        ActFunctionPerLayer[i] = myFile.readStringUntil('\n').toInt();
-                    #endif      
-                    tmp_layerInputs  = myFile.readStringUntil('\n').toInt();
-                    tmp_layerOutputs = myFile.readStringUntil('\n').toInt();
-                    #if !defined(NO_BIAS)
-                        #if !defined(MULTIPLE_BIASES_PER_LAYER)
-                            #if !defined(USE_INT_QUANTIZATION)
-                                tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                tmp_bias  = new DFLOAT;
-                                *tmp_bias = *((DFLOAT*)(&tmp));
-                            #else
-                                tmp_bias  = new IDFLOAT;
-                                *tmp_bias = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                            #endif
-                        #else
-                            tmp_bias  = new IDFLOAT[tmp_layerOutputs];
-                        #endif
-                    #endif
+            //     for (unsigned int i = 0; i < numberOflayers; i++)
+            //     {
+            //         #if defined(ACTIVATION__PER_LAYER)
+            //             ActFunctionPerLayer[i] = myFile.readStringUntil('\n').toInt();
+            //         #endif      
+            //         tmp_layerInputs  = myFile.readStringUntil('\n').toInt();
+            //         tmp_layerOutputs = myFile.readStringUntil('\n').toInt();
+            //         #if !defined(NO_BIAS)
+            //             #if !defined(MULTIPLE_BIASES_PER_LAYER)
+            //                 #if !defined(USE_INT_QUANTIZATION)
+            //                     tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
+            //                     tmp_bias  = new DFLOAT;
+            //                     *tmp_bias = *((DFLOAT*)(&tmp));
+            //                 #else
+            //                     tmp_bias  = new IDFLOAT;
+            //                     *tmp_bias = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+            //                 #endif
+            //             #else
+            //                 tmp_bias  = new IDFLOAT[tmp_layerOutputs];
+            //             #endif
+            //         #endif
 
-                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-                        #if defined(NO_BIAS)
-                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, HAS_NO_BIAS, this);
-                        #else
-                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
-                        #endif
-                        layers[i].weights = new IDFLOAT *[tmp_layerOutputs];
-                    #endif
+            //         #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+            //             #if defined(NO_BIAS)
+            //                 layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, HAS_NO_BIAS, this);
+            //             #else
+            //                 layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
+            //             #endif
+            //             layers[i].weights = new IDFLOAT *[tmp_layerOutputs];
+            //         #endif
 
-                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-                        for(unsigned int j=0; j<tmp_layerOutputs; j++){
-                            #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                #if !defined(USE_INT_QUANTIZATION)
-                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                    layers[i].bias[j] = *((DFLOAT*)(&tmp));
-                                #else
-                                    layers[i].bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                #endif
-                            #endif
-                            layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
-                            for(unsigned int k=0; k<tmp_layerInputs; k++){
-                                #if !defined(USE_INT_QUANTIZATION)
-                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                    layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                #else
-                                    layers[i].weights[j][k] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                #endif
-                            }
-                        }
-                    #else // I won't elif here cause I want to have a clear image of the "division" below
-                        #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            for(unsigned int j=0; j<tmp_layerOutputs; j++){
-                                #if !defined(USE_INT_QUANTIZATION)
-                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                    tmp_bias[j] = *((DFLOAT*)(&tmp));
-                                #else
-                                    tmp_bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                #endif
-                                for(unsigned int k=0; k<tmp_layerInputs; k++){
-                                    #if !defined(USE_INT_QUANTIZATION)
-                                        tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                        weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                    #else
-                                        weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                    #endif
-                                    count_ij++;
-                                }
-                            }
-                        #else
-                            for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
-                                #if !defined(USE_INT_QUANTIZATION)
-                                    tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                    weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                #else
-                                    weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                #endif
-                                count_ij++;
-                            }
-                        #endif
-                    #endif
-                    #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-                        #if defined(NO_BIAS)
-                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, HAS_NO_BIAS, this);
-                        #else
-                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
-                        #endif
-                    #endif
-                }
-                myFile.close();
-                return true;
-              }
+            //         #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+            //             for(unsigned int j=0; j<tmp_layerOutputs; j++){
+            //                 #if defined(MULTIPLE_BIASES_PER_LAYER)
+            //                     #if !defined(USE_INT_QUANTIZATION)
+            //                         tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+            //                         layers[i].bias[j] = *((DFLOAT*)(&tmp));
+            //                     #else
+            //                         layers[i].bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+            //                     #endif
+            //                 #endif
+            //                 layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
+            //                 for(unsigned int k=0; k<tmp_layerInputs; k++){
+            //                     #if !defined(USE_INT_QUANTIZATION)
+            //                         tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+            //                         layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+            //                     #else
+            //                         layers[i].weights[j][k] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+            //                     #endif
+            //                 }
+            //             }
+            //         #else // I won't elif here cause I want to have a clear image of the "division" below
+            //             #if defined(MULTIPLE_BIASES_PER_LAYER)
+            //                 for(unsigned int j=0; j<tmp_layerOutputs; j++){
+            //                     #if !defined(USE_INT_QUANTIZATION)
+            //                         tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+            //                         tmp_bias[j] = *((DFLOAT*)(&tmp));
+            //                     #else
+            //                         tmp_bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+            //                     #endif
+            //                     for(unsigned int k=0; k<tmp_layerInputs; k++){
+            //                         #if !defined(USE_INT_QUANTIZATION)
+            //                             tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+            //                             weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+            //                         #else
+            //                             weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+            //                         #endif
+            //                         count_ij++;
+            //                     }
+            //                 }
+            //             #else
+            //                 for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
+            //                     #if !defined(USE_INT_QUANTIZATION)
+            //                         tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+            //                         weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+            //                     #else
+            //                         weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+            //                     #endif
+            //                     count_ij++;
+            //                 }
+            //             #endif
+            //         #endif
+            //         #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+            //             #if defined(NO_BIAS)
+            //                 layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, HAS_NO_BIAS, this);
+            //             #else
+            //                 layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
+            //             #endif
+            //         #endif
+            //     }
+            //     myFile.close();
+            //     return true;
+            //   }
             return false;
         }
     #endif
