@@ -1528,7 +1528,11 @@ public:
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         bool NeuralNetwork::save(String file) 
         {
-            File myFile = SD.open(file, SD_NN_WRITE_MODE);
+            #ifdef CORE_TEENSY
+                File myFile = SD.open(file.c_str(), FILE_WRITE);
+            #else
+                File myFile = SD.open(file, SD_NN_WRITE_MODE);
+            #endif
             if (myFile){
                 unsigned int totalNumOfWeights = 0;
                 myFile.println("        "); // yes... it needs those spaces
@@ -1559,6 +1563,7 @@ public:
                 myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
                 myFile.print(totalNumOfWeights);
                 myFile.close();
+                return true;
             }
             return false;
         }
@@ -1569,7 +1574,11 @@ public:
             if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
                 pdestract();
 
-            File myFile = SD.open(file);
+            #ifdef CORE_TEENSY
+                File myFile = SD.open(file.c_str());
+            #else
+                File myFile = SD.open(file);
+            #endif
             if (myFile) {
                 isAllocdWithNew = true;
 
@@ -1700,7 +1709,7 @@ public:
                 }
                 myFile.close();
                 return true;
-              }
+            }
             return false;
         }
     #endif
