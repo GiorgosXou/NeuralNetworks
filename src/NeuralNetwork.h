@@ -366,22 +366,22 @@
 #define CUSTOM_DF4_DEFINITION
 #define CUSTOM_DF5_DEFINITION
 
-// STR(AX) | pragma message | A = Activation | AL = All | CA = Custom Activation
-#define A1 
-#define A2 
-#define A3 
-#define A4 
-#define A5 
-#define A6 
-#define A7
-#define A8
-#define A9 
-#define A10 
-#define A11
-#define A12
-#define A13
-#define A14
-#define AL
+// STR(AX) | pragma message | AN = Activation Name | ALL_A = All | CA = Custom Activation
+#define AN_1
+#define AN_2
+#define AN_3
+#define AN_4
+#define AN_5
+#define AN_6
+#define AN_7
+#define AN_8
+#define AN_9
+#define AN_10
+#define AN_11
+#define AN_12
+#define AN_13
+#define AN_14
+#define ALL_A
 
 #define CA1
 #define CA2
@@ -401,7 +401,7 @@
 
 
 #if defined(Sigmoid) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A1
+    #undef AN_1
     #undef ACT1
     #undef Sigmoid
     #undef DEFAULT_ACTIVATION_FUNCTION
@@ -409,10 +409,10 @@
     #define ACTIVATION 
     #define ACTIVATION_FUNCTION Sigmoid
     #define Sigmoid Sigmoid
-    #define A1 |> Sigmoid 
+    #define AN_1 |> Sigmoid 
 #endif
 #if defined(Tanh) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A2
+    #undef AN_2
     #undef ACT2
     #undef Tanh
     #undef ACTIVATION
@@ -422,10 +422,10 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Tanh
     #define Tanh Tanh
-    #define A2 |> Tanh
+    #define AN_2 |> Tanh 
 #endif
 #if defined(ReLU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A3
+    #undef AN_3
     #undef ACT3
     #undef ReLU
     #undef ACTIVATION
@@ -436,10 +436,10 @@
     #define ACTIVATION_FUNCTION ReLU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ReLU ReLU
-    #define A3 |> ReLU 
+    #define AN_3 |> ReLU 
 #endif
 #if defined(LeakyELU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A4
+    #undef AN_4
     #undef ACT4
     #undef LeakyELU
     #undef ACTIVATION
@@ -450,10 +450,10 @@
     #define ACTIVATION_FUNCTION LeakyELU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define LeakyELU LeakyELU
-    #define A4 |> LeakyELU 
+    #define AN_4 |> LeakyELU 
 #endif
 #if defined(ELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A5
+    #undef AN_5
     #undef ACT5
     #undef ELU
     #undef ACTIVATION
@@ -464,10 +464,10 @@
     #define ACTIVATION_FUNCTION ELU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
     #define ELU ELU
-    #define A5 |> ELU 
+    #define AN_5 |> ELU 
 #endif
 #if defined(SELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A6
+    #undef AN_6
     #undef ACT6
     #undef SELU
     #undef ACTIVATION
@@ -477,10 +477,10 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SELU
     #define SELU SELU
-    #define A6 |> SELU
+    #define AN_6 |> SELU 
 #endif
 #if defined(Softmax)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A7
+    #undef AN_7
     #undef ACT7
     #undef Softmax
     #undef ACTIVATION
@@ -490,10 +490,10 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softmax
     #define Softmax Softmax
-    #define A7 |> Softmax
+    #define AN_7 |> Softmax 
 #endif
 #if defined(Identity)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
-    #undef A8
+    #undef AN_8
     #undef ACT8
     #undef Identity
     #undef ACTIVATION
@@ -503,11 +503,11 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Identity
     #define Identity Identity
-    #define A8 |> Identity
+    #define AN_8 |> Identity 
 #endif
 #if defined(BinaryStep) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
-    #undef A9
+    #undef AN_9
     #undef ACT9
     #undef BinaryStep
     #undef ACTIVATION
@@ -519,11 +519,11 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION BinaryStep
     #define BinaryStep BinaryStep
-    #define A9 |> BinaryStep 
+    #define AN_9 |> BinaryStep 
 #endif
 #if defined(Softplus)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
-    #undef A10
+    #undef AN_10
     #undef ACT10
     #undef Softplus
     #undef ACTIVATION
@@ -535,11 +535,11 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softplus
     #define Softplus Softplus
-    #define A10 |> Softplus 
+    #define AN_10 |> Softplus 
 #endif
 #if defined(SiLU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
-    #undef A11
+    #undef AN_11
     #undef ACT11
     #undef SiLU
     #undef ACTIVATION
@@ -551,11 +551,11 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SiLU
     #define SiLU SiLU
-    #define A11 |> SiLU 
+    #define AN_11 |> SiLU 
 #endif
 #if defined(GELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
-    #undef A12
+    #undef AN_12
     #undef ACT12
     #undef GELU
     #undef ACTIVATION
@@ -567,11 +567,11 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION GELU
     #define GELU GELU
-    #define A12 |> GELU 
+    #define AN_12 |> GELU 
 #endif
 #if defined(Mish)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
-    #undef A13
+    #undef AN_13
     #undef ACT13
     #undef Mish
     #undef ACTIVATION
@@ -583,11 +583,11 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Mish
     #define Mish Mish
-    #define A13 |> Mish 
+    #define AN_13 |> Mish 
 #endif
 #if defined(Gaussian)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef NB
-    #undef A14
+    #undef AN_14
     #undef ACT14
     #undef Gaussian
     #undef ACTIVATION
@@ -599,7 +599,7 @@
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Gaussian
     #define Gaussian Gaussian
-    #define A14 |> Gaussian 
+    #define AN_14 |> Gaussian 
 #endif
 
 #define CONCATENATE_WITHOUT_SPACE(x, y) CONCATENATE_IMPL(x, y)
@@ -750,7 +750,7 @@
         // ACTIVATE ALL FUNCTIONS
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
-        #define AL |> "(ALL_ACTIVATION_FUNCTIONS)"
+        #define ALL_A |> "(ALL_ACTIVATION_FUNCTIONS)"
         #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
         #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
         #undef MSG10
@@ -758,13 +758,13 @@
     #else
         //ENABLE DEFAULT ACTIVATION FUNCTION
         // i will also create a mechanism to show #error if more than one is defined with B opperations?
-        #undef A1
+        #undef AN_1
         #undef Sigmoid
         #define DEFAULT_ACTIVATION_FUNCTION
         #define ACTIVATION //Sigmoid default but for more than one you must declare it
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
-        #define A1 |> Sigmoid 
+        #define AN_1 |> Sigmoid 
     #endif
 #endif
 
@@ -785,7 +785,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] AL A1 A2 A3 A4 A5 A6 A7 A8 A9 A10 A11 A12 A13 A14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB A9 A10 A11 A12 A13 A14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
