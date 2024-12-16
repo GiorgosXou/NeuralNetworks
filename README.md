@@ -261,7 +261,7 @@ And then use them in your sketch like:
 
 #include <NeuralNetwork.h>
 
-// derivative function must end in "Der" | Limited to f(x), for optimization reasons
+// derivative function must end in "Der" | Limited to f(x), due to optimization reasons
 float NeuralNetwork::Layer::my_sigmoidDer(const float &fx){ return fx - fx * fx;      } 
 float NeuralNetwork::Layer::my_sigmoid   (const float &x ){ return 1 / (1 + exp(-x)); }
 
