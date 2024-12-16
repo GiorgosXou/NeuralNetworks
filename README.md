@@ -8,7 +8,7 @@
 
 
 # Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
-Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs) easily and effectively on any Arduino board and other microcontrollers.
+Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs) easily and effectively on any Arduino board and many microcontrollers.
 
 # 📚 Summary
 | NN<span>&nbsp;</span>Functions | Input<span>&nbsp;</span>Type<span>&nbsp;</span>(x)|Output<span>&nbsp;</span>Type<span>&nbsp;</span>(Y) |<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|
@@ -26,12 +26,12 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Use of activation-functions per layer-to-layer.
 - - ```+``` Optimizations based on [user's preference](#define-macro-properties). 
 - - ```+``` Support for [custom activation functions](#define-custom-functions).
-- - ```+``` [Basic ESP32-S3 SIMD acceleration.](https://github.com/GiorgosXou/NeuralNetworks/blob/5cd31c9a29853899c36b5ca7d0d8cf5e9cb3422e/src/NeuralNetwork.h#L1964-L1967 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
+- - ```+``` [Basic ESP32-S3 SIMD acceleration.](https://github.com/GiorgosXou/NeuralNetworks/blob/3dceb2f195bd3341ad0af37d5f020093c8f29988/src/NeuralNetwork.h#L2337-L2340 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
 - - ```+``` Both 16 and 8 bit, [int quantization](#int-quantization).
 - - ```+``` MSE/BCE/CCE [loss-functions](#dfloat-loss-functions).
 - - ```+``` Support for [double precision](#define-macro-properties).
 - - ```+``` Many [activation-functions](#dfloat-activation-functions).
-- - ```+``` [Use of storage medias.](## 'Such as SD, PROGMEM, EEPROM')
+- - ```+``` [Use of storage medias.](#%EF%B8%8F--examples 'Such as SD, PROGMEM, EEPROM')
 - - ```+``` [Exceptional solutions.](## 'eg. look at FeedForward_Individual')
 - - ```+``` Simplicity!  
  
@@ -48,7 +48,7 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM) and [FRAM](https://en.wikipedia.org/wiki/Ferroelectric_RAM).
 - - ```-``` Even more properties, for many different needs.
 
-# ✏️ Examples
+# ✏️  Examples
 ***✨ ([See also](#-training)): training with Tensorflow section)***
 
 - ***`🔤 Basic:`***
@@ -70,7 +70,7 @@ Understanding the Basics of a Neural Network:
 - - [Recognizing handwritten digits (MNIST) ✨][EXAMPLE_FEED_INDIVIDUAL_INO]
 
 
-# ⚠️ Important
+# 📌 Important
 1. I am **NOT a professional** in any of those fields...
 2. In case of error with 'POINTER_REGS' click [here](https://forum.arduino.cc/index.php?topic=613857.0)
 3. `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
@@ -86,7 +86,7 @@ Understanding the Basics of a Neural Network:
 <details><summary><strong>ESP32-C3</strong></summary>
 
 - You may need to increase serial baud-rate from `9600` to `115200`
-- Uses software-emulated EEPROM, so don't expect EEPROM-examples\functionalities to work on it </details>
+- Uses software-emulated EEPROM, so don't expect internal-EEPROM examples\functionalities to work on it </details>
 <details><summary><strong>ATtiny85</strong></summary>
 
 - `NN.print()` Function is disabled!
@@ -99,7 +99,8 @@ Understanding the Basics of a Neural Network:
 <br>
 
 # ⚙️ Functions, Variables  ...
-Note that `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
+> [!NOTE]
+> `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
 
 | (NN) Neural-Network's Constructors |
 | ------ | 
@@ -261,7 +262,7 @@ And then use them in your sketch like:
 
 #include <NeuralNetwork.h>
 
-// derivative function must end in "Der" | Limited to f(x), for optimization reasons
+// derivative function must end in "Der" | Limited to f(x), due to optimization reasons
 float NeuralNetwork::Layer::my_sigmoidDer(const float &fx){ return fx - fx * fx;      } 
 float NeuralNetwork::Layer::my_sigmoid   (const float &x ){ return 1 / (1 + exp(-x)); }
 
@@ -271,7 +272,8 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 
 // Tanh > ... > Tanh > my_sigmoid
 ```
-**IMPORTANT NOTE:** Be careful commenting in front of `#define`, see issue #29
+> [!CAUTION]
+> Be careful commenting in front of `#define`, see issue [#29](https://github.com/GiorgosXou/NeuralNetworks/issues/29)
 
 
 
@@ -288,7 +290,8 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 <br>
 
 ## ```Type``` Other Variables
-**Note** that except from `_numberOfInputs` and `_numberOfOutputs` everything else is not valid when you [`USE_INTERNAL_EEPROM`](#define-macro-properties)
+> [!NOTE]
+> if you [`USE_INTERNAL_EEPROM`](#define-macro-properties), then only `_numberOfInputs`,`_numberOfOutputs` and `outputs` are available
 
 | Type | NN's Variables | Explenation|
 | ------ | ------ | ------ |
@@ -565,9 +568,9 @@ for i in range(len(inputs)):
 <br>
 
 
-**IMPORTANT NOTE:** See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
-
-*([see also examples](#✏️-examples) on how to train a NN directly on an MCU)* 
+> [!IMPORTANT]
+> See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+> *([see also examples](#✏️-examples) on how to train a NN directly on an MCU)*
 
 <br>
 
@@ -796,6 +799,6 @@ Here most of the resources I came across the internet, I recomend you to have a 
 
 **if** you want to help me&others to educate ourselves better **and if** you have a love and passion for sharing and helping, **then** I suggest you to **[join our discord server ](https://discord.gg/R2RVeD3gY8)** 🤍
 
-My Instagram account is: [giorgos.xou](https://www.instagram.com/giorgos.xou/) [;)](http://prntscr.com/xtz4s6) feel free to ask me anything
+<sup><sub>My Instagram account is: [giorgos.xou](https://www.instagram.com/giorgos.xou/) [;)](http://prntscr.com/xtz4s6) feel free to ask me anything</sub></sup>
 
             
