@@ -2,6 +2,7 @@
 - CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS, FLOAT\DOUBLE\INT-MODE OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
 - CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS, FLOAT\DOUBLE\INT-MODE OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
 - CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS, FLOAT\DOUBLE\INT-MODE OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- ^^^^^^^ THE ABOVE STATEMENT IS ALSO TRUE WHETHER YOU USED REDUCE_RAM_WEIGHTS_LVL2 OR NOT DURING TRAINING !!!!
 - CAUTION THIS EXAMPLE BARELY FITS THE RAM OF ARDUINO UNO. EXPIRIMENT WITH CAUTION ON IT* | THIS IS MAINLY THE RESULT OF NOT USING B01000000 RAM-OPTIMIZATION ...
 */
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
@@ -16,7 +17,7 @@
 #include <NeuralNetwork.h>
           NeuralNetwork *NN;
 
-unsigned int layers[] = {3, 7, 1}; // 3 layers: (1st)layer with 3 input neurons 2nd layer 7 hidden neurons and (3th)layer with 1 output neuron
+unsigned int layers[] = {3, 7, 1}; // 3 layers: (1st)layer with 3-input-neurons (2nd)layer 7-hidden-neurons and (3rd)layer with 1-output-neuron
 byte Actv_Functions[] = {   1, 0}; // 1 = Tanh and 0 = Sigmoid (just as a proof of consept)
 
 float *output; // 3th layer's output

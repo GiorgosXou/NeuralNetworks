@@ -47,7 +47,10 @@
 #endif
 
 #define SD_NN_WRITE_MODE O_WRITE | O_CREAT
-#if defined(ESP32)
+#if defined(CORE_TEENSY)
+    #undef SD_NN_WRITE_MODE
+    #define SD_NN_WRITE_MODE FILE_WRITE
+#elif defined(ESP32)
     #define AS_SOFTWARE_EMULATED_EEPROM
     #undef SD_NN_WRITE_MODE
     #define SD_NN_WRITE_MODE "w"
@@ -84,6 +87,15 @@
         #define INCLUDES_EEPROM_H
     #endif
 #endif
+
+
+// Message for those who used SD with [V.2.X.X] and now want to use [V.3.X.X]
+#define SD_MIGRATE_MSG
+#if defined(SUPPORTS_SD_FUNCTIONALITY)
+    #undef SD_MIGRATE_MSG
+    #define SD_MIGRATE_MSG \n "𝗪𝗔𝗥𝗡𝗜𝗡𝗚: (IN CASE YOU MIGRATING FROM [V.2.X.X] TO [V.3.X.X] SEE Upgrade_Old_SD_NN_files.ino OR JUST REPLACE 'load()' WITH 'load_old()' AND 'save()' WITH 'save_old()'"\n
+#endif
+
 
 // STR(MSGX) | pragma message
 #define MSG1
@@ -188,7 +200,7 @@
 
 #define IDFLOAT DFLOAT
 
-// If not USE_INT_QUANTIZATION then the line bellow is used for SD save
+// [OLD VERSION V.2.X.X] If not USE_INT_QUANTIZATION then the line bellow is used for SD save
 #define CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(value) *((LLONG*)(&value))
 
 #if defined(_2_OPTIMIZE)
@@ -785,7 +797,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -956,12 +968,12 @@ public:
     // issues with multiple NNs too ...
     #if defined(REDUCE_RAM_WEIGHTS_LVL2) 
         IS_CONST IDFLOAT *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-        int i_j = 0;  // NOTE: not sure if I should make it unsigned yet considering there's --i_j; that goes to -1
+        int i_j = 0;  // NOTE: not sure if I should make it unsigned yet considering there's i_j--; that goes to -1
     #endif   
 
     #if defined(ACTIVATION__PER_LAYER)
         unsigned int AtlayerIndex; // who 's gonna make a network with more than 255 layers :P ?!?!? but anyways i will use int or i will add byte too, using a property definition with bunch of other things like this for max optimization ... lol
-        byte *ActFunctionPerLayer; // lets be realistic... byte because. xD
+        byte *ActFunctionPerLayer; // lets be realistic... byte because. xD | 2025-01-04 07:57:32 PM If I ever change it, remember to change SD-save too (and if anything else)
     #endif
 
     // #5 This is the sum of the exp(outputs) of the previous layer (for All and each layer)
@@ -1049,8 +1061,10 @@ public:
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork(String file);
-        bool save(String file); // TODO: load\Save from RAM and PROGMEM, EEPROM, FRAM and other medias 
-        bool load(String file);
+        bool save    (String file); // TODO: load\Save from RAM and PROGMEM, EEPROM, FRAM and other medias
+        bool load    (String file);
+        bool save_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
+        bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
     #if defined(INCLUDES_EEPROM_H)
         unsigned int save(unsigned int atAddress); // EEPROM
@@ -1526,13 +1540,53 @@ public:
     
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
-        bool NeuralNetwork::save(String file) 
+        bool NeuralNetwork::save(String file)
         {
-            #ifdef CORE_TEENSY
-                File myFile = SD.open(file.c_str(), FILE_WRITE);
-            #else
-                File myFile = SD.open(file, SD_NN_WRITE_MODE);
-            #endif
+            File myFile = SD.open(file.c_str(), SD_NN_WRITE_MODE); // it seems that c_str() doesn't work with UNO ...
+
+            if (myFile){
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    unsigned int totalNumOfWeights = 0; // we write 0 so we can seek at the end and set the real value
+                    myFile.write(reinterpret_cast<byte*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
+                #endif
+                myFile.write(reinterpret_cast<byte*>(&numberOflayers), sizeof(numberOflayers));
+                for(unsigned int n=0; n<numberOflayers; n++){
+                    #if defined(ACTIVATION__PER_LAYER)
+                        myFile.write(reinterpret_cast<byte*>(&ActFunctionPerLayer[n]), sizeof(*ActFunctionPerLayer));
+                    #endif
+                    myFile.write(reinterpret_cast<byte*>(&layers[n]._numberOfInputs), sizeof(NeuralNetwork::Layer::_numberOfInputs));
+                    myFile.write(reinterpret_cast<byte*>(&layers[n]._numberOfOutputs), sizeof(NeuralNetwork::Layer::_numberOfOutputs));
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        myFile.write(reinterpret_cast<byte*>(layers[n].bias), sizeof(*NeuralNetwork::Layer::bias));
+                    #endif
+                    // TODO: make an i_j loop for REDUCE_RAM_WEIGHTS_LVL2 instead
+                    for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
+                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                            myFile.write(reinterpret_cast<byte*>(&layers[n].bias[i]), sizeof(*NeuralNetwork::Layer::bias));
+                        #endif
+                        for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                myFile.write(reinterpret_cast<byte*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
+                            #else
+                                myFile.write(reinterpret_cast<byte*>(&layers[n].weights[i][j]), sizeof(**NeuralNetwork::Layer::weights)); // I would had used i_j but I have totalNumOfWeights so... :)
+                            #endif
+                        }
+                    }
+                }
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
+                    myFile.write(reinterpret_cast<byte*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
+                #endif
+                myFile.close();
+                return true;
+            }
+            return false;
+        }
+
+        bool NeuralNetwork::save_old(String file)
+        {
+            File myFile = SD.open(file.c_str(), SD_NN_WRITE_MODE);
+
             if (myFile){
                 unsigned int totalNumOfWeights = 0;
                 myFile.println("        "); // yes... it needs those spaces
@@ -1574,11 +1628,113 @@ public:
             if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
                 pdestract();
 
-            #ifdef CORE_TEENSY
-                File myFile = SD.open(file.c_str());
-            #else
-                File myFile = SD.open(file);
-            #endif
+            File myFile = SD.open(file.c_str());
+
+            if (myFile) {
+                isAllocdWithNew = true;
+
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    // TODO: remove count_ij in favor of i_j but first see the note about\at i_j's definition (if so, reminder: at the end, set it to zero again)
+                    // see also issue #32 and adapt based on <limits.h> ULONG_MAX
+                    unsigned int count_ij; // it needs to be unsigned since we write an unsigned :P
+                    myFile.read(reinterpret_cast<byte*>(&count_ij), sizeof(count_ij));
+                    weights = new IDFLOAT[count_ij];
+                    i_j = 0;
+                    count_ij = 0;
+                #endif
+
+                myFile.read(reinterpret_cast<byte*>(&numberOflayers), sizeof(numberOflayers));
+                layers = new Layer[numberOflayers];
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    layers[numberOflayers -1].outputs = NULL;
+                #endif
+
+                #if defined(ACTIVATION__PER_LAYER)
+                    isAlreadyLoadedOnce = true;
+                    ActFunctionPerLayer = new byte[numberOflayers];
+                #endif
+
+                #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                    me = this;
+                #endif
+
+                unsigned int tmp_layerInputs;
+                unsigned int tmp_layerOutputs;
+
+                #if !defined(NO_BIAS)
+                    IDFLOAT *tmp_bias;
+                #endif
+
+                for (unsigned int i = 0; i < numberOflayers; i++)
+                {
+                    #if defined(ACTIVATION__PER_LAYER)
+                        myFile.read(reinterpret_cast<byte*>(&ActFunctionPerLayer[i]), sizeof(*ActFunctionPerLayer));
+                    #endif
+                    myFile.read(reinterpret_cast<byte*>(&tmp_layerInputs), sizeof(tmp_layerInputs));
+                    myFile.read(reinterpret_cast<byte*>(&tmp_layerOutputs), sizeof(tmp_layerOutputs));
+                    #if !defined(NO_BIAS)
+                        #if !defined(MULTIPLE_BIASES_PER_LAYER)
+                            tmp_bias  = new IDFLOAT;
+                            myFile.read(reinterpret_cast<byte*>(tmp_bias), sizeof(*tmp_bias));
+                        #else
+                            tmp_bias  = new IDFLOAT[tmp_layerOutputs]; // reminder: this is fine for NOT-REDUCE_RAM_WEIGHTS_LVL2 too
+                        #endif
+                    #endif
+
+                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
+                        #if defined(NO_BIAS)
+                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, HAS_NO_BIAS, this);
+                        #else
+                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
+                        #endif
+                        layers[i].weights = new IDFLOAT *[tmp_layerOutputs];
+
+                        for(unsigned int j=0; j<tmp_layerOutputs; j++){
+                            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                myFile.read(reinterpret_cast<byte*>(&layers[i].bias[j]), sizeof(*NeuralNetwork::Layer::bias));
+                            #endif
+                            layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
+
+                            for(unsigned int k=0; k<tmp_layerInputs; k++){
+                                myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k]), sizeof(**NeuralNetwork::Layer::weights));
+                            }
+                        }
+                    #else // I won't elif here cause I want to have a clear image of the "division" below
+                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                            for(unsigned int j=0; j<tmp_layerOutputs; j++){
+
+                                myFile.read(reinterpret_cast<byte*>(&tmp_bias[j]), sizeof(*tmp_bias));
+
+                                for(unsigned int k=0; k<tmp_layerInputs; k++){
+                                    myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                }
+                            }
+                        #else
+                            for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
+                                myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                            }
+                        #endif
+
+                        #if defined(NO_BIAS)
+                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, HAS_NO_BIAS, this);
+                        #else
+                            layers[i] = Layer(tmp_layerInputs, tmp_layerOutputs, tmp_bias, this);
+                        #endif
+                    #endif
+                }
+                myFile.close();
+                return true;
+            }
+            return false;
+        }
+
+        bool NeuralNetwork::load_old(String file)
+        {
+            if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
+                pdestract();
+
+            File myFile = SD.open(file.c_str());
+
             if (myFile) {
                 isAllocdWithNew = true;
 
@@ -1587,10 +1743,10 @@ public:
                     i_j = 0;
                     weights = new IDFLOAT[myFile.readStringUntil('\n').toInt()];
                 #else
-                    myFile.readStringUntil('\n').toInt(); // Skipping line
+                    myFile.readStringUntil('\n').toInt(); // Skipping line // reminder removed this too
                 #endif
 
-                numberOflayers = myFile.readStringUntil('\n').toInt() - 1;
+                numberOflayers = myFile.readStringUntil('\n').toInt() - 1; // reminder I removed +1 from save
                 layers = new Layer[numberOflayers]; 
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     layers[numberOflayers -1].outputs = NULL;
