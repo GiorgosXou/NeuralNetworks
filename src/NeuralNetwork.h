@@ -968,7 +968,7 @@ public:
     // issues with multiple NNs too ...
     #if defined(REDUCE_RAM_WEIGHTS_LVL2) 
         IS_CONST IDFLOAT *weights; //                              pointer to sketch's        Array of Weights.    #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-        int i_j = 0;  // NOTE: not sure if I should make it unsigned yet considering there's i_j--; that goes to -1
+        unsigned int i_j = 0;
     #endif   
 
     #if defined(ACTIVATION__PER_LAYER)
@@ -1505,7 +1505,7 @@ public:
 
             layers[numberOflayers - 1].BackPropOutput(expected, layers[numberOflayers - 2].outputs); // issue because backprop einai anapoda ta weights [Fixed]
 
-            for (int i = numberOflayers - 2; i > 0; i--)
+            for (unsigned int i = numberOflayers - 2; i > 0; i--)
             {
                 layers[i].BackPropHidden(&layers[i + 1], layers[i - 1].outputs);
                 delete[] layers[i + 1].preLgamma;
@@ -1634,8 +1634,7 @@ public:
                 isAllocdWithNew = true;
 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    // TODO: remove count_ij in favor of i_j but first see the note about\at i_j's definition (if so, reminder: at the end, set it to zero again)
-                    // see also issue #32 and adapt based on <limits.h> ULONG_MAX
+                    // TODO: remove count_ij in favor of i_j (if so, reminder: at the end, set it to zero again) see also issue #32
                     unsigned int count_ij; // it needs to be unsigned since we write an unsigned :P
                     myFile.read(reinterpret_cast<byte*>(&count_ij), sizeof(count_ij));
                     weights = new IDFLOAT[count_ij];
@@ -2592,7 +2591,7 @@ public:
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
         DFLOAT NeuralNetwork::Layer::SoftmaxSum(const DFLOAT &x) { DFLOAT tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
-        void  NeuralNetwork::Layer::Softmax() {for (int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}}
+        void  NeuralNetwork::Layer::Softmax() {for (unsigned int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}}
     #endif
 
     DFLOAT NeuralNetwork::Layer::Identity      (const DFLOAT &x) {return x                                                 ;}
@@ -2636,8 +2635,17 @@ public:
             DFLOAT gamma;
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                for (int i = _numberOfOutputs -1; i >= 0; i--)
-                {
+                // ---> #9
+                // 3. in other words it's like: for (int i = _numberOfOutputs -1; i >= 0; i--) OR
+                // 2. in other words it's like: for (unsigned int i = _numberOfOutputs -1; i != UINT_MAX; i--) OR
+                // 1. in other words it's like: for (unsigned int i = _numberOfOutputs -1;; i--){...if (i == 0){ break; }}
+                // But since 1. doesn't use unsigned, 2. bloats FLASH-memmory and 3. uses branching and AVRs may not handle it well?
+                // ... I ended up with this :P
+
+                unsigned int i = _numberOfOutputs;
+                unsigned int j; 
+                do {
+                    i--;
                     //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
                     gamma = (outputs[i] - _expected_[i]);
                     
@@ -2664,13 +2672,15 @@ public:
                         bias_Delta *= gamma;
                     #endif
 
-                    for (int j = _numberOfInputs -1; j >= 0; j--)
-                    {
+                    // [Reference: #9]
+                    j = _numberOfInputs;
+                    do {
+                        j--;
                         me->i_j--;
                         preLgamma[j] += gamma * me->weights[me->i_j];
                         me->weights[me->i_j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;   
-                    }
-                }
+                    } while (j != 0 );
+                } while (i != 0);
 
             #else
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
@@ -2730,8 +2740,11 @@ public:
             DFLOAT gamma;
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                for (int i = _numberOfOutputs -1; i >= 0; i--)
-                {
+                // [Reference: #9]
+                unsigned int i = _numberOfOutputs;
+                unsigned int j; 
+                do {
+                    i--;
                     #if defined(ACTIVATION__PER_LAYER)
                         gamma = frontLayer->preLgamma[i] * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
                     #else
@@ -2744,14 +2757,16 @@ public:
                         bias_Delta *= gamma;
                     #endif
 
-                    for (int j = _numberOfInputs -1; j >= 0; j--)
-                    {
+                    // [Reference: #9]
+                    j = _numberOfInputs;
+                    do {
+                        j--;
                         me->i_j--;
                         preLgamma[j] += gamma * me->weights[me->i_j];
                         me->weights[me->i_j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
-                    }
+                    } while (j != 0 );
 
-                }
+                } while (i != 0);
 
             #else
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
