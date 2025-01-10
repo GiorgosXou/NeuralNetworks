@@ -2651,10 +2651,10 @@ public:
                     
                      // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros
                     #if defined(CATEGORICAL_CROSS_ENTROPY)
-                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * log(outputs[i]);
+                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
                     #endif
                     #if defined(BINARY_CROSS_ENTROPY)
-                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * log(outputs[i]) + (1 - _expected_[i]) * log(1 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
+                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
                     #endif
                     #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
                         me->sumSquaredError += gamma * gamma; 
