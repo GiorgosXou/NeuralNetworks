@@ -883,6 +883,8 @@ private:
         #if !defined (NO_BACKPROP)
             void BackPropOutput(const DFLOAT *_expected_, const DFLOAT *inputs);
             void BackPropHidden(const Layer *frontLayer, const DFLOAT *inputs);
+            // Common Compute\train gamma Weights preLgamma (and MULTIPLE_BIASES_PER_LAYER if defined)
+            void CommonCompute(DFLOAT &gamma, DFLOAT preLgammaORgamma, const DFLOAT *inputs, unsigned int i, unsigned int j);
         #endif
 
 
@@ -2623,13 +2625,42 @@ public:
         DFLOAT NeuralNetwork::Layer::IdentityDer    (const DFLOAT &x ) {return 1                                                              ;}
 
 
+        void NeuralNetwork::Layer::CommonCompute(DFLOAT &gamma, DFLOAT preLgammaORgamma, const DFLOAT *inputs, unsigned int i, unsigned int j=0)
+        {
+            #if defined(ACTIVATION__PER_LAYER)
+                gamma = preLgammaORgamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+            #else
+                gamma = preLgammaORgamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
+            #endif
+
+            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure
+            #endif
+
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2) // [Reference: #9]
+                do {
+                    j--;
+                    me->i_j--;
+                    preLgamma[j] += gamma * me->weights[me->i_j];
+                    me->weights[me->i_j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
+                } while (j != 0 );
+            #else
+                for (; j < _numberOfInputs; j++)
+                {
+                    preLgamma[j] += gamma * weights[i][j];
+                    weights[i][j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
+                }
+            #endif
+        }
+
+
         void NeuralNetwork::Layer::BackPropOutput(const DFLOAT *_expected_, const DFLOAT *inputs)
         {
 
             preLgamma = new DFLOAT[_numberOfInputs]{}; // create gamma of previous layer and initialize{} values to 0 .. meh
             
 
-            #if !defined(NO_BIAS)
+            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 DFLOAT bias_Delta = 1.0;
             #endif
             DFLOAT gamma;
@@ -2643,7 +2674,6 @@ public:
                 // ... I ended up with this :P
 
                 unsigned int i = _numberOfOutputs;
-                unsigned int j; 
                 do {
                     i--;
                     //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
@@ -2660,26 +2690,11 @@ public:
                         me->sumSquaredError += gamma * gamma; 
                     #endif
 
-                    
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]);
-                    #endif
-                    #if defined(MULTIPLE_BIASES_PER_LAYER)
-                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
-                    #elif !defined(NO_BIAS)
+                    CommonCompute(gamma, gamma, inputs, i, _numberOfInputs);
+
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
-
-                    // [Reference: #9]
-                    j = _numberOfInputs;
-                    do {
-                        j--;
-                        me->i_j--;
-                        preLgamma[j] += gamma * me->weights[me->i_j];
-                        me->weights[me->i_j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;   
-                    } while (j != 0 );
                 } while (i != 0);
 
             #else
@@ -2702,23 +2717,11 @@ public:
                         me->sumSquaredError += gamma * gamma; 
                     #endif
                     
-                   
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]);
-                    #endif
-                    #if defined(MULTIPLE_BIASES_PER_LAYER)
-                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
-                    #elif !defined(NO_BIAS)
+                    CommonCompute(gamma, gamma, inputs, i);
+
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
-
-                    for (unsigned int j = 0; j < _numberOfInputs; j++) // TODO: 2024-03-12 07:03:29 AM this could go into a seperate common function
-                    {
-                        preLgamma[j] += gamma * weights[i][j];
-                        weights[i][j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
-                    }
                 }
             #endif
             
@@ -2734,7 +2737,7 @@ public:
             #endif
             preLgamma = new DFLOAT[_numberOfInputs]{};
 
-            #if !defined(NO_BIAS)
+            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 DFLOAT bias_Delta = 1.0;
             #endif
             DFLOAT gamma;
@@ -2742,53 +2745,23 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 // [Reference: #9]
                 unsigned int i = _numberOfOutputs;
-                unsigned int j; 
                 do {
                     i--;
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = frontLayer->preLgamma[i] * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
-                    #endif
+                    CommonCompute(gamma, frontLayer->preLgamma[i], inputs, i, _numberOfInputs);
 
-                    #if defined(MULTIPLE_BIASES_PER_LAYER)
-                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
-                    #elif !defined(NO_BIAS)
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
-
-                    // [Reference: #9]
-                    j = _numberOfInputs;
-                    do {
-                        j--;
-                        me->i_j--;
-                        preLgamma[j] += gamma * me->weights[me->i_j];
-                        me->weights[me->i_j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
-                    } while (j != 0 );
-
                 } while (i != 0);
 
             #else
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = frontLayer->preLgamma[i] * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = frontLayer->preLgamma[i] * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
-                    #endif
+                    CommonCompute(gamma, frontLayer->preLgamma[i], inputs, i);
 
-                    #if defined(MULTIPLE_BIASES_PER_LAYER)
-                        bias[i] -= gamma * me->LearningRateOfBiases; // This is the only line in the entire source-code, for which I asked and slightly trusted CHATGPT, because I wasn't 100% sure 
-                    #elif !defined(NO_BIAS)
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
-
-                    for (unsigned int j = 0; j < _numberOfInputs; j++)
-                    {
-                        preLgamma[j] += gamma * weights[i][j];
-                        weights[i][j] -= (gamma * inputs[j]) * me->LearningRateOfWeights;
-                    }
-
                 }
             #endif
 
