@@ -78,16 +78,6 @@
     #endif
 #endif
 
-#define EEPROM_LIB_NAME <EEPROM.h>
-#if defined(EEPROM_h) || defined(__EEPROM_H__) 
-    #define INCLUDES_EEPROM_H
-#elif defined __has_include
-    #if __has_include(EEPROM_LIB_NAME)
-        #include EEPROM_LIB_NAME 
-        #define INCLUDES_EEPROM_H
-    #endif
-#endif
-
 
 // Message for those who used SD with [V.2.X.X] and now want to use [V.3.X.X]
 #define SD_MIGRATE_MSG
