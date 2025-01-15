@@ -787,7 +787,10 @@
 #endif
 
 
+// NUM_OF_USED_ACTIVATION_FUNCTIONS is the number that initializes the size of the array-of-pointers to activation-functions (and derivative ones)
+// While, SOFTMAX_POSITION_IN_ARRAY is the position at which the softmax-activation function is present, based on what other activation-functions have been enabled to be compiled
 #define NUM_OF_USED_ACTIVATION_FUNCTIONS (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6 + ACT7 + ACT8 + ACT9 + ACT9 + ACT10 + ACT11 + ACT12 + ACT13 + ACT14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
+#define SOFTMAX_POSITION_IN_ARRAY (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6)
 
 
 #if !defined(ACTIVATION)
@@ -2320,8 +2323,8 @@ public:
             }
 
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                if (me->ActFunctionPerLayer[0] == 6)
+                // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
                     Softmax();
             #elif defined(Softmax)
                 Softmax();
@@ -2380,8 +2383,8 @@ public:
             }
 
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                if (me->ActFunctionPerLayer[0] == 6)
+                // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
                     Softmax();
             #elif defined(Softmax)
                 Softmax();
@@ -2470,8 +2473,8 @@ public:
                 #endif
 
                 #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                    // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                    if (me->F1 == 6)
+                    // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                    if (me->F1 == SOFTMAX_POSITION_IN_ARRAY)
                         Softmax();
                 #elif defined(Softmax)
                     Softmax();
@@ -2518,8 +2521,8 @@ public:
             }
 
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                if (fx == 6)
+                // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                if (fx == SOFTMAX_POSITION_IN_ARRAY)
                     Softmax();
             #elif defined(Softmax)
                 Softmax();
@@ -2564,8 +2567,8 @@ public:
         }
 
         #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-            // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-            if (me->ActFunctionPerLayer[me->AtlayerIndex] == 6)
+            // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+            if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
                 Softmax();
         #elif defined(Softmax)
             Softmax();
@@ -2625,8 +2628,8 @@ public:
         }
 
         #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-            // if current's Activation function == 6 == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-            if (me->ActFunctionPerLayer[me->AtlayerIndex] == 6)
+            // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+            if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
                 Softmax();
         #elif defined(Softmax)
             Softmax();
