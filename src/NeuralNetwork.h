@@ -1364,6 +1364,8 @@ public:
         #define TYPE_MEMMORY_PUT EEPROM.put
         #define TYPE_MEMMORY_ME_GET EEPROM.get
         #define TYPE_MEMMORY_READ EEPROM.read
+        #define PRINT_MESSAGE_INT_Q "INT_Q INTERNAL-EEPROM "
+        #define PRINT_MESSAGE_TYPE_MEM "INTERNAL-EEPROM "
     #elif defined(INCLUDES_FRAM_H)
         #define TYPE_MEMMORY_GET fram->readObject
         #define TYPE_MEMMORY_ME_GET me->fram->readObject
@@ -1375,6 +1377,8 @@ public:
         #else
             #define IN_EXTERNAL_TYPE_MEMMORY
             #define TYPE_MEMMORY_PUT fram->writeObject
+            #define PRINT_MESSAGE_INT_Q "INT_Q EXTERNAL-FRAM "
+            #define PRINT_MESSAGE_TYPE_MEM "EXTERNAL-FRAM "
         #endif
     #endif
 
@@ -2964,9 +2968,9 @@ public:
             void NeuralNetwork::Layer::type_memmory_print()
             {
                 #if defined(USE_INT_QUANTIZATION)
-                    Serial.print(F_MACRO("INT_Q EEPROM "));
+                    Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
                 #else
-                    Serial.print(F_MACRO("EEPROM "));
+                    Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                 #endif
                 Serial.print(_numberOfInputs);
                 Serial.print(F_MACRO("x"));
