@@ -1115,10 +1115,10 @@ public:
         bool save_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
-    #if defined(INCLUDES_EEPROM_H)
+    #if defined(INCLUDES_EEPROM_H) and !defined(USE_INTERNAL_EEPROM)
         template< typename T > void put_type_memmory_value(unsigned int &addr, T val);
         unsigned int save(unsigned int atAddress); // EEPROM , FRAM
-    #elif defined(INCLUDES_FRAM_H)
+    #elif defined(INCLUDES_FRAM_H) and !defined(USE_EXTERNAL_FRAM)
         template< typename T > void put_type_memmory_value(FRAM &fram, unsigned int &addr, T val);
         unsigned int save(FRAM &fram, unsigned int atAddress); // FRAM
     #endif
