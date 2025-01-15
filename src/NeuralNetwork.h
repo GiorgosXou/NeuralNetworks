@@ -68,6 +68,7 @@
 
 // https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
 // considering there's a scope it's looking for the library if you declare it above the #include <NeuralNetwork.h> it will enable the functionality else no.. meaning that I don't need to worry about destructor optimization #8
+// INCLUDES_FRAM_H and INCLUDES_EEPROM_H need to be there for save() function.
 #define SD_LIB_NAME <SD.h>
 #if defined(__SD_H__) || defined(SD_h) 
     #define SUPPORTS_SD_FUNCTIONALITY
@@ -76,6 +77,27 @@
         #include SD_LIB_NAME
         #define SUPPORTS_SD_FUNCTIONALITY
     #endif
+#endif
+
+#define EEPROM_LIB_NAME <EEPROM.h>
+#if defined(EEPROM_h) || defined(__EEPROM_H__) 
+    #define INCLUDES_EEPROM_H
+#elif defined __has_include
+    #if __has_include(EEPROM_LIB_NAME)
+        #include EEPROM_LIB_NAME 
+        #define INCLUDES_EEPROM_H
+    #endif
+#endif
+
+// #define FRAM_LIB_NAME "FRAM.h"
+#if defined(FRAM_OK) // Meh.. library uses #pragma once so I had to use another macro
+    #define INCLUDES_FRAM_H
+    // This will result on issues if the library is included below <NeuralNetwork.h> for some weird reason, so I believe this is enough anyways
+// #elif defined __has_include
+//     #if __has_include(FRAM_LIB_NAME)
+//         #include FRAM_LIB_NAME 
+//         #define INCLUDES_FRAM_H
+//     #endif
 #endif
 
 
@@ -104,6 +126,7 @@
 #define MSG14
 #define MSG15
 #define MSG16
+#define MSG17
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -201,11 +224,6 @@
         #endif
         #define NO_BACKPROP
         #define USE_INTERNAL_EEPROM
-        #if defined(ACTIVATION__PER_LAYER)
-            #define SIZEOF_FX sizeof(byte)
-        #else
-            #define SIZEOF_FX 0
-        #endif
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
             #define MSG9 \n- " [2] 0B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
@@ -301,8 +319,33 @@
 #endif
 
 
-// _3_OPTIMIZE will be here <-------------------------------
+#if defined(_3_OPTIMIZE)
+    #if ((_3_OPTIMIZE bitor 0B01111111) == 0B11111111)
+        #if defined(USE_INTERNAL_EEPROM)
+            #error "You can't yet USE_INTERNAL_EEPROM and USE_EXTERNAL_FRAM together."
+        #endif
+        #undef MSG17
+        #define MSG17 \n- " [3] 0B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not allowed with (USE_EXTERNAL_FRAM)."
+        #define USE_EXTERNAL_FRAM
+        #define NO_BACKPROP
+        // #if !defined(FRAM_h) || !defined(__FRAM_H__) 
+        //     #include "FRAM.h"
+        // #endif
+        // no need for #define INCLUDES_FRAM_H
+    #endif
+#endif
 
+
+// _4_OPTIMIZE will be here <-------------------------------
+
+
+#if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+    #if defined(ACTIVATION__PER_LAYER)
+        #define SIZEOF_FX sizeof(byte)
+    #else
+        #define SIZEOF_FX 0
+    #endif
+#endif
 
 // Handle this optimization last because above might add other ones that disable NO_BACKPROP
 #if defined(_2_OPTIMIZE) and ((_2_OPTIMIZE bitor 0B11111110) == 0B11111111)
@@ -787,7 +830,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -795,12 +838,18 @@ class NeuralNetwork
 {
 private:
 
-    #if defined(USE_INTERNAL_EEPROM)
+    #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
         unsigned int address = 0;
+        template< typename T > T get_type_memmory_value(unsigned int &addr);
         #if defined(ACTIVATION__PER_LAYER)
-            byte F1; // first activation function only for use in FdF_Individual_iEEPROM
+            byte F1; // first activation function only for use in type_memmory_FeedForward_Individual
         #endif
     #endif
+
+    #if defined(USE_EXTERNAL_FRAM)
+        FRAM *fram;
+    #endif
+
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
         bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
     #endif
@@ -826,7 +875,7 @@ private:
         unsigned int _numberOfOutputs; // # of neurons in the current  layer.
 
         #if !defined(NO_BIAS)
-            IS_CONST IDFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when FdF_Individual_iEEPROM
+            IS_CONST IDFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when type_memmory_FeedForward_Individual
         #endif
         DFLOAT *outputs;                // outputs of this     layer  [1D Array] pointers.
         
@@ -860,14 +909,14 @@ private:
 
         void FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
         void FdF_Individual_PROGMEM(const DFLOAT &input, const unsigned int &j);
-        #if defined(USE_INTERNAL_EEPROM)
-            void FdF_Individual_iEEPROM(const DFLOAT &input, const unsigned int &j);
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            void type_memmory_FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
         #endif
 
         void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
         void FdF_PROGMEM(const DFLOAT *inputs);
-        #if defined(USE_INTERNAL_EEPROM)
-            void FdF_IN_EEPROM(const DFLOAT *inputs);
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            void type_memmory_FeedForward(const DFLOAT *inputs);
         #endif
 
         #if !defined (NO_BACKPROP)
@@ -929,8 +978,8 @@ private:
         DFLOAT Gaussian   (const DFLOAT &x );
         
 
-        #if defined(USE_INTERNAL_EEPROM)
-            void print_INTERNAL_EEPROM();
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            void type_memmory_print();
         #endif
         void print_PROGMEM();
         void print();
@@ -1021,6 +1070,8 @@ public:
     NeuralNetwork();
     #if defined(USE_INTERNAL_EEPROM)
         NeuralNetwork(unsigned int address);
+    #elif defined(USE_EXTERNAL_FRAM)
+        NeuralNetwork(FRAM &framObj, unsigned int address);
     #endif
     #if !defined(NO_BACKPROP)
         NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL);                                              // #0
@@ -1058,10 +1109,13 @@ public:
         bool save_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
-    #if defined(INCLUDES_EEPROM_H)
-        unsigned int save(unsigned int atAddress); // EEPROM
+    #if defined(INCLUDES_EEPROM_H) or defined(USE_EXTERNAL_FRAM)
+        template< typename T > void put_type_memmory_value(unsigned int &addr, T val);
+        unsigned int save(unsigned int atAddress); // EEPROM , FRAM
+    #elif defined(INCLUDES_FRAM_H)
+        template< typename T > void put_type_memmory_value(FRAM &fram, unsigned int &addr, T val);
+        unsigned int save(FRAM &fram, unsigned int atAddress); // FRAM
     #endif
-    // unsigned int save(FRAM fram, unsigned int atAddress); // FRAM https://www.arduino.cc/reference/en/libraries/fram_i2c/
     
     void print();
      
@@ -1300,10 +1354,31 @@ public:
         }
     #endif
 
-    #if defined(USE_INTERNAL_EEPROM)
+
+    #if defined(INCLUDES_EEPROM_H)
+        #define IN_EXTERNAL_TYPE_MEMMORY
+        #define TYPE_MEMMORY_GET EEPROM.get
+        #define TYPE_MEMMORY_PUT EEPROM.put
+        #define TYPE_MEMMORY_ME_GET EEPROM.get
+        #define TYPE_MEMMORY_READ EEPROM.read
+    #elif defined(INCLUDES_FRAM_H)
+        #define TYPE_MEMMORY_GET fram->readObject
+        #define TYPE_MEMMORY_ME_GET me->fram->readObject
+        #define TYPE_MEMMORY_READ fram->read8
+        #if !defined(USE_EXTERNAL_FRAM) // meaning that if we don't use FRAM for the NN structure, but FRAM.h is included
+            #undef IN_EXTERNAL_TYPE_MEMMORY
+            #define IN_EXTERNAL_TYPE_MEMMORY fram,
+            #define TYPE_MEMMORY_PUT fram.writeObject
+        #else
+            #define IN_EXTERNAL_TYPE_MEMMORY
+            #define TYPE_MEMMORY_PUT fram->writeObject
+        #endif
+    #endif
+
+    #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
 
         template< typename T >
-        T get_EEPROM_value(unsigned int &addr){
+        T NeuralNetwork::get_type_memmory_value(unsigned int &addr){
             // T val = EEPROM.get(addr,val);
             // addr += sizeof(T);
             // return val;
@@ -1315,32 +1390,44 @@ public:
             // return (T)ptr;
             uint8_t ptr[sizeof(T)];
             for (unsigned int i = 0; i < sizeof(T); ++i, ++addr) {
-                ptr[i] = EEPROM.read(addr);
+                ptr[i] = TYPE_MEMMORY_READ(addr);
             }
             return *reinterpret_cast<T*>(ptr);
         }
-
+        
         //TODO: common get function that adds to address for  EEPROM
-        NeuralNetwork::NeuralNetwork(unsigned int addr){
-            // isAllocdWithNew = false; // no need because of pdestract #if condition // also #8
-            #if defined(REDUCE_RAM_STATIC_REFERENCE)
-                me = this;
-            #endif
-            numberOflayers = get_EEPROM_value<unsigned int>(addr);
-            layers = new Layer[numberOflayers];
+        #if defined(USE_INTERNAL_EEPROM)
+            NeuralNetwork::NeuralNetwork(unsigned int addr){
+        #else // USE_EXTERNAL_FRAM
+            NeuralNetwork::NeuralNetwork(FRAM& framObj, unsigned int addr){
+                fram = &framObj;
+        #endif
+                // isAllocdWithNew = false; // no need because of pdestract #if condition // also #8
+                #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                    me = this;
+                #endif
+                numberOflayers = get_type_memmory_value<unsigned int>(addr);
+                layers = new Layer[numberOflayers];
 
-            unsigned int tmp1;
-            unsigned int tmp2;
-            for (unsigned int i = 0; i < numberOflayers; i++){
-                layers[i] =  Layer(EEPROM.get(addr,tmp1), EEPROM.get(addr+sizeof(unsigned int),tmp2), this);
-                addr += sizeof(unsigned int);
+                unsigned int tmp1;
+                unsigned int tmp2;
+                for (unsigned int i = 0; i < numberOflayers; i++){
+                    #if defined(USE_INTERNAL_EEPROM)
+                        layers[i] =  Layer(TYPE_MEMMORY_GET(addr,tmp1), TYPE_MEMMORY_GET(addr+sizeof(unsigned int),tmp2), this);
+                    #else // USE_EXTERNAL_FRAM
+                        TYPE_MEMMORY_GET(addr,tmp1);
+                        TYPE_MEMMORY_GET(addr+sizeof(unsigned int),tmp2);
+                        layers[i] =  Layer(tmp1, tmp2, this);
+                    #endif
+                    addr += sizeof(unsigned int);
+                }
+                address = addr + sizeof(unsigned int);
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    layers[numberOflayers -1].outputs = NULL;
+                #endif
             }
-            address = addr + sizeof(unsigned int);
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                layers[numberOflayers -1].outputs = NULL;
-            #endif
-        }
     #endif
+
 
     void NeuralNetwork::reset_Individual_Input_Counter() { Individual_Input = 0;}
 
@@ -1351,9 +1438,9 @@ public:
         #endif
         #if defined(USE_PROGMEM)
             layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
-        #elif defined(USE_INTERNAL_EEPROM)
+        #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             unsigned int tmp_addr = address;
-            layers[0].FdF_Individual_iEEPROM(input, Individual_Input);
+            layers[0].type_memmory_FeedForward_Individual(input, Individual_Input);
             address = tmp_addr;
         #else
             layers[0].FeedForward_Individual(input, Individual_Input);
@@ -1364,7 +1451,7 @@ public:
         {
             Individual_Input=0;
 
-            #if defined(USE_INTERNAL_EEPROM)
+            #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 #if defined(MULTIPLE_BIASES_PER_LAYER)
                     #if defined(ACTIVATION__PER_LAYER)
                         address += SIZEOF_FX + layers[0]._numberOfOutputs * sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
@@ -1395,13 +1482,13 @@ public:
                 #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                     sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
                 #endif
-                #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM)
+                #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
                     AtlayerIndex = i;
                 #endif  
                 #if defined(USE_PROGMEM)
                     layers[i].FdF_PROGMEM(layers[i - 1].outputs);
-                #elif defined(USE_INTERNAL_EEPROM)
-                    layers[i].FdF_IN_EEPROM(layers[i - 1].outputs);
+                #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM) 
+                    layers[i].type_memmory_FeedForward(layers[i - 1].outputs);
                 #else
                     layers[i].FeedForward(layers[i - 1].outputs);
                 #endif
@@ -1413,7 +1500,7 @@ public:
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                 sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
             #endif
-            #if defined(USE_INTERNAL_EEPROM)
+            #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 address = tmp_addr;
             #endif
             return  layers[i - 1].outputs;
@@ -1447,9 +1534,9 @@ public:
         
         #if defined(USE_PROGMEM)
             layers[0].FdF_PROGMEM(inputs);
-        #elif defined(USE_INTERNAL_EEPROM)
+        #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             unsigned int tmp_addr = address;
-            layers[0].FdF_IN_EEPROM(inputs);
+            layers[0].type_memmory_FeedForward(inputs);
         #else
             layers[0].FeedForward(inputs);
         #endif
@@ -1464,8 +1551,8 @@ public:
             #endif  
             #if defined(USE_PROGMEM)
                 layers[i].FdF_PROGMEM(layers[i - 1].outputs);
-            #elif defined(USE_INTERNAL_EEPROM)
-                layers[i].FdF_IN_EEPROM(layers[i - 1].outputs);
+            #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+                layers[i].type_memmory_FeedForward(layers[i - 1].outputs);
             #else
                 layers[i].FeedForward(layers[i - 1].outputs);
             #endif
@@ -1473,7 +1560,7 @@ public:
                 delete[] layers[i - 1].outputs;
             #endif
         }
-        #if defined(USE_INTERNAL_EEPROM)
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             address = tmp_addr;
         #endif
 
@@ -1860,46 +1947,55 @@ public:
             return false;
         }
     #endif
-    #if defined(INCLUDES_EEPROM_H)
-        template< typename T >
-        void put_EEPROM_value(unsigned int &addr, T val){
-            EEPROM.put(addr, val);
-            addr += sizeof(T);
-        }
+    #if defined(INCLUDES_EEPROM_H) or defined(INCLUDES_FRAM_H)
 
-        unsigned int NeuralNetwork::save(unsigned int atAddress){
-            unsigned int tmp_addr = 0;
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                i_j = 0;
-            #endif
-            put_EEPROM_value(atAddress, numberOflayers);
-            tmp_addr = atAddress;
-            atAddress += (numberOflayers+1)*sizeof(unsigned int);
-            for(unsigned int n=0; n<numberOflayers; n++){
-                put_EEPROM_value(tmp_addr, layers[n]._numberOfInputs);
-                #if defined(ACTIVATION__PER_LAYER)
-                    put_EEPROM_value(atAddress, ActFunctionPerLayer[n]);
+        #if defined(INCLUDES_FRAM_H) and !defined(USE_EXTERNAL_FRAM)
+            template< typename T > void NeuralNetwork::put_type_memmory_value(FRAM &fram, unsigned int &addr, T val){
+        #else
+            template< typename T > void NeuralNetwork::put_type_memmory_value(unsigned int &addr, T val){
+        #endif
+                TYPE_MEMMORY_PUT(addr, val);
+                addr += sizeof(T);
+            }
+
+        // Because if it is just #included then it is not used, therefore we have to pass an fram object
+        #if defined(INCLUDES_FRAM_H) and !defined(USE_EXTERNAL_FRAM)
+            unsigned int NeuralNetwork::save(FRAM &fram, unsigned int atAddress){
+        #else
+            unsigned int NeuralNetwork::save(unsigned int atAddress){
+        #endif
+                unsigned int tmp_addr = 0;
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    i_j = 0;
                 #endif
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    put_EEPROM_value(atAddress, *layers[n].bias);
-                #endif
-                for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
-                    #if defined(MULTIPLE_BIASES_PER_LAYER)
-                        put_EEPROM_value(atAddress, layers[n].bias[i]);
+                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, numberOflayers);
+                tmp_addr = atAddress;
+                atAddress += (numberOflayers+1)*sizeof(unsigned int);
+                for(unsigned int n=0; n<numberOflayers; n++){
+                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  tmp_addr, layers[n]._numberOfInputs);
+                    #if defined(ACTIVATION__PER_LAYER)
+                        put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, ActFunctionPerLayer[n]);
                     #endif
-                    for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
-                        #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            put_EEPROM_value(atAddress, layers[n].weights[i][j]);
-                        #else
-                            put_EEPROM_value(atAddress, weights[i_j]);
-                            i_j++;
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, *layers[n].bias);
+                    #endif
+                    for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
+                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                            put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].bias[i]);
                         #endif
+                        for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
+                            #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].weights[i][j]);
+                            #else
+                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, weights[i_j]);
+                                i_j++;
+                            #endif
+                        }
                     }
                 }
+                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  tmp_addr, layers[numberOflayers-1]._numberOfOutputs);
+                return atAddress;
             }
-            put_EEPROM_value(tmp_addr, layers[numberOflayers-1]._numberOfOutputs);
-            return atAddress;
-        }
     #endif
 
     //If Microcontroller isn't one of the .._No_Common_Serial_Support Series then it compiles the code below.
@@ -1909,7 +2005,7 @@ public:
         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
             i_j=0; 
         #endif
-        #if defined(USE_INTERNAL_EEPROM)
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             unsigned int tmp_addr = address;
         #endif
 
@@ -1918,18 +2014,18 @@ public:
 
         for (unsigned int i = 0; i < numberOflayers; i++)
         {
-            #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM)  // not def USE_INTERNAL_EEPROM, because AtlayerIndex is not needed
+            #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM) // not def USE_INTERNAL_EEPROM, because AtlayerIndex is not needed
                 AtlayerIndex = i;
             #endif  
             #if defined(USE_PROGMEM)
                 layers[i].print_PROGMEM();
-            #elif defined(USE_INTERNAL_EEPROM)
-                layers[i].print_INTERNAL_EEPROM();
+            #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+                layers[i].type_memmory_print();
             #else
                 layers[i].print();
             #endif
         }
-        #if defined(USE_INTERNAL_EEPROM)
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             address = tmp_addr;
         #endif
     }
@@ -2107,7 +2203,7 @@ public:
         #endif
     }
 
-    #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
+    #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN ) // TODO: IDFLOAT support 
         {
@@ -2155,7 +2251,7 @@ public:
 
         }
     // Yes, it needs the "elif" else it doesn't find any decleration of the function\method bellow
-    #elif defined(USE_INTERNAL_EEPROM)
+    #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
@@ -2294,8 +2390,8 @@ public:
     }
 
 
-    #if defined (USE_INTERNAL_EEPROM) 
-        void NeuralNetwork::Layer::FdF_Individual_iEEPROM(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
+    #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+        void NeuralNetwork::Layer::type_memmory_FeedForward_Individual(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
         {
             // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
             if (j == 0){ // if it is the first input then create output array (for the output layer of this current layer)
@@ -2303,10 +2399,10 @@ public:
                     outputs = new DFLOAT[_numberOfOutputs];
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
-                    me->F1 = get_EEPROM_value<byte>(me->address);
+                    me->F1 = me->get_type_memmory_value<byte>(me->address);
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    bias = new IDFLOAT(get_EEPROM_value<IDFLOAT>(me->address));
+                    bias = new IDFLOAT(me->get_type_memmory_value<IDFLOAT>(me->address));
                 #endif
             }else{
                 #if defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2328,7 +2424,7 @@ public:
                 #endif
             }
             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                bias = new IDFLOAT(get_EEPROM_value<IDFLOAT>(me->address));
+                bias = new IDFLOAT(me->get_type_memmory_value<IDFLOAT>(me->address));
             #endif
 
             IDFLOAT tmp_jweight;
@@ -2342,10 +2438,15 @@ public:
                         outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #endif
                 }
-                outputs[i] += input * EEPROM.get(me->address + j*sizeof(IDFLOAT), tmp_jweight) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                #if defined(USE_INTERNAL_EEPROM)
+                    outputs[i] += input * TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                #else // USE_EXTERNAL_FRAM
+                    TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight);
+                    outputs[i] += input * tmp_jweight MULTIPLY_BY_INT_IF_QUANTIZATION;
+                #endif
                 me->address += _numberOfInputs * sizeof(IDFLOAT); 
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
-                    *bias = get_EEPROM_value<IDFLOAT>(me->address);
+                    *bias = me->get_type_memmory_value<IDFLOAT>(me->address);
                 #endif
             }
             #if defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2379,31 +2480,31 @@ public:
         }
 
 
-        void NeuralNetwork::Layer::FdF_IN_EEPROM(const DFLOAT *inputs)
+        void NeuralNetwork::Layer::type_memmory_FeedForward(const DFLOAT *inputs)
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];
             #endif
             #if defined(ACTIVATION__PER_LAYER)
-                byte fx = get_EEPROM_value<byte>(me->address); 
+                byte fx = me->get_type_memmory_value<byte>(me->address); 
             #endif
 
             #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                IDFLOAT tmp_bias = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                IDFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
             #endif
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                    outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
                 #else
                     outputs[i] = tmp_bias;
                 #endif
 
                 for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
                 {
-                    outputs[i] += inputs[j] * get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 }
 
                 #if defined(ACTIVATION__PER_LAYER)
@@ -2856,8 +2957,8 @@ public:
         Serial.println(F_MACRO("----------------------"));
     }
 
-        #if defined(USE_INTERNAL_EEPROM)
-            void NeuralNetwork::Layer::print_INTERNAL_EEPROM()
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            void NeuralNetwork::Layer::type_memmory_print()
             {
                 #if defined(USE_INT_QUANTIZATION)
                     Serial.print(F_MACRO("INT_Q EEPROM "));
@@ -2869,11 +2970,11 @@ public:
                 Serial.print(_numberOfOutputs);
                 #if defined(ACTIVATION__PER_LAYER)
                     Serial.print(F_MACRO("| F(x):"));
-                    Serial.print(get_EEPROM_value<byte>(me->address));
+                    Serial.print(me->get_type_memmory_value<byte>(me->address));
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     Serial.print(F_MACRO("| bias:"));
-                    Serial.print(get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
                 Serial.println();
                 DFLOAT tmp_ijweight; // Reminder: don't change it to IDFLOAT
@@ -2881,13 +2982,13 @@ public:
                 {
                     #if defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("   B:"));
-                        Serial.println(get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        Serial.println(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     Serial.print(i + 1);
                     Serial.print(F_MACRO(" "));
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
                     {
-                        tmp_ijweight = get_EEPROM_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        tmp_ijweight = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                         Serial.print(F_MACRO(" W:"));
                         if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
                         Serial.print(tmp_ijweight, DFLOAT_LEN);

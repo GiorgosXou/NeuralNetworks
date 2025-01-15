@@ -24,7 +24,9 @@
    "-I/home/xou/.arduino15/packages/arduino/hardware/avr/1.8.6/cores/arduino",
    "-I/home/xou/.arduino15/packages/arduino/hardware/avr/1.8.6/variants/standard",
    "-I/home/xou/.arduino15/packages/arduino/hardware/avr/1.8.6/libraries/EEPROM/src/",
-   "-I/home/xou/Arduino/libraries/SD/src"
+   "-I/home/xou/.arduino15/packages/arduino/hardware/avr/1.8.6/libraries/Wire/src/",
+   "-I/home/xou/Arduino/libraries/SD/src",
+   "-I/home/xou/Arduino/libraries/FRAM_I2C/"
   ],
   "file": "./src/NeuralNetworks.h"
  }
