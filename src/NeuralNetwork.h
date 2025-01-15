@@ -1019,6 +1019,7 @@ public:
         #if !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
             unsigned int AtlayerIndex; // who 's gonna make a network with more than 255 layers :P ?!?!? but anyways i will use int or i will add byte too, using a property definition with bunch of other things like this for max optimization ... lol
         #endif
+        // TODO: wrap ActFunctionPerLayer to !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM) too (but first i need to wrap the rest of functions)
         byte *ActFunctionPerLayer; // lets be realistic... byte because. xD | 2025-01-04 07:57:32 PM If I ever change it, remember to change SD-save too (and if anything else)
     #endif
 
@@ -1114,7 +1115,7 @@ public:
         bool save_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
-    #if defined(INCLUDES_EEPROM_H) or defined(USE_EXTERNAL_FRAM)
+    #if defined(INCLUDES_EEPROM_H)
         template< typename T > void put_type_memmory_value(unsigned int &addr, T val);
         unsigned int save(unsigned int atAddress); // EEPROM , FRAM
     #elif defined(INCLUDES_FRAM_H)
@@ -1372,16 +1373,10 @@ public:
         #define TYPE_MEMMORY_GET fram->readObject
         #define TYPE_MEMMORY_ME_GET me->fram->readObject
         #define TYPE_MEMMORY_READ fram->read8
-        #if !defined(USE_EXTERNAL_FRAM) // meaning that if we don't use FRAM for the NN structure, but FRAM.h is included
-            #undef IN_EXTERNAL_TYPE_MEMMORY
-            #define IN_EXTERNAL_TYPE_MEMMORY fram,
-            #define TYPE_MEMMORY_PUT fram.writeObject
-        #else
-            #define IN_EXTERNAL_TYPE_MEMMORY
-            #define TYPE_MEMMORY_PUT fram->writeObject
-            #define PRINT_MESSAGE_INT_Q "INT_Q EXTERNAL-FRAM "
-            #define PRINT_MESSAGE_TYPE_MEM "EXTERNAL-FRAM "
-        #endif
+        #define IN_EXTERNAL_TYPE_MEMMORY fram,
+        #define TYPE_MEMMORY_PUT fram.writeObject
+        #define PRINT_MESSAGE_INT_Q "INT_Q EXTERNAL-FRAM "
+        #define PRINT_MESSAGE_TYPE_MEM "EXTERNAL-FRAM "
     #endif
 
     #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
@@ -1956,9 +1951,9 @@ public:
             return false;
         }
     #endif
-    #if defined(INCLUDES_EEPROM_H) or defined(INCLUDES_FRAM_H)
+    #if (defined(INCLUDES_EEPROM_H) or defined(INCLUDES_FRAM_H)) and !(defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
 
-        #if defined(INCLUDES_FRAM_H) and !defined(USE_EXTERNAL_FRAM)
+        #if defined(INCLUDES_FRAM_H)
             template< typename T > void NeuralNetwork::put_type_memmory_value(FRAM &fram, unsigned int &addr, T val){
         #else
             template< typename T > void NeuralNetwork::put_type_memmory_value(unsigned int &addr, T val){
@@ -1968,7 +1963,7 @@ public:
             }
 
         // Because if it is just #included then it is not used, therefore we have to pass an fram object
-        #if defined(INCLUDES_FRAM_H) and !defined(USE_EXTERNAL_FRAM)
+        #if defined(INCLUDES_FRAM_H)
             unsigned int NeuralNetwork::save(FRAM &fram, unsigned int atAddress){
         #else
             unsigned int NeuralNetwork::save(unsigned int atAddress){
