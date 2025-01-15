@@ -1016,7 +1016,9 @@ public:
     #endif   
 
     #if defined(ACTIVATION__PER_LAYER)
-        unsigned int AtlayerIndex; // who 's gonna make a network with more than 255 layers :P ?!?!? but anyways i will use int or i will add byte too, using a property definition with bunch of other things like this for max optimization ... lol
+        #if !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
+            unsigned int AtlayerIndex; // who 's gonna make a network with more than 255 layers :P ?!?!? but anyways i will use int or i will add byte too, using a property definition with bunch of other things like this for max optimization ... lol
+        #endif
         byte *ActFunctionPerLayer; // lets be realistic... byte because. xD | 2025-01-04 07:57:32 PM If I ever change it, remember to change SD-save too (and if anything else)
     #endif
 
@@ -1531,7 +1533,7 @@ public:
         #endif
 
         // Reseting the index to which layer we are back to 0, the 1st layer
-        #if defined(ACTIVATION__PER_LAYER)
+        #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
             AtlayerIndex = 0;
         #endif  
         // resets starting point (could have had a function returning it instead of initializing it on constructor too?)
@@ -1553,7 +1555,7 @@ public:
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
                 sumOfSoftmax = 0;  //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
             #endif
-            #if defined(ACTIVATION__PER_LAYER)
+            #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
                 AtlayerIndex = i;
             #endif  
             #if defined(USE_PROGMEM)
@@ -2534,112 +2536,115 @@ public:
         }
     #endif
 
-    void NeuralNetwork::Layer::FdF_PROGMEM(const DFLOAT *inputs) //*
-    {
-        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            outputs = new DFLOAT[_numberOfOutputs];
-        #endif
-        
-        //feed forwards
-        for (unsigned int i = 0; i < _numberOfOutputs; i++)
-        {
-            #if defined(NO_BIAS)
-                outputs[i] = 0;
-            #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-            #else
-                outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
-            #endif
 
-            for (unsigned int j = 0; j < _numberOfInputs; j++) 
+    #if !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
+        void NeuralNetwork::Layer::FdF_PROGMEM(const DFLOAT *inputs) //*
+        {
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                outputs = new DFLOAT[_numberOfOutputs];
+            #endif
+            
+            //feed forwards
+            for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    me->i_j++;
-                #else
-                    outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                #endif
-            }
-            #if defined(ACTIVATION__PER_LAYER)
-                outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-            #elif defined(Softmax)
-                outputs[i] = exp(outputs[i]);
-                sumOfSoftmax += outputs[i];
-            #else
-                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
-            #endif
-        }
-
-        #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-            // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-            if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
-                Softmax();
-        #elif defined(Softmax)
-            Softmax();
-        #endif
-    }
-
-    void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs) //*
-    {
-        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            outputs = new DFLOAT[_numberOfOutputs];
-        #endif
-    
-        //feed forwards
-        for (unsigned int i = 0; i < _numberOfOutputs; i++)
-        {
-            #if defined(ESP_SUPPORTS_SIMD)
-                #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    dsps_dotprod_f32(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
-                #else
-                    dsps_dotprod_f32(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); 
-                    me->i_j+= _numberOfInputs;
-                #endif
-
-                #if defined(MULTIPLE_BIASES_PER_LAYER) // No need for MULTIPLY_BY_INT_IF_QUANTIZATION because there's no SIMD support for it// TODO: REDUCE_RAM_BIASES "common reference" 
-                    outputs[i] += bias[i]; 
-                #elif !defined(NO_BIAS)
-                    outputs[i] += *bias;
-                #endif
-            #else
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #else
-                    outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
                 #endif
 
-                for (unsigned int j = 0; j < _numberOfInputs; j++)
+                for (unsigned int j = 0; j < _numberOfInputs; j++) 
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        outputs[i] += inputs[j] * me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                         me->i_j++;
                     #else
-                        outputs[i] += inputs[j] * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
+                        outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #endif
                 }
-            #endif
+                #if defined(ACTIVATION__PER_LAYER)
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                #elif defined(Softmax)
+                    outputs[i] = exp(outputs[i]);
+                    sumOfSoftmax += outputs[i];
+                #else
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
+                #endif
+            }
 
-            #if defined(ACTIVATION__PER_LAYER)
-                outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
+            #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
+                    Softmax();
             #elif defined(Softmax)
-                outputs[i] = exp(outputs[i]);
-                sumOfSoftmax += outputs[i];
-            #else
-                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                Softmax();
             #endif
         }
 
-        #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-            // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-            if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
+        void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs) //*
+        {
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                outputs = new DFLOAT[_numberOfOutputs];
+            #endif
+        
+            //feed forwards
+            for (unsigned int i = 0; i < _numberOfOutputs; i++)
+            {
+                #if defined(ESP_SUPPORTS_SIMD)
+                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        dsps_dotprod_f32(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                    #else
+                        dsps_dotprod_f32(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); 
+                        me->i_j+= _numberOfInputs;
+                    #endif
+
+                    #if defined(MULTIPLE_BIASES_PER_LAYER) // No need for MULTIPLY_BY_INT_IF_QUANTIZATION because there's no SIMD support for it// TODO: REDUCE_RAM_BIASES "common reference" 
+                        outputs[i] += bias[i]; 
+                    #elif !defined(NO_BIAS)
+                        outputs[i] += *bias;
+                    #endif
+                #else
+                    #if defined(NO_BIAS)
+                        outputs[i] = 0;
+                    #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                        outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #else
+                        outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #endif
+
+                    for (unsigned int j = 0; j < _numberOfInputs; j++)
+                    {
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            outputs[i] += inputs[j] * me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            me->i_j++;
+                        #else
+                            outputs[i] += inputs[j] * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
+                        #endif
+                    }
+                #endif
+
+                #if defined(ACTIVATION__PER_LAYER)
+                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
+                #elif defined(Softmax)
+                    outputs[i] = exp(outputs[i]);
+                    sumOfSoftmax += outputs[i];
+                #else
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                #endif
+            }
+
+            #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
+                    Softmax();
+            #elif defined(Softmax)
                 Softmax();
-        #elif defined(Softmax)
-            Softmax();
-        #endif
-        // return outputs;
-    } 
+            #endif
+            // return outputs;
+        } 
+    #endif
 
     
     DFLOAT NeuralNetwork::Layer::erf(DFLOAT x)
@@ -2872,98 +2877,6 @@ public:
 
     //If Microcontroller isn't one of the Attiny Series then it compiles the code below.
     #if !defined(As__No_Common_Serial_Support) // then Compile:
-    void NeuralNetwork::Layer::print()
-    { 
-        #if defined(USE_INT_QUANTIZATION)
-            Serial.print(F_MACRO("INT_Q "));
-        #endif
-        Serial.print(_numberOfInputs);
-        Serial.print(F_MACRO("x"));
-        Serial.print(_numberOfOutputs);
-        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-            Serial.print(F_MACRO("| bias:"));
-            Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-        #endif
-        #if defined(ACTIVATION__PER_LAYER)
-            Serial.print(F_MACRO("| F(x):"));
-            Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-        #endif
-        Serial.println();
-
-        for (unsigned int i = 0; i < _numberOfOutputs; i++)
-        {
-            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                Serial.print(F_MACRO("   B:"));
-                Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-            #endif
-            Serial.print(i + 1);
-            Serial.print(F_MACRO(" "));
-            for (unsigned int j = 0; j < _numberOfInputs; j++)
-            {
-                Serial.print(F_MACRO(" W:"));
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
-                    Serial.print(me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    me->i_j++;
-                #else
-                    if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
-                    Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                #endif
-                Serial.print(F_MACRO(" "));
-            }
-            Serial.println();
-        }
-        Serial.println(F_MACRO("----------------------"));
-
-    }
-
-    void NeuralNetwork::Layer::print_PROGMEM()
-    {
-        #if defined(USE_INT_QUANTIZATION)
-            Serial.print(F_MACRO("INT_Q PROGMEM "));
-        #else
-            Serial.print(F_MACRO("PROGMEM "));
-        #endif
-        Serial.print(_numberOfInputs);
-        Serial.print(F_MACRO("x"));
-        Serial.print(_numberOfOutputs);
-        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-            Serial.print(F_MACRO("| bias:"));
-            Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-        #endif
-        #if defined(ACTIVATION__PER_LAYER)
-            Serial.print(F_MACRO("| F(x):"));
-            Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-        #endif
-        Serial.println();
-
-        for (unsigned int i = 0; i < _numberOfOutputs; i++)
-        {
-            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                Serial.print(F_MACRO("   B:"));
-                Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-            #endif
-            Serial.print(i + 1);
-            Serial.print(" ");
-            for (unsigned int j = 0; j < _numberOfInputs; j++)
-            {
-                //weights[i][j] = (DFLOAT)j;
-                Serial.print(F_MACRO(" W:"));
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                    Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    me->i_j++;
-                #else
-                    if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                    Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                #endif
-                Serial.print(F_MACRO(" "));
-            }
-            Serial.println();
-        }
-        Serial.println(F_MACRO("----------------------"));
-    }
-
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             void NeuralNetwork::Layer::type_memmory_print()
             {
@@ -3005,8 +2918,99 @@ public:
                 }
                 Serial.println(F_MACRO("----------------------"));
             }
-        #endif
+        #else
+            void NeuralNetwork::Layer::print()
+            { 
+                #if defined(USE_INT_QUANTIZATION)
+                    Serial.print(F_MACRO("INT_Q "));
+                #endif
+                Serial.print(_numberOfInputs);
+                Serial.print(F_MACRO("x"));
+                Serial.print(_numberOfOutputs);
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    Serial.print(F_MACRO("| bias:"));
+                    Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                #endif
+                #if defined(ACTIVATION__PER_LAYER)
+                    Serial.print(F_MACRO("| F(x):"));
+                    Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                #endif
+                Serial.println();
 
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                {
+                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                        Serial.print(F_MACRO("   B:"));
+                        Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    Serial.print(i + 1);
+                    Serial.print(F_MACRO(" "));
+                    for (unsigned int j = 0; j < _numberOfInputs; j++)
+                    {
+                        Serial.print(F_MACRO(" W:"));
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
+                            Serial.print(me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            me->i_j++;
+                        #else
+                            if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
+                            Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+                        Serial.print(F_MACRO(" "));
+                    }
+                    Serial.println();
+                }
+                Serial.println(F_MACRO("----------------------"));
+
+            }
+
+            void NeuralNetwork::Layer::print_PROGMEM()
+            {
+                #if defined(USE_INT_QUANTIZATION)
+                    Serial.print(F_MACRO("INT_Q PROGMEM "));
+                #else
+                    Serial.print(F_MACRO("PROGMEM "));
+                #endif
+                Serial.print(_numberOfInputs);
+                Serial.print(F_MACRO("x"));
+                Serial.print(_numberOfOutputs);
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    Serial.print(F_MACRO("| bias:"));
+                    Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                #endif
+                #if defined(ACTIVATION__PER_LAYER)
+                    Serial.print(F_MACRO("| F(x):"));
+                    Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                #endif
+                Serial.println();
+
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                {
+                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                        Serial.print(F_MACRO("   B:"));
+                        Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    Serial.print(i + 1);
+                    Serial.print(" ");
+                    for (unsigned int j = 0; j < _numberOfInputs; j++)
+                    {
+                        //weights[i][j] = (DFLOAT)j;
+                        Serial.print(F_MACRO(" W:"));
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                            Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            me->i_j++;
+                        #else
+                            if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
+                            Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+                        Serial.print(F_MACRO(" "));
+                    }
+                    Serial.println();
+                }
+                Serial.println(F_MACRO("----------------------"));
+            }
+        #endif
     #endif
 
 #pragma endregion Layer.cpp
