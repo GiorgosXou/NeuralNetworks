@@ -2306,12 +2306,9 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 me->i_j += _numberOfInputs;
             #endif
-        }
 
-        // when all individual inputs get summed and multiplied by their weights in their outputs, then pass them from the activation function
-        if (j == _numberOfInputs -1){
-            for (i = 0; i < _numberOfOutputs; i++)
-            {
+            // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
+            if (j == _numberOfInputs -1){
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
@@ -2321,7 +2318,9 @@ public:
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
                 #endif
             }
+        }
 
+        if (j == _numberOfInputs -1){
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
                 // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
                 if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
@@ -2367,11 +2366,9 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 me->i_j += _numberOfInputs;
             #endif
-        }
 
-        // when all individual inputs get summed and multiplied by their weights in their outputs, then pass them from the activation function
-        if (j == _numberOfInputs -1){
-            for (i = 0; i < _numberOfOutputs; i++){
+            // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
+            if (j == _numberOfInputs -1){
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
@@ -2381,7 +2378,9 @@ public:
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                 #endif
             }
+        }
 
+        if (j == _numberOfInputs -1){
             #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
                 // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
                 if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
@@ -2451,14 +2450,9 @@ public:
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
                     *bias = me->get_type_memmory_value<IDFLOAT>(me->address);
                 #endif
-            }
-            #if defined(MULTIPLE_BIASES_PER_LAYER)
-                delete bias;
-            #endif
 
-            // when all individual inputs get summed and multiplied by their weights in their outputs, then pass them from the activation function
-            if (j == _numberOfInputs -1){
-                for (i = 0; i < _numberOfOutputs; i++){
+                // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
+                if (j == _numberOfInputs -1){
                     #if defined(ACTIVATION__PER_LAYER)
                         outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                     #elif defined(Softmax)
@@ -2468,6 +2462,12 @@ public:
                         outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                     #endif
                 }
+            }
+            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                delete bias;
+            #endif
+
+            if (j == _numberOfInputs -1){
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     delete bias;
                 #endif
