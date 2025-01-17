@@ -2245,8 +2245,7 @@ public:
                 for (unsigned int j = 0; j < _numberOfInputs; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
-                        me->weights[me->i_j] = (IDFLOAT)random(-90000, 90000) / 100000;
-                        me->i_j++;
+                        me->weights[me->i_j++] = (IDFLOAT)random(-90000, 90000) / 100000;
                     #else
                         weights[i][j] = (IDFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
                     #endif
@@ -2553,8 +2552,7 @@ public:
                 for (unsigned int j = 0; j < _numberOfInputs; j++) 
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        me->i_j++;
+                        outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #else
                         outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #endif
@@ -2612,8 +2610,7 @@ public:
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
                     {
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += inputs[j] * me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                            me->i_j++;
+                            outputs[i] += inputs[j] * me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION;
                         #else
                             outputs[i] += inputs[j] * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
                         #endif
@@ -2945,8 +2942,7 @@ public:
                         Serial.print(F_MACRO(" W:"));
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                             if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
-                            Serial.print(me->weights[me->i_j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                            me->i_j++;
+                            Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #else
                             if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
                             Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
@@ -2993,8 +2989,7 @@ public:
                         Serial.print(F_MACRO(" W:"));
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                             if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                            Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                            me->i_j++;
+                            Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #else
                             if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
                             Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
