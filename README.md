@@ -64,7 +64,7 @@ Understanding the Basics of a Neural Network:
 - ***`💾 Media:`***
 - - [Save NN into SD and load it into RAM after restart](./examples/Media/Save_load_NN_from_SD/Save_load_NN_from_SD.ino 'Save_load_NN_from_SD.ino')
 - - [Saving a NN into the internal EEPROM for later use](./examples/Media/Save_NN_to_internal_EEPROM/Save_NN_to_internal_EEPROM.ino 'Save_NN_to_internal_EEPROM.ino')
-- - [Saving a NN into an external FRAM for later use](EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO)
+- - [Saving a NN into an external FRAM for later use][EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO]
 - - [Running NN mostly via internal EEPROM (not RAM)][EXAMPLE_IN_EEPROM_INO]
 - - [Running NN mostly via external FRAM (not RAM)][EXAMPLE_EXTERNAL_FRAM_INO]
 - - [Running NN mostly via flash memmory (PROGMEM)](./examples/Media/FeedForward_double_Xor_PROGMEM/FeedForward_double_Xor_PROGMEM.ino 'FeedForward_double_Xor_PROGMEM.ino')
@@ -167,7 +167,7 @@ To use any of the variables below,  you first need to ```#define```  a loss func
 ##  ```DFLOAT``` Activation Functions
 Due to *(my uncertainty and)* the strict RAM optimization that allows the library to use one array that stores only the values after the activation instead of two arrays storing values before and after the activation, the use of some derivative functions in backpropagation are not supported by this library at this moment, as also seen by the MACRO ```NO_BACKPROP``` below. This means that if you want to use and  ```#define``` any function from 8-13 under the section *"```NO_BACKPROP``` support"* , you won't be able to use backpropagation.
 
-||  <span>&nbsp;&nbsp;</span>Enabling<span>&nbsp;</span>MACRO<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>| <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Activation<span>&nbsp;</span>Functions<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|  <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Returns<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> |
+| |  <span>&nbsp;&nbsp;</span>Enabling<span>&nbsp;</span>MACRO<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>| <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Activation<span>&nbsp;</span>Functions<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|  <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Returns<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> |
 | :------: | ------ | ------ | ------ |
 |**0**|```#define Sigmoid```   |<sup><sub>NN.layers-></sub></sup>```Sigmoid(&x)```  |  ```1/(1+e^(-x))``` |
 |**1**|```#define Tanh```      |<sup><sub>NN.layers-></sub></sup>```Tanh(&x)```     |  ```(e^(2*x)-1)/(e^(2*x)+1)``` |
@@ -177,14 +177,14 @@ Due to *(my uncertainty and)* the strict RAM optimization that allows the librar
 |**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELU(&x)```     |  ```(x>0)?x:AlphaSELU*(e^(x)-1)``` |
 |**6**|```#define Softmax```   |<sup><sub>NN.layers-></sub></sup>```Softmax(&x)```| ```void``` "complicated implementation" |
 |**7**|```#define Identity```  |<sup><sub>NN.layers-></sub></sup>```Identity(&x)```|  ```x``` |
-||| <center>**```NO_BACKPROP``` SUPPORT**</center> | |
+| | | <center>**```NO_BACKPROP``` SUPPORT**</center> | |
 |**8**|```#define BinaryStep```|<sup><sub>NN.layers-></sub></sup>```BinaryStep(&x)```|  ```(x <  0) ?  0  :  1``` |
 |**9**|```#define Softplus```  |<sup><sub>NN.layers-></sub></sup>```Softplus(&x)```|  ```log(1  +  exp(x))``` |
 |**10**|```#define SiLU```     |<sup><sub>NN.layers-></sub></sup>```SiLU(&x)```|  ```x / (1  +  exp(-x))``` |
 |**11**|```#define GELU```     |<sup><sub>NN.layers-></sub></sup>```GELU(&x)```|  ```(1/2) * x * (1  +  erf(x /  sqrt(x)))``` |
 |**12**|```#define Mish```     |<sup><sub>NN.layers-></sub></sup>```Mish(&x)```|  ```x *  Tanh(log(1  +  exp(x)))``` |
 |**13**|```#define Gaussian``` |<sup><sub>NN.layers-></sub></sup>```Gaussian(&x)```|  ```exp(-(x*x))``` |
-||| <center>**Derivative Functions**</center> | |
+| | | <center>**Derivative Functions**</center> | |
 |**0**|```#define Sigmoid```   |<sup><sub>NN.layers-></sub></sup>```SigmoidDer(&fx)``` |  ```fx-fx*fx``` |
 |**1**|```#define Tanh```      |<sup><sub>NN.layers-></sub></sup>```TanhDer(&fx)```|  ```1-fx*fx``` |
 |**2**|```#define ReLU```      |<sup><sub>NN.layers-></sub></sup>```ReLUDer(&fx)```|  ```(fx>0)?1:0``` |
@@ -304,7 +304,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 |```DFLOAT```       |NN.```LearningRateOfBiases```| The Learning-Rate-Of-Biases|
 |```IDFLOAT*```      |NN.```weights```|If [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
 |```Layer*```      |NN.```layers``` | Layers of NN|
-||<center>**Layer's Variables**</center>||
+| |<center>**Layer's Variables**</center>| |
 |```IDFLOAT*```      |NN.layers[i].```bias```| <details><summary>The bias of an individual layer[i], unless...</summary>[`NO_BIAS` or `MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled.</details>|
 |```DFLOAT*```      |NN.layers[i].```outputs```[]| The Output array of an individual layer[i]|
 |```IDFLOAT**```     |NN.layers[i].```weights```[][]|if not [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
@@ -331,17 +331,17 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should either update `NN.me` manually before using the next one like `NN.me = &NN2` or just use `_2_OPTIMIZE 0B00000010` instead</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
 | ```0B00000010``` |<sup><sub>📌</sub></sup>|<details><summary>Disables MSE function</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
 | ```0B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T *([see also example][EXAMPLE_DOUBLE_PRECISION])*</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
-|  **_2_OPTIMIZE** | |  ||
+|  **_2_OPTIMIZE** | | | |
 | ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
 | ```0B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
 | ```0B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
-| ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
+| ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`F_MACRO`</sup></sub>|
 | ```0B00001000```  |<sup><sub>📌</sub></sup>|<details><summary>Use `int16_t` quantization</summary> Weights and biases are stored as `int16_t` *(2-bytes each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `float` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
 | ```0B00000100```  |<sup><sub></sub></sup>|<details><summary>Use `int8_t ` quantization</summary>Weights and biases are stored as `int8_t` *(1-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `int16_t` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
 | ```0B00000010```  |<sup><sub></sub></sup>|<details><summary><sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub> for multiple NN </summary>It does the same thing as `REDUCE_RAM_STATIC_REFERENCE` but for multiple NN objects *(instead for just one)*. If you use `FeedForward_Individual` It is recommended to fallback to the original `_1_OPTIMIZE 0B00000100` and manually change `NN.me`</details> |<sub><sup>`...FOR_MULTIPLE_NN_OBJECTS`</sup></sub>|
 | ```0B00000001```  |<sup><sub>⚠️</sub></sup>|<details><summary>Disables backpropagation</summary>Disabling backpropagation when it's not automatically disabled, helps reduce the size of your sketch.</details> |<sub><sup>`NO_BACKPROP`<sup></sub>|
-|  **_3_OPTIMIZE** | |  ||
-| ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>external<span>&nbsp;</span>FRAM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from an external FRAM. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
+|  **_3_OPTIMIZE** | | | |
+| ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>external<span>&nbsp;</span>FRAM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from an external FRAM. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`USE_EXTERNAL_FRAM`</sup></sub>|
   
 
 <br>
@@ -700,7 +700,6 @@ Here most of the resources I came across the internet, I recommend you to have a
 * * * [(Arduino Project) MNIST - (approach) downsampled to 9x9 - 170 neurons ](https://hackaday.io/project/41159-deep-neural-network-on-arduino-mnist-handwritten)
 * * * [MNIST digit recognition: what is the best we can get with a fully connected NN only? (no CNN)](https://stats.stackexchange.com/questions/376312/mnist-digit-recognition-what-is-the-best-we-can-get-with-a-fully-connected-nn-o)
 * * * [What is the smallest model in terms of number of parameters that can achieve results over 99% on MNIST dataset?](https://www.quora.com/What-is-the-smallest-model-in-terms-of-number-of-parameters-that-can-achieve-results-over-99-on-MNIST-dataset)
-
 * **```Related to Programming```**
 * * _**```to C-type Languages```**_
 * * * [c++ making a function that always runs when any other function of a class is called](https://stackoverflow.com/questions/518028/in-c-making-a-function-that-always-runs-when-any-other-function-of-a-class-is)
@@ -722,13 +721,11 @@ Here most of the resources I came across the internet, I recommend you to have a
 * * _**```Other```**_
 * * * [Aspect-oriented programming](https://en.wikipedia.org/wiki/Aspect-oriented_programming)
 * * * [Metaprogramming](https://en.wikipedia.org/wiki/Metaprogramming#:~:text=Metaprogramming%20is%20a%20programming%20technique,even%20modify%20itself%20while%20running.)
-
 * **```Arduino Related```**
 * * [Reading and Writing Data to External EEPROM Using Arduino](https://www.instructables.com/Reading-and-Writing-Data-to-External-EEPROM-Using-/)
 * * [avrdude: verification error, first mismatch at byte 0x7800](https://forum.arduino.cc/index.php?topic=396457.0)
 * * [avrdude: verification error, first mismatch at byte 0x7800](https://forum.arduino.cc/index.php?topic=135195.0)
 * * [KEYWORDS.TXT](https://forum.arduino.cc/index.php?topic=149418.0)
-
 * **```#MACROS / pre-processor directives```**
 * * [Is it possible to define same macro more than once?](https://www.sololearn.com/Discuss/1912463/is-it-possible-to-define-same-macro-more-than-once)
 * * [(Very Useful) Print Content of Defined Variable](https://stackoverflow.com/a/12638158/11465149)
@@ -743,46 +740,46 @@ Here most of the resources I came across the internet, I recommend you to have a
 
 #
 
-### Old Searches:
-| ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other |```*```| Maybe Intresting?  
+### Old Research:
+> | ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other |```*```| Maybe Intresting?
 
 | NNs | PROGMEM | Define directive | Other & "Random" | 
 | ------ | ------ | ------ | ------ |  
 |[```Playlist```](https://www.youtube.com/watch?v=ZzWaow1Rvho&list=PLxt59R_fWVzT9bDxA76AHm3ig0Gg9S3So)|[```Arduino```](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/)|[```Tutorial```]( https://www.deviceplus.com/how-tos/arduino-guide/arduino-preprocessor-directives-tutorial/)|[A. Initialize Array Values](https://stackoverflow.com/questions/201101/how-to-initialize-all-members-of-an-array-to-the-same-value)|  
 |[```Playlist```](https://www.youtube.com/watch?v=aircAruvnKk&list=PLZHQObOWTQDNU6R1_67000Dx_ZCJB-3pi)|[```Manual```](https://www.nongnu.org/avr-libc/user-manual/group__avr__pgmspace.html)|[```Arduino Define```]( https://www.arduino.cc/reference/en/language/structure/further-syntax/define/)|[A. Inheritance,destructors?](https://stackoverflow.com/questions/15817941/virtual-destructors-and-deleting-objects-with-multiple-inheritance-how-does-i)|
 |[```BackPropagation```](https://www.youtube.com/watch?v=L_PByyJ9g-I)|[```Examples```](http://busyducks.com/wp_4_1/2016/02/11/update-comprehensive-arduino-flash-memory-via-progmem/)|[```Determining board```](https://forum.arduino.cc/index.php?topic=113656.0)|[A. Identifying Arduino type?](https://web-engineering.info/node/28)|
-|[```Math Chain Rule```]( https://www.youtube.com/watch?v=H-ybCx8gt-8 )|[+ Post](https://forum.arduino.cc/index.php?topic=613873.0)|[```define extern?```](https://forum.arduino.cc/index.php?topic=614659.0)|[A. Create compile error?](https://arduino.stackexchange.com/questions/49009/purposely-create-compile-error-to-fail-the-upload)||
-|[```Getting Started```](https://www.youtube.com/watch?v=I74ymkoNTnw)|[+ Pointers](https://stackoverflow.com/questions/28645920/c-arduino-passing-pointer-to-2d-array-stored-in-progmem)|[.ino Determining Board](https://github.com/stanleyseow/attiny-nRF24L01/blob/master/hardware/tiny/cores/tiny/core_build_options.h)|[A. Measuring Memory Usage](https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory)||
-|[+ BackProp Tutorial]( https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/)|[+ Double Info]( https://www.arduino.cc/reference/en/language/variables/data-types/double/)|[Understanding #if ?](https://forum.arduino.cc/index.php?topic=98155.0)|[A. External Memory](https://scienceprog.com/adding-external-memory-to-atmega128/)||
-|[+ BackProp Tutorial](https://ml-cheatsheet.readthedocs.io/en/latest/nn_concepts.html)|[read-only?](https://arduino.stackexchange.com/questions/1260/can-i-write-to-flash-memory-using-progmem)|[Random Defined Site?](https://gcc.gnu.org/onlinedocs/cpp/Defined.html#Defined)|[A. ATtiny85 Math Issues?](https://www.avrfreaks.net/forum/math-issues-attiny)||
-|[+ Complete NN chart !]( https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464)|[flash to RAM?](https://arduino.stackexchange.com/questions/4572/progmem-do-i-have-to-copy-data-from-flash-to-ram-for-reading)|[Loading local libraries?](https://arduino.stackexchange.com/questions/8651/loading-local-libraries)|[A. Attiny85 External Mem.?](https://arduino.stackexchange.com/questions/45870/external-flash-memory-for-attiny85)||
-|[+ MIT Deep RL](https://www.youtube.com/watch?v=zR11FLZ-O9M)|[Info Near Far?](https://www.geeksforgeeks.org/what-are-near-far-and-huge-pointers/)||[A. Splitting Array?](https://stackoverflow.com/questions/33682629/splitting-an-array-into-multiple-arrays-c)||
-|[+ MIT Deep Learning]( https://www.youtube.com/watch?v=O5xeyoRL95U)|[Example](https://github.com/troystribling/arduino-examples/blob/master/progmem/progmem.ino)||[A. Importing Loads Everything?]( https://stackoverflow.com/questions/15291750/does-importing-libraries-load-everything-in-arduino)||
-|- [```.NET Framework```]( http://accord-framework.net/)|[What is PGM_P?](https://www.avrfreaks.net/forum/what-pgmp)||[```NN. Backprop. For Dummies YT```](https://www.youtube.com/watch?v=8d6jf7s6_Qs)||
-|- .NET ! [1]( https://msdn.microsoft.com/en-us/magazine/mt842505.aspx),[2]( https://msdn.microsoft.com/en-us/magazine/mt493293.aspx),[3]( https://msdn.microsoft.com/en-us/magazine/mt829273.aspx),[4]( https://msdn.microsoft.com/en-us/magazine/dn904675.aspx),[5]( https://msdn.microsoft.com/en-us/magazine/mt791798.aspx),[6]( https://msdn.microsoft.com/en-us/magazine/dn451445.aspx)|[Passing Array?](https://forum.arduino.cc/index.php?topic=302174.0)||[```NN. Convolutional (Math- code)```](https://www.youtube.com/watch?v=FTr3n7uBIuE)||
-|- [C# Implementation]( https://www.tech-quantum.com/implement-a-simple-neural-network-in-csharp-net-part-1/), [2]( https://www.tech-quantum.com/implement-a-simple-neural-network-in-c-net-part-2/)|[Passing Array?](https://forum.arduino.cc/index.php?topic=36761.0)||[NN. In 4 minutes - Python](https://www.youtube.com/watch?v=h3l4qz76JhQ)||
-| - [.NET Deep NN](https://www.codeguru.com/csharp/.net/deep-neural-networks-and-.net.html)|[Reading?](https://forum.arduino.cc/index.php?topic=435121.0)||[NN. Quick Intro]( https://ujjwalkarn.me/2016/08/09/quick-intro-neural-networks/)||
-|[* Predicting Languages](https://www.youtube.com/watch?v=evTx5BoKcc8)|[Easy data handling?](https://forum.arduino.cc/index.php?topic=37137.0)||[NN. -]( https://natureofcode.com/book/chapter-10-neural-networks/)||
-|[* MIT Recurrent NNs]( https://www.youtube.com/watch?v=nFTQ7kHQWtc)|[Reading Long?](https://forum.arduino.cc/index.php?topic=294397.0)||[NN. PyConSG 2016](https://www.youtube.com/watch?v=U0ACP9J8vOU)||
-|- [2007 .NET Img Recognition]( https://www.codeproject.com/Articles/19323/Image-Recognition-with-Neural-Networks)|[Multi-D Array?](https://forum.arduino.cc/index.php?topic=45681.0)||[NN. Simple 9 lines of Py-code]()||
-|- [C# Handwritten Recognition](https://www.codeproject.com/Articles/143059/%2FArticles%2F143059%2FNeural-Network-for-Recognition-of-Handwritten-Di-2)|[Attiny85 mem?](https://electronics.stackexchange.com/questions/74872/memory-management-problems-with-attiny85)||[NN. MIT Press book](http://www.deeplearningbook.org/)||
-|[```Youtube Chanel```](https://www.youtube.com/channel/UCgBncpylJ1kiVaPyP-PZauQ)|[Prob Array use?](https://arduino.stackexchange.com/questions/623/why-can-i-not-use-pointers-instead-of-array-with-progmem)||[NN. A Beginner's Guide](https://skymind.ai/wiki/neural-network)||
-|[+ Recurrent Explained]( https://www.youtube.com/watch?v=yZv_yRgOvMg)|[Double or float?](https://arduino.stackexchange.com/questions/20582/since-double-and-float-represent-the-same-data-type-usually-which-is-preferab)||[```NN. MIT courses?```](http://www.ai.mit.edu/courses/6.892/lecture8-html/sld017.htm)||
-|- .NET [1](https://visualstudiomagazine.com/Articles/2014/06/01/Deep-Neural-Networks.aspx?Page=2),[2](https://visualstudiomagazine.com/articles/2014/06/01/~/media/ECG/visualstudiomagazine/Images/2014/06/0614vsm_mccaffreyFig2.ashx),[3](https://visualstudiomagazine.com/articles/2014/06/01/~/media/ECG/visualstudiomagazine/Images/2014/06/0614vsm_mccaffreyFig1.ashx)|||[```NN.Back Propagation```]( https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199)||
-|- [C# Handwritten Recognition]( https://www.codeproject.com/Articles/1273125/Handwritten-Digits-Reader-UI)|||[NN. MLP Maths?](http://www.iro.umontreal.ca/~pift6266/H10/notes/mlp.html)||
-|[+ Python NN From Scratch](https://towardsdatascience.com/how-to-build-your-own-neural-network-from-scratch-in-python-68998a08e4f6)|||[NN. Math. Notations Into Code](https://www.lifehacker.com.au/2016/03/translating-mathematical-notations-into-code-you-can-use/)||
-|[* How Backpropagation!](https://www.youtube.com/watch?v=An5z8lR8asY)|||[NN. Maths Into Code](http://matt.might.net/articles/discrete-math-and-code/)||
-|[linear Regression](https://towardsdatascience.com/coding-deep-learning-for-beginners-linear-regression-part-1-initialization-and-prediction-7a84070b01c8)|||[NN. (TAA),(BDI) Architecture ](https://msdn.microsoft.com/en-us/magazine/mt848706)||
-|[+ MLP](https://www.cse.unsw.edu.au/~cs9417ml/MLP2/)|||[NN. fast.ai ?](https://www.fast.ai/)||
-|[+ MLP](https://towardsdatascience.com/multi-layer-neural-networks-with-sigmoid-function-deep-learning-for-rookies-2-bf464f09eb7f)|||[NN. deeplearning.net]( http://deeplearning.net/reading-list/tutorials/)||
-|[```🇬🇷``` Νευρωνικά Δίκτυα](https://www.youtube.com/watch?v=x4mCfg14S28)|||[NN. BackProp Python]( https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/)||
-|[```🇬🇷``` Γενετικός Αλγόριθμος]( https://www.youtube.com/watch?v=FyglDUdCqCk)|||[NN. C# Code]( https://github.com/deepakkumar1984/tech-quantum/blob/master/CSharpExamples/StandardExamples/SimpleNeuralNet.cs)||
-|- [MS NN Classification](https://msdn.microsoft.com/en-US/magazine/jj190808.aspx)|||[NN. Implement BackProp Python](https://medium.com/coinmonks/implement-back-propagation-in-neural-networks-ed09897593e7)||
-|- [VB ML Q-Learning]( https://www.codeproject.com/Articles/1088282/VisualBasic-Machine-Learning-Step-The-Q-Learning)|||[```NN. Java Tut Playlist```](https://www.youtube.com/watch?v=d3OtgsGcMLw&index=1&list=PLgomWLYGNl1dL1Qsmgumhcg4HOcWZMd3k) ?||
-|[* handwritten Recognition ](http://neuralnetworksanddeeplearning.com/chap1.html)|||[NN. BackProp for Dummies]( https://www.quora.com/What-is-the-best-back-propagation-deep-learning-presentation-for-dummies)||
-|[* Deep Learning in 6 weeks?](https://www.youtube.com/watch?v=_qjNH1rDLm0)|||[```NN. Wiki Backprop Math```](https://en.m.wikipedia.org/wiki/Backpropagation)||
-|[* Playlist](https://www.youtube.com/watch?v=QJoa0JYaX1I&list=PLRqwX-V7Uu6Y7MdSCaIfsxc561QI0U0Tb)|||[NN. Looking Inside](https://ml4a.github.io/ml4a/looking_inside_neural_nets/)||
-|[- ```SciBasic```](https://github.com/xieguigang/sciBASIC)|||||
+|[```Math Chain Rule```]( https://www.youtube.com/watch?v=H-ybCx8gt-8 )|[+ Post](https://forum.arduino.cc/index.php?topic=613873.0)|[```define extern?```](https://forum.arduino.cc/index.php?topic=614659.0)|[A. Create compile error?](https://arduino.stackexchange.com/questions/49009/purposely-create-compile-error-to-fail-the-upload)|
+|[```Getting Started```](https://www.youtube.com/watch?v=I74ymkoNTnw)|[+ Pointers](https://stackoverflow.com/questions/28645920/c-arduino-passing-pointer-to-2d-array-stored-in-progmem)|[.ino Determining Board](https://github.com/stanleyseow/attiny-nRF24L01/blob/master/hardware/tiny/cores/tiny/core_build_options.h)|[A. Measuring Memory Usage](https://learn.adafruit.com/memories-of-an-arduino/measuring-free-memory)|
+|[+ BackProp Tutorial]( https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/)|[+ Double Info]( https://www.arduino.cc/reference/en/language/variables/data-types/double/)|[Understanding #if ?](https://forum.arduino.cc/index.php?topic=98155.0)|[A. External Memory](https://scienceprog.com/adding-external-memory-to-atmega128/)|
+|[+ BackProp Tutorial](https://ml-cheatsheet.readthedocs.io/en/latest/nn_concepts.html)|[read-only?](https://arduino.stackexchange.com/questions/1260/can-i-write-to-flash-memory-using-progmem)|[Random Defined Site?](https://gcc.gnu.org/onlinedocs/cpp/Defined.html#Defined)|[A. ATtiny85 Math Issues?](https://www.avrfreaks.net/forum/math-issues-attiny)|
+|[+ Complete NN chart !]( https://towardsdatascience.com/the-mostly-complete-chart-of-neural-networks-explained-3fb6f2367464)|[flash to RAM?](https://arduino.stackexchange.com/questions/4572/progmem-do-i-have-to-copy-data-from-flash-to-ram-for-reading)|[Loading local libraries?](https://arduino.stackexchange.com/questions/8651/loading-local-libraries)|[A. Attiny85 External Mem.?](https://arduino.stackexchange.com/questions/45870/external-flash-memory-for-attiny85)|
+|[+ MIT Deep RL](https://www.youtube.com/watch?v=zR11FLZ-O9M)|[Info Near Far?](https://www.geeksforgeeks.org/what-are-near-far-and-huge-pointers/)| |[A. Splitting Array?](https://stackoverflow.com/questions/33682629/splitting-an-array-into-multiple-arrays-c)|
+|[+ MIT Deep Learning]( https://www.youtube.com/watch?v=O5xeyoRL95U)|[Example](https://github.com/troystribling/arduino-examples/blob/master/progmem/progmem.ino)| |[A. Importing Loads Everything?]( https://stackoverflow.com/questions/15291750/does-importing-libraries-load-everything-in-arduino)|
+|- [```.NET Framework```]( http://accord-framework.net/)|[What is PGM_P?](https://www.avrfreaks.net/forum/what-pgmp)| |[```NN. Backprop. For Dummies YT```](https://www.youtube.com/watch?v=8d6jf7s6_Qs)|
+|- .NET ! [1]( https://msdn.microsoft.com/en-us/magazine/mt842505.aspx),[2]( https://msdn.microsoft.com/en-us/magazine/mt493293.aspx),[3]( https://msdn.microsoft.com/en-us/magazine/mt829273.aspx),[4]( https://msdn.microsoft.com/en-us/magazine/dn904675.aspx),[5]( https://msdn.microsoft.com/en-us/magazine/mt791798.aspx),[6]( https://msdn.microsoft.com/en-us/magazine/dn451445.aspx)|[Passing Array?](https://forum.arduino.cc/index.php?topic=302174.0)| |[```NN. Convolutional (Math- code)```](https://www.youtube.com/watch?v=FTr3n7uBIuE)|
+|- [C# Implementation]( https://www.tech-quantum.com/implement-a-simple-neural-network-in-csharp-net-part-1/), [2]( https://www.tech-quantum.com/implement-a-simple-neural-network-in-c-net-part-2/)|[Passing Array?](https://forum.arduino.cc/index.php?topic=36761.0)| |[NN. In 4 minutes - Python](https://www.youtube.com/watch?v=h3l4qz76JhQ)|
+| - [.NET Deep NN](https://www.codeguru.com/csharp/.net/deep-neural-networks-and-.net.html)|[Reading?](https://forum.arduino.cc/index.php?topic=435121.0)| |[NN. Quick Intro]( https://ujjwalkarn.me/2016/08/09/quick-intro-neural-networks/)|
+|[* Predicting Languages](https://www.youtube.com/watch?v=evTx5BoKcc8)|[Easy data handling?](https://forum.arduino.cc/index.php?topic=37137.0)| |[NN. -]( https://natureofcode.com/book/chapter-10-neural-networks/)|
+|[* MIT Recurrent NNs]( https://www.youtube.com/watch?v=nFTQ7kHQWtc)|[Reading Long?](https://forum.arduino.cc/index.php?topic=294397.0)| |[NN. PyConSG 2016](https://www.youtube.com/watch?v=U0ACP9J8vOU)|
+|- [2007 .NET Img Recognition]( https://www.codeproject.com/Articles/19323/Image-Recognition-with-Neural-Networks)|[Multi-D Array?](https://forum.arduino.cc/index.php?topic=45681.0)| |[NN. Simple 9 lines of Py-code]()|
+|- [C# Handwritten Recognition](https://www.codeproject.com/Articles/143059/%2FArticles%2F143059%2FNeural-Network-for-Recognition-of-Handwritten-Di-2)|[Attiny85 mem?](https://electronics.stackexchange.com/questions/74872/memory-management-problems-with-attiny85)| |[NN. MIT Press book](http://www.deeplearningbook.org/)|
+|[```Youtube Chanel```](https://www.youtube.com/channel/UCgBncpylJ1kiVaPyP-PZauQ)|[Prob Array use?](https://arduino.stackexchange.com/questions/623/why-can-i-not-use-pointers-instead-of-array-with-progmem)| |[NN. A Beginner's Guide](https://skymind.ai/wiki/neural-network)|
+|[+ Recurrent Explained]( https://www.youtube.com/watch?v=yZv_yRgOvMg)|[Double or float?](https://arduino.stackexchange.com/questions/20582/since-double-and-float-represent-the-same-data-type-usually-which-is-preferab)| |[```NN. MIT courses?```](http://www.ai.mit.edu/courses/6.892/lecture8-html/sld017.htm)|
+|- .NET [1](https://visualstudiomagazine.com/Articles/2014/06/01/Deep-Neural-Networks.aspx?Page=2),[2](https://visualstudiomagazine.com/articles/2014/06/01/~/media/ECG/visualstudiomagazine/Images/2014/06/0614vsm_mccaffreyFig2.ashx),[3](https://visualstudiomagazine.com/articles/2014/06/01/~/media/ECG/visualstudiomagazine/Images/2014/06/0614vsm_mccaffreyFig1.ashx)| | |[```NN.Back Propagation```]( https://becominghuman.ai/back-propagation-in-convolutional-neural-networks-intuition-and-code-714ef1c38199)|
+|- [C# Handwritten Recognition]( https://www.codeproject.com/Articles/1273125/Handwritten-Digits-Reader-UI)| | |[NN. MLP Maths?](http://www.iro.umontreal.ca/~pift6266/H10/notes/mlp.html)|
+|[+ Python NN From Scratch](https://towardsdatascience.com/how-to-build-your-own-neural-network-from-scratch-in-python-68998a08e4f6)| | |[NN. Math. Notations Into Code](https://www.lifehacker.com.au/2016/03/translating-mathematical-notations-into-code-you-can-use/)|
+|[* How Backpropagation!](https://www.youtube.com/watch?v=An5z8lR8asY)| | |[NN. Maths Into Code](http://matt.might.net/articles/discrete-math-and-code/)|
+|[linear Regression](https://towardsdatascience.com/coding-deep-learning-for-beginners-linear-regression-part-1-initialization-and-prediction-7a84070b01c8)| | |[NN. (TAA),(BDI) Architecture ](https://msdn.microsoft.com/en-us/magazine/mt848706)|
+|[+ MLP](https://www.cse.unsw.edu.au/~cs9417ml/MLP2/)| | |[NN. fast.ai ?](https://www.fast.ai/)|
+|[+ MLP](https://towardsdatascience.com/multi-layer-neural-networks-with-sigmoid-function-deep-learning-for-rookies-2-bf464f09eb7f)| | |[NN. deeplearning.net]( http://deeplearning.net/reading-list/tutorials/)|
+|[```🇬🇷``` Νευρωνικά Δίκτυα](https://www.youtube.com/watch?v=x4mCfg14S28)| | |[NN. BackProp Python]( https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/)|
+|[```🇬🇷``` Γενετικός Αλγόριθμος]( https://www.youtube.com/watch?v=FyglDUdCqCk)| | |[NN. C# Code]( https://github.com/deepakkumar1984/tech-quantum/blob/master/CSharpExamples/StandardExamples/SimpleNeuralNet.cs)|
+|- [MS NN Classification](https://msdn.microsoft.com/en-US/magazine/jj190808.aspx)| | |[NN. Implement BackProp Python](https://medium.com/coinmonks/implement-back-propagation-in-neural-networks-ed09897593e7)|
+|- [VB ML Q-Learning]( https://www.codeproject.com/Articles/1088282/VisualBasic-Machine-Learning-Step-The-Q-Learning)| | |[```NN. Java Tut Playlist```](https://www.youtube.com/watch?v=d3OtgsGcMLw&index=1&list=PLgomWLYGNl1dL1Qsmgumhcg4HOcWZMd3k) ?|
+|[* handwritten Recognition ](http://neuralnetworksanddeeplearning.com/chap1.html)| | |[NN. BackProp for Dummies]( https://www.quora.com/What-is-the-best-back-propagation-deep-learning-presentation-for-dummies)|
+|[* Deep Learning in 6 weeks?](https://www.youtube.com/watch?v=_qjNH1rDLm0)| | |[```NN. Wiki Backprop Math```](https://en.m.wikipedia.org/wiki/Backpropagation)|
+|[* Playlist](https://www.youtube.com/watch?v=QJoa0JYaX1I&list=PLRqwX-V7Uu6Y7MdSCaIfsxc561QI0U0Tb)| | |[NN. Looking Inside](https://ml4a.github.io/ml4a/looking_inside_neural_nets/)| 
+|[- ```SciBasic```](https://github.com/xieguigang/sciBASIC)| | | |
 
 <br>
 
