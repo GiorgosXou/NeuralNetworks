@@ -341,7 +341,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B00000010```  |<sup><sub></sub></sup>|<details><summary><sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub> for multiple NN </summary>It does the same thing as `REDUCE_RAM_STATIC_REFERENCE` but for multiple NN objects *(instead for just one)*. If you use `FeedForward_Individual` It is recommended to fallback to the original `_1_OPTIMIZE 0B00000100` and manually change `NN.me`</details> |<sub><sup>`...FOR_MULTIPLE_NN_OBJECTS`</sup></sub>|
 | ```0B00000001```  |<sup><sub>⚠️</sub></sup>|<details><summary>Disables backpropagation</summary>Disabling backpropagation when it's not automatically disabled, helps reduce the size of your sketch.</details> |<sub><sup>`NO_BACKPROP`<sup></sub>|
 |  **_3_OPTIMIZE** | |  ||
-| ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>external<span>&nbsp;</span>FRAM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from an external FRAM. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
+| ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>external<span>&nbsp;</span>FRAM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from an external FRAM. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`USE_EXTERNAL_FRAM`</sup></sub>|
   
 
 <br>
