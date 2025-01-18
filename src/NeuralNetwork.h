@@ -218,10 +218,6 @@
 
 #if defined(_2_OPTIMIZE)
     #if ((_2_OPTIMIZE bitor 0B01111111) == 0B11111111)
-        #if defined(REDUCE_RAM_WEIGHTS_COMMON)
-            #undef MSG3
-            #define MSG3 \n- " [_] 0B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
-        #endif
         #define NO_BACKPROP
         #define USE_INTERNAL_EEPROM
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
@@ -340,6 +336,10 @@
 
 
 #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+    #if defined(REDUCE_RAM_WEIGHTS_COMMON)
+        #undef MSG3
+        #define MSG3 \n- " [_] 0B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+    #endif
     #if defined(ACTIVATION__PER_LAYER)
         #define SIZEOF_FX sizeof(byte)
     #else
