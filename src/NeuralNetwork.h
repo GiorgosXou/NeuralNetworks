@@ -1020,6 +1020,7 @@ public:
             unsigned int AtlayerIndex; // who 's gonna make a network with more than 255 layers :P ?!?!? but anyways i will use int or i will add byte too, using a property definition with bunch of other things like this for max optimization ... lol
         #endif
         // TODO: wrap ActFunctionPerLayer to !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM) too (but first i need to wrap the rest of functions)
+        // NOTE: 2025-01-18 06:20:30 AM (from a test i did) Seems that the compiler is smart enough to optimize this case (unless I did test it wrongly)
         byte *ActFunctionPerLayer; // lets be realistic... byte because. xD | 2025-01-04 07:57:32 PM If I ever change it, remember to change SD-save too (and if anything else)
     #endif
 
