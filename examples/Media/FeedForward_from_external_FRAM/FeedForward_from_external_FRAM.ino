@@ -1,5 +1,5 @@
 // This is a minimal example demonstrating the use of a Neural Network (NN) with FRAM-based weights and biases,
-// aiming to reduce RAM and PROGMEM usage.
+// aiming to reduce RAM and flash-memmory (aka. PROGMEM) usage.
 /*
    CAUTION: Use Save_NN_to_external_FRAM.ino TO SAVE AN NN INTO FRAM FIRST, BEFORE USE OF THIS SKETCH
    CAUTION: Use Save_NN_to_external_FRAM.ino TO SAVE AN NN INTO FRAM FIRST, BEFORE USE OF THIS SKETCH

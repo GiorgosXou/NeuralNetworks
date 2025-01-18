@@ -2,6 +2,8 @@
 [EXAMPLE_CUSTOM_FUNCTIONS_INO]: ./examples/Other/Custom_activation_function/Custom_activation_function.ino
 [EXAMPLE_FEED_INDIVIDUAL_INO]: ./examples/Other/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
 [EXAMPLE_IN_EEPROM_INO]: ./examples/Media/FeedForward_from_internal_EEPROM/FeedForward_from_internal_EEPROM.ino
+[EXAMPLE_EXTERNAL_FRAM_INO]: ./examples/Media/FeedForward_from_external_FRAM/FeedForward_from_external_FRAM.ino
+[EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO]: ./examples/Media/Save_NN_to_external_FRAM/Save_NN_to_external_FRAM.ino
 [EXAMPLE_DOUBLE_XOR_BACKPROP_INO]: ./examples/Basic/Backpropagation_double_Xor/Backpropagation_double_Xor.ino
 [EXAMPLE_INT_QUANTIZED_XOR_INO]: ./examples/Other/Int_quantized_double_Xor_PROGMEM/Int_quantized_double_Xor_PROGMEM.ino
 [EXAMPLE_DOUBLE_PRECISION]: ./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino
@@ -31,7 +33,7 @@ Understanding the Basics of a Neural Network:
 - - ```+``` MSE/BCE/CCE [loss-functions](#dfloat-loss-functions).
 - - ```+``` Support for [double precision](#define-macro-properties).
 - - ```+``` Many [activation-functions](#dfloat-activation-functions).
-- - ```+``` [Use of storage medias.](#%EF%B8%8F--examples 'Such as SD, PROGMEM, EEPROM')
+- - ```+``` [Use of storage medias.](#%EF%B8%8F--examples 'Such as SD, PROGMEM, EEPROM, FRAM')
 - - ```+``` [Exceptional solutions.](## 'eg. look at FeedForward_Individual')
 - - ```+``` Simplicity!  
  
@@ -42,10 +44,11 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Other training methods.
 - - ```-``` More Activation Functions.
 - - ```-``` Training with int quantization.
+- - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM).
 - - ```-``` [Support for convolutional layers.](https://github.com/GiorgosXou/NeuralNetworks/issues/33)
 - - ```-``` [Support for fixed-point arithmetics](https://github.com/GiorgosXou/NeuralNetworks/discussions/15).
 - - ```-``` Different weight initialization methods.
-- - ```-``` Support for external [EEPROM](https://en.wikipedia.org/wiki/EEPROM) and [FRAM](https://en.wikipedia.org/wiki/Ferroelectric_RAM).
+- - ```-``` Running NNs entirely off external memmory.
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️  Examples
@@ -61,8 +64,11 @@ Understanding the Basics of a Neural Network:
 - ***`💾 Media:`***
 - - [Save NN into SD and load it into RAM after restart](./examples/Media/Save_load_NN_from_SD/Save_load_NN_from_SD.ino 'Save_load_NN_from_SD.ino')
 - - [Saving a NN into the internal EEPROM for later use](./examples/Media/Save_NN_to_internal_EEPROM/Save_NN_to_internal_EEPROM.ino 'Save_NN_to_internal_EEPROM.ino')
+- - [Saving a NN into an external FRAM for later use](EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO)
 - - [Running NN mostly via internal EEPROM (not RAM)][EXAMPLE_IN_EEPROM_INO]
-- - [Running NN mostly via programmable memmory](./examples/Media/FeedForward_double_Xor_PROGMEM/FeedForward_double_Xor_PROGMEM.ino 'FeedForward_double_Xor_PROGMEM.ino')
+- - [Running NN mostly via external FRAM (not RAM)][EXAMPLE_EXTERNAL_FRAM_INO]
+- - [Running NN mostly via flash memmory (PROGMEM)](./examples/Media/FeedForward_double_Xor_PROGMEM/FeedForward_double_Xor_PROGMEM.ino 'FeedForward_double_Xor_PROGMEM.ino')
+- - [Upgrade old v2.X.X SD files to v3](./examples/Media/Upgrade_Old_SD_NN_files/Upgrade_Old_SD_NN_files.ino)
 - ***`🎲 Other:`***
 - - [Pre-trained `int8_t`-quantized NN ✨][EXAMPLE_INT_QUANTIZED_XOR_INO]
 - - [Using a custom function made by you][EXAMPLE_CUSTOM_FUNCTIONS_INO]
@@ -99,14 +105,13 @@ Understanding the Basics of a Neural Network:
 <br>
 
 # ⚙️ Functions, Variables  ...
-> [!NOTE]
-> `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
+**NOTE:** `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
 
 | (NN) Neural-Network's Constructors |
 | ------ | 
 |<details><summary>`NeuralNetwork()`</summary>Default Constructors</details>|
 |<details><summary>`NeuralNetwork(String file)`</summary>Available if `#include <SD.h>`, lets you load NN from SD. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
-|<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_1_OPTIMIZE 0B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
+|<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_3_OPTIMIZE 0B10000000`-*(`USE_EXTERNAL_FRAM`)* or<br>Available if defined `_1_OPTIMIZE 0B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, &LRw, &LRb, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, *default_Weights, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if [`NO_BIAS`](#define-macro-properties) enabled</details>|
@@ -132,8 +137,8 @@ Understanding the Basics of a Neural Network:
 | ```*FeedForward(x) ```| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| <details><summary>Returns the output of the NN</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
 | ```BackProp(x) ```| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
 |`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
-|`save(x)`| String \ int|bool \ int| <details><summary>Saves NN to storage media</summary> SD or internal-EEPROM</details>|
-|`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM)_</details>|
+|`save(x)`| String \ u_int|bool \ u_int| <details><summary>Saves NN to storage media</summary> SD \ internal-EEPROM or external-FRAM</details>|
+|`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM. The same is true for the rest of memmory-types)_</details>|
 
 <br>
 
@@ -290,8 +295,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 <br>
 
 ## ```Type``` Other Variables
-> [!NOTE]
-> if you [`USE_INTERNAL_EEPROM`](#define-macro-properties), then only `_numberOfInputs`,`_numberOfOutputs` and `outputs` are available
+**NOTE:** if you [`USE_INTERNAL_EEPROM`](#define-macro-properties), then only `_numberOfInputs`,`_numberOfOutputs` and `outputs` are available
 
 | Type | NN's Variables | Explenation|
 | ------ | ------ | ------ |
@@ -336,6 +340,8 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B00000100```  |<sup><sub></sub></sup>|<details><summary>Use `int8_t ` quantization</summary>Weights and biases are stored as `int8_t` *(1-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `int16_t` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
 | ```0B00000010```  |<sup><sub></sub></sup>|<details><summary><sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub> for multiple NN </summary>It does the same thing as `REDUCE_RAM_STATIC_REFERENCE` but for multiple NN objects *(instead for just one)*. If you use `FeedForward_Individual` It is recommended to fallback to the original `_1_OPTIMIZE 0B00000100` and manually change `NN.me`</details> |<sub><sup>`...FOR_MULTIPLE_NN_OBJECTS`</sup></sub>|
 | ```0B00000001```  |<sup><sub>⚠️</sub></sup>|<details><summary>Disables backpropagation</summary>Disabling backpropagation when it's not automatically disabled, helps reduce the size of your sketch.</details> |<sub><sup>`NO_BACKPROP`<sup></sub>|
+|  **_3_OPTIMIZE** | |  ||
+| ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>external<span>&nbsp;</span>FRAM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from an external FRAM. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
   
 
 <br>
@@ -435,7 +441,7 @@ print('};\n')
 
 ### Int quantization
 
- Assuming you already have either enabled [`int16_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , is set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
+ *([See also](EXAMPLE_INT_QUANTIZED_XOR_INO))* Assuming you already have either enabled [`int16_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , is set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
 ```cpp
 // FLOAT RANGE FOR INT16 = (100.0) - (-100.0) = 200.0 | MAX - MIN
 // FLOAT RANGE FOR INT8  = ( 25.5) - (- 25.5) =  51.0 | MAX - MIN
@@ -569,7 +575,7 @@ for i in range(len(inputs)):
 
 
 > [!IMPORTANT]
-> See how weights and biases are printed at the end of the script and make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+> Make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
 > *([see also examples](#✏️-examples) on how to train a NN directly on an MCU)*
 
 <br>
@@ -580,7 +586,7 @@ I want to **really thanks** [Underpower Jet](https://www.youtube.com/channel/UCW
 
 
 # 🌐 Research
-Here most of the resources I came across the internet, I recomend you to have a look if you want to _(but please stay aware of the fact that for some of those sites, I had only opened them checked something and then closed them in a matter of seconds [so, please don't get them all seriously])_
+Here most of the resources I came across the internet, I recommend you to have a brief look if you want to _(but please be aware of the fact that for few of those sites, I had only opened them checked something and then closed them in a matter of seconds [so, please don't get them all seriously])_
 
 
 **```22\11\2023```** 
@@ -786,16 +792,17 @@ Here most of the resources I came across the internet, I recomend you to have a 
 </p>
 
 
-**Please** consider donating something, even the least amount would be really appreciated. I need it.
+Any amount of donation, will be highly appreciated! 
 | Monero address: <sup>`87PVyQ8Vt768hnvVyR9Qw1NyGzDea4q9Zd6AuwHb8tQBU9VdRYjRoBL7Ya8yRPVQakW2pjt2UWEtzYoxiRd7xpuB4XSJVAW`</sup>
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) 
+[![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url)
 
 
 # 🕳️ Outro
 - Forgive me if I've made any mistakes and please don't take me seriously with every claim i make, I am mainly "self taught" in this field of NeuralNetworks, I am not a professional programmer nor do I have a good knowledge in many of the fields used to create this library, **I just make things because I love to** [...] 
 
 - Also looking for jobs, if you are interested let me know, I really like working with embeded systems, C\C++, python, CLIs and etc.
+- Life is suffering.
 
 **if** you want to help me&others to educate ourselves better **and if** you have a love and passion for sharing and helping, **then** I suggest you to **[join our discord server ](https://discord.gg/R2RVeD3gY8)** 🤍
 

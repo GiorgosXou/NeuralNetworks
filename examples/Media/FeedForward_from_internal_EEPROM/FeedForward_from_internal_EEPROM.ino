@@ -1,5 +1,5 @@
 // This is a minimal example demonstrating the use of a Neural Network (NN) with EEPROM-based weights and biases,
-// aiming to reduce RAM and PROGMEM usage.
+// aiming to reduce RAM and flash-memmory (aka. PROGMEM) usage.
 /*
    CAUTION: Use Save_NN_to_internal_EEPROM.ino TO SAVE AN NN INTO EEPROM FIRST, BEFORE USE OF THIS SKETCH
    CAUTION: Use Save_NN_to_internal_EEPROM.ino TO SAVE AN NN INTO EEPROM FIRST, BEFORE USE OF THIS SKETCH
@@ -24,8 +24,8 @@ void setup()
   Serial.begin(9600);
 
   // Initializing a NeuralNetwork that runs (partially) via the Internal EEPROM of the MCU
-  // (Partially meaning: weights, biases, etc. NOT LOADED INTO RAM.
-  // Only the computation of outputs of each layer uses RAM, which can be eliminated\reduced by B01000000 and FeedForward_Individual)
+  // (Partially meaning: weights, biases, etc. NOT LOADED INTO RAM. Only the computation of 
+  // outputs of each layer uses RAM, which can be reduced by B01000000 and FeedForward_Individual)
   NeuralNetwork NN(FROM_EEPROM_ADDRESS);
 
   // "Feeding" the NeuralNetwork with an input array and getting the output
