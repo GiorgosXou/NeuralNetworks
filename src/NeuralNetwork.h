@@ -1484,9 +1484,6 @@ public:
             unsigned int i = 1;
             for (; i < numberOflayers; i++)
             {
-                #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
-                    sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
-                #endif
                 #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
                     AtlayerIndex = i;
                 #endif  
@@ -1502,9 +1499,6 @@ public:
                 #endif
             }
 
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
-                sumOfSoftmax = 0; //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
-            #endif
             #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 address = tmp_addr;
             #endif
@@ -1548,9 +1542,6 @@ public:
         unsigned int i = 1;
         for (; i < numberOflayers; i++)
         {
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
-                sumOfSoftmax = 0;  //(in case of USE_ALL...) i won't use if statment for each layer cause an initialization is nothing compared to an if statment  for every loop checking if layer points to Softmax
-            #endif
             #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
                 AtlayerIndex = i;
             #endif  
@@ -2689,7 +2680,7 @@ public:
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
         DFLOAT NeuralNetwork::Layer::SoftmaxSum(const DFLOAT &x) { DFLOAT tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
-        void  NeuralNetwork::Layer::Softmax() {for (unsigned int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}}
+        void  NeuralNetwork::Layer::Softmax() {for (unsigned int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}; me->sumOfSoftmax = 0}
     #endif
 
     DFLOAT NeuralNetwork::Layer::Identity      (const DFLOAT &x) {return x                                                 ;}
