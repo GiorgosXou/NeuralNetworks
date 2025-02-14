@@ -351,7 +351,7 @@
 #if defined(_2_OPTIMIZE) and ((_2_OPTIMIZE bitor 0B11111110) == 0B11111111)
     #undef MSG16
     #if defined(NO_BACKPROP)
-        #define MSG16 \n- " [2] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] NO_BACKPROP is already enabled!"
+        #define MSG16 \n- " [2] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] NO_BACKPROP is already set!"
     #else
         #define MSG16 \n- " [2] 0B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Disabled Backpropagation."
         #define NO_BACKPROP
