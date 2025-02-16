@@ -2305,7 +2305,7 @@ public:
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
-                    sumOfSoftmax += outputs[i];
+                    me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
                 #endif
@@ -2365,7 +2365,7 @@ public:
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
-                    sumOfSoftmax += outputs[i];
+                    me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                 #endif
@@ -2449,7 +2449,7 @@ public:
                         outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                     #elif defined(Softmax)
                         outputs[i] = exp(outputs[i]);
-                        sumOfSoftmax += outputs[i];
+                        me->sumOfSoftmax += outputs[i];
                     #else
                         outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                     #endif
@@ -2506,7 +2506,7 @@ public:
                     outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i]);
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
-                    sumOfSoftmax += outputs[i];
+                    me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
                 #endif
@@ -2553,7 +2553,7 @@ public:
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
-                    sumOfSoftmax += outputs[i];
+                    me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
                 #endif
@@ -2613,7 +2613,7 @@ public:
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
-                    sumOfSoftmax += outputs[i];
+                    me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                 #endif
