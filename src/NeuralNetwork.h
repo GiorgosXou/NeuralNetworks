@@ -2680,7 +2680,7 @@ public:
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
         DFLOAT NeuralNetwork::Layer::SoftmaxSum(const DFLOAT &x) { DFLOAT tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
-        void  NeuralNetwork::Layer::Softmax() {for (unsigned int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}; me->sumOfSoftmax = 0}
+        void  NeuralNetwork::Layer::Softmax() {for (unsigned int i = 0; i < _numberOfOutputs; i++){outputs[i] /= me->sumOfSoftmax;}; me->sumOfSoftmax = 0;}
     #endif
 
     DFLOAT NeuralNetwork::Layer::Identity      (const DFLOAT &x) {return x                                                 ;}
