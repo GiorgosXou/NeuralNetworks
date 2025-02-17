@@ -1288,43 +1288,16 @@ public:
     #if !defined(NO_BACKPROP)
         #if defined(NO_BIAS)
             NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, byte *_ActFunctionPerLayer )
+            : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)
         #else
             NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, const DFLOAT &LRb,  byte *_ActFunctionPerLayer )
+            : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)  // Delegate to the second constructor | this is better, even though it uses a few extra bytes (the compiler doesn't optimize directly the values of learning rates)
         #endif
         {
             LearningRateOfWeights = LRw; // Initializing the Learning Rate of Weights
             #if !defined(NO_BIAS)
                 LearningRateOfBiases = LRb; // Initializing the Learning Rate of Biases
             #endif
-
-            numberOflayers = NumberOflayers - 1;
-
-            layers = new Layer[numberOflayers];
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                layers[numberOflayers -1].outputs = NULL;
-            #endif
-
-            #if defined(ACTIVATION__PER_LAYER)
-                ActFunctionPerLayer = _ActFunctionPerLayer;
-            #endif 
-
-            #if defined(REDUCE_RAM_STATIC_REFERENCE)
-                me = this;
-            #endif
-
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
-                for (unsigned int i = 0; i < numberOflayers; i++)
-                    i_j += layer_[i] * layer_[i + 1];
-                
-                weights = new DFLOAT[i_j];
-                i_j=0;
-            #endif
-
-            for (unsigned int i = 0; i < numberOflayers; i++)
-            {
-                layers[i] =  Layer(layer_[i], layer_[i + 1],this);
-            }
-
         }
 
         //maybe i will  add one more constructor so i can release memory from feedforward outputs in case i dont want backprop?
