@@ -14,10 +14,12 @@ NeuralNetwork	KEYWORD3	NeuralNetwork
 getCategoricalCrossEntropy	KEYWORD2
 getBinaryCrossEntropy		KEYWORD2
 getMeanSqrdError		KEYWORD2
+ComputeSummedErrors		KEYWORD2
 
 FeedForward_Individual		KEYWORD2
 FeedForward			KEYWORD2
 BackProp			KEYWORD2
+HillClimb			KEYWORD2
 print				KEYWORD2
 save				KEYWORD2
 load				KEYWORD2

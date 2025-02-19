@@ -127,6 +127,7 @@
 #define MSG15
 #define MSG16
 #define MSG17
+#define MSG18
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -329,11 +330,44 @@
         // #endif
         // no need for #define INCLUDES_FRAM_H
     #endif
+
+    #if ((_3_OPTIMIZE bitor 0B10111111) == 0B11111111)
+        #undef MSG18
+        #define MSG18 \n- " [3] 0B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (RAM_EFFICIENT_HILL_CLIMB)."
+        #define RAM_EFFICIENT_HILL_CLIMB
+    #endif
+
+    #if ((_3_OPTIMIZE bitor 0B11011111) == 0B11111111)
+        #if defined(RAM_EFFICIENT_HILL_CLIMB)
+            #error "You can't use both (RAM_EFFICIENT_HILL_CLIMB) and (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
+        #endif
+        #undef MSG18
+        #define MSG18 \n- " [3] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Only pre-established NNs allowed with (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
+        #define RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW
+        #define NO_BACKPROP
+    #endif
 #endif
 
 
 // _4_OPTIMIZE will be here <-------------------------------
 
+
+// TODO: Once I'll add support for FRAM I need to change those errors for RAM_EFFICIENT_HILL_CLIMB to inform the user to use RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW instead! 
+// Because there is no initialization nor destrcuction proccess of dynamic parameters during FRAM usage
+#if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+    #if defined(USE_INTERNAL_EEPROM)
+        #error "You can't USE_INTERNAL_EEPROM with HillClimb yet."
+    #endif
+    #if defined(USE_EXTERNAL_FRAM)
+        #error "You can't USE_EXTERNAL_FRAM with HillClimb yet."
+    #endif
+    #if defined(USE_INT_QUANTIZATION)
+        #error "You can't USE_INT_QUANTIZATION with HillClimb yet ."
+    #endif
+    #if defined(USE_PROGMEM)
+        #error "You can't USE_PROGMEM with HillClimb"
+    #endif
+#endif
 
 #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
     #if defined(REDUCE_RAM_WEIGHTS_COMMON)
@@ -559,6 +593,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
+    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT9 1
     #define ACTIVATION
@@ -575,6 +610,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
+    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT10 1
     #define ACTIVATION
@@ -591,6 +627,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
+    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT11 1
     #define ACTIVATION
@@ -607,6 +644,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
+    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT12 1
     #define ACTIVATION
@@ -623,6 +661,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
+    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT13 1
     #define ACTIVATION
@@ -639,6 +678,7 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
+    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT14 1
     #define ACTIVATION
@@ -668,6 +708,7 @@
         #define CUSTOM_DF1_DEFINITION DFLOAT CUSTOM_DF1(const float &fx);
     #else
         #define NO_BACKPROP
+        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA1
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -695,6 +736,7 @@
         #define CUSTOM_DF2_DEFINITION DFLOAT CUSTOM_DF2(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
+        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA2
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -722,6 +764,7 @@
         #define CUSTOM_DF3_DEFINITION DFLOAT CUSTOM_DF3(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
+        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA3
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -749,6 +792,7 @@
         #define CUSTOM_DF4_DEFINITION DFLOAT CUSTOM_DF4(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
+        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA4
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -776,6 +820,7 @@
         #define CUSTOM_DF5_DEFINITION DFLOAT CUSTOM_DF5(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
+        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA5
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -793,6 +838,7 @@
 #define SOFTMAX_POSITION_IN_ARRAY (ACT1 + ACT2 + ACT3 + ACT4 + ACT5 + ACT6)
 
 
+// vvv Meaning that if not exclusivly defined one (or more) ACTIVATION function
 #if !defined(ACTIVATION)
     #if defined(ACTIVATION__PER_LAYER)
         // ACTIVATE ALL FUNCTIONS
@@ -817,6 +863,19 @@
 #endif
 
 
+#if defined(NO_DERIVATIVE) and (defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW))
+    #if defined(ACTIVATION__PER_LAYER)
+        #if defined(ALL_ACTIVATION_FUNCTIONS)
+            #error "There's no derivative support for (ALL_ACTIVATION_FUNCTIONS)"
+        #else
+            #error "There's no derivative support for one of the activation-functions you enabled "
+        #endif
+    #else
+        #error "There's no derivative support for the activation-function you enabled"
+    #endif
+#endif
+
+
 #define MAKE_FUN_NAME1(actname,value) actname(value)
 #define MAKE_FUN_NAME2(actname,value) actname ## Der(value)
 
@@ -833,7 +892,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -853,7 +912,7 @@ private:
         FRAM *fram;
     #endif
 
-    #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+    #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
         bool isAllocdWithNew = true;  // If weights and biases are allocated with new, for the destractor later | TODO: #if !defined(USE_PROGMEM) and etc. in constructors
     #endif
     unsigned int Individual_Input = 0;
@@ -929,6 +988,9 @@ private:
             void CommonCompute(DFLOAT &gamma, DFLOAT preLgammaORgamma, const DFLOAT *inputs, unsigned int i, unsigned int j);
         #endif
 
+        // (I guess) No need for encapsulation of this function into macro when all error-funtions (eg. MSE, ...) are disabled, since (it will be blank) the compiler will optimize it anyways for any user that uses it.
+        void ComputeSummedErrors(const DFLOAT *_expected_);
+
 
         // "Extra Math"
         DFLOAT erf(DFLOAT x);
@@ -995,7 +1057,7 @@ public:
     #if defined(ACTIVATION__PER_LAYER)
         typedef DFLOAT (Layer::*method_function) (const DFLOAT &);
         static const method_function activation_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
-        #if !defined(NO_BACKPROP)
+        #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
             static const method_function derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
         #endif  
         //https://stackoverflow.com/a/31708674/11465149
@@ -1048,7 +1110,7 @@ public:
 
 
     // unsigned float doesn't exist..? lol
-    #if !defined (NO_BACKPROP)
+    #if !defined (NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
         DFLOAT LearningRateOfWeights = 0.33 ; // Learning Rate of Weights.
         #if !defined(NO_BIAS)
             DFLOAT LearningRateOfBiases  = 0.066; // Learning Rate of Biases .
@@ -1080,7 +1142,8 @@ public:
     #elif defined(USE_EXTERNAL_FRAM)
         NeuralNetwork(FRAM &framObj, unsigned int address);
     #endif
-    #if !defined(NO_BACKPROP)
+    // Here we only check for RAM_EFFICIENT_HILL_CLIMB because the whole purpose of RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW is to reduce sketch size by removing initialization and deconstructor logic
+    #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
         NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL);                                              // #0
         #if defined(NO_BIAS)
             NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, byte *_ActFunctionPerLayer = NULL);          // #0
@@ -1105,7 +1168,15 @@ public:
     DFLOAT getCategoricalCrossEntropy (unsigned int inputsPerEpoch); 
     DFLOAT loss  (DFLOAT &sum, DFLOAT &loss, unsigned int batch_size);        
 
-    #if !defined (NO_BACKPROP)
+    #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+        unsigned int nn_seed   = 0;
+        DFLOAT       old_error = 0;
+        void climb(int8_t direction);
+        bool HillClimb(DFLOAT error, DFLOAT tolerance);
+    #endif
+    void ComputeSummedErrors(const DFLOAT *_expected_);
+
+    #if !defined(NO_BACKPROP)
         void BackProp(const DFLOAT *expected);    // BackPropopagation - (error, delta-weights, etc.).
     #endif
 
@@ -1138,7 +1209,7 @@ public:
 //=======================================================================================================================================================================
 #pragma region NeuralNetwork.cpp
     NeuralNetwork::NeuralNetwork() {
-        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
             isAllocdWithNew = false;
         #endif
         #if defined(REDUCE_RAM_STATIC_REFERENCE)
@@ -1148,7 +1219,7 @@ public:
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork::NeuralNetwork(String file){
-            #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+            #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
                 isAllocdWithNew = false;
             #endif
             #if defined(REDUCE_RAM_STATIC_REFERENCE)
@@ -1161,7 +1232,7 @@ public:
 
     void NeuralNetwork::pdestract()
     {
-        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8 // !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
+        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8 // !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
             if (isAllocdWithNew){ // Because of undefined behavior in some MCUs like ESP32-C3
                 unsigned int i=0;
                 while(true) // for (unsigned int i = 0; i < numberOflayers; i++)
@@ -1230,7 +1301,7 @@ public:
         NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
     #endif
     {
-        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) // #8
+        #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
             isAllocdWithNew = false;
         #endif
         numberOflayers = NumberOflayers - 1;
@@ -1285,7 +1356,7 @@ public:
         }
     }
 
-    #if !defined(NO_BACKPROP)
+    #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
         #if defined(NO_BIAS)
             NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, byte *_ActFunctionPerLayer )
             : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)
@@ -1483,7 +1554,7 @@ public:
 
     DFLOAT *NeuralNetwork::FeedForward(const DFLOAT *inputs)
     {
-        #if !defined(NO_BACKPROP)
+        #if !defined(NO_BACKPROP) // no need for (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
             _inputs = inputs;
         #endif
 
@@ -1537,11 +1608,86 @@ public:
     }
 
 
+    void NeuralNetwork::ComputeSummedErrors(const DFLOAT *_expected_)
+    {
+        /* i dont find any reason of having this if Backprop or ComputeSummedErrors will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too | Meaning: NN.Backprop(..); \n NN.Backprop(..); without a feedforward in between
+        #if defined(ACTIVATION__PER_LAYER)
+            AtlayerIndex = numberOflayers - 1;
+        #endif  
+        */
+
+        #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
+            me = this;
+        #endif
+
+        layers[numberOflayers - 1].ComputeSummedErrors(_expected_);
+    }
+
+
+    #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+        void NeuralNetwork::climb(int8_t direction) 
+        {
+            // TODO: It should be pretty simple to train entirely on FRAM
+
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                i_j = 0;
+            #endif
+            
+            // random(-1,2) means {-1,0,1}
+            for (unsigned int l = 0; l < numberOflayers; l++){
+                #if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                    *layers[l].bias += (LearningRateOfBiases * random(-1,2) * direction);
+                #endif
+                for (unsigned int i = 0; i < layers[l]._numberOfOutputs; i++){
+                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                        layers[l].bias[i] += (LearningRateOfBiases * random(-1,2) * direction);
+                    #endif
+                    for (unsigned int j = 0; j < layers[l]._numberOfInputs; j++){
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            weights[i_j++] += (LearningRateOfWeights * random(-1,2) * direction);
+                        #else
+                            layers[l].weights[i][j] += (LearningRateOfWeights * random(-1,2) * direction);
+                        #endif
+                    }
+                }
+            }
+        }
+
+
+        /*
+        * A computationally-expensive but memmory-efficient Hill-Climbing algorithm,
+        * that uses barely any extra amount of RAM to train the NN. (Just a few bytes)
+        * WARNING: This algorithm may not work with MCUs that utilize TRNG 
+        * (True-PRNG) at the back-end of `random()` function, if not any fallback
+        * to PRNG via eg. `randomSeed()` exists.
+        */
+        bool NeuralNetwork::HillClimb(DFLOAT error, DFLOAT tolerance)
+        {
+            if (error <= tolerance)
+                return false;
+
+            if (error > old_error){
+                // climb-back\revert-changes
+                --nn_seed;
+                randomSeed(nn_seed++);
+                climb(-1);
+            }
+
+            // climb-up\retry
+            old_error = error;
+            randomSeed(nn_seed++);
+            climb(1);
+
+            // TODO: a HillClimbing with Spike if preciist?
+            return true;
+        }
+    #endif
+
 
     #if !defined (NO_BACKPROP)
         void NeuralNetwork::BackProp(const DFLOAT *expected)
         {
-            /* i dont find any reason of having this if Backprop will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too | Meaning: NN.Backprop(..); \n NN.Backprop(..); without a feedforward in between
+            /* i dont find any reason of having this if Backprop or ComputeSummedErrors will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too | Meaning: NN.Backprop(..); \n NN.Backprop(..); without a feedforward in between
             #if defined(ACTIVATION__PER_LAYER)
                 AtlayerIndex = numberOflayers - 1;
             #endif  
@@ -2072,7 +2218,7 @@ public:
                 &NeuralNetwork::Layer::CUSTOM_AF5,
             #endif
         };
-        #if !defined(NO_BACKPROP)
+        #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
             const NeuralNetwork::method_function NeuralNetwork::derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
                 #if defined(Sigmoid)
                     &NeuralNetwork::Layer::SigmoidDer,
@@ -2665,7 +2811,7 @@ public:
     DFLOAT NeuralNetwork::Layer::Mish          (const DFLOAT &x) {return x * Tanh(log(1 + exp(x)))                         ;}
     DFLOAT NeuralNetwork::Layer::Gaussian      (const DFLOAT &x) {return exp(-(x*x))                                       ;}
 
-    #if !defined(NO_BACKPROP)
+    #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
 
         DFLOAT NeuralNetwork::Layer::SigmoidDer  (const DFLOAT &fx) { return fx - fx * fx                                                     ;} 
         DFLOAT NeuralNetwork::Layer::TanhDer     (const DFLOAT &fx) { return 1 - fx * fx                                                      ;}
@@ -2685,6 +2831,69 @@ public:
         DFLOAT NeuralNetwork::Layer::IdentityDer    (const DFLOAT &x ) {return 1                                                              ;}
 
 
+        void NeuralNetwork::Layer::ComputeSummedErrors(const DFLOAT *_expected_)
+        {
+            DFLOAT gamma;
+            // NOTE: summed errors exist at BackPropOutput too
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                // ---> #9
+                unsigned int i = _numberOfOutputs;
+                do {
+                    i--;
+                    //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
+                    gamma = (outputs[i] - _expected_[i]);
+                    
+                        // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros
+                    #if defined(CATEGORICAL_CROSS_ENTROPY)
+                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
+                    #endif
+                    #if defined(BINARY_CROSS_ENTROPY)
+                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
+                    #endif
+                    #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
+                        me->sumSquaredError += gamma * gamma; 
+                    #endif
+
+                    #if defined(ACTIVATION__PER_LAYER)
+                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                    #else
+                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
+                    #endif
+                } while (i != 0);
+
+            #else
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                {
+                    //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
+                    //gamma = (outputs[i] - _expected_[i]) * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // outputs[i] is f(x) not x in this case, because i wanted to delete the array of inputs before activation
+
+                        //#3
+                    gamma = (outputs[i] - _expected_[i]); 
+                    
+                    // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros again lol
+                    #if defined(CATEGORICAL_CROSS_ENTROPY)
+                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
+                    #endif
+                    #if defined(BINARY_CROSS_ENTROPY)
+                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
+                    #endif
+                    #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
+                        me->sumSquaredError += gamma * gamma; 
+                    #endif
+                    
+                    #if defined(ACTIVATION__PER_LAYER)
+                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                    #else
+                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
+                    #endif
+                }
+            #endif
+            
+        }
+    #endif
+
+
+    #if !defined(NO_BACKPROP)
         void NeuralNetwork::Layer::CommonCompute(DFLOAT &gamma, DFLOAT preLgammaORgamma, const DFLOAT *inputs, unsigned int i, unsigned int j=0)
         {
             #if defined(ACTIVATION__PER_LAYER)
@@ -2725,6 +2934,7 @@ public:
             #endif
             DFLOAT gamma;
 
+            // NOTE: summed errors exist at ComputeSummedErrors too
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 // ---> #9
                 // 3. in other words it's like: for (int i = _numberOfOutputs -1; i >= 0; i--) OR
