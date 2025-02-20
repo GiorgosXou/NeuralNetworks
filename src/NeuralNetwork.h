@@ -64,7 +64,7 @@
 #define __NN_VERSION__ "VERSION: 3.0.0"\n
 
 // - That gives you access to the standard types and constants of the Arduino language.
-// #include "Arduino.h"
+#include "Arduino.h"
 
 // https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
 // considering there's a scope it's looking for the library if you declare it above the #include <NeuralNetwork.h> it will enable the functionality else no.. meaning that I don't need to worry about destructor optimization #8
