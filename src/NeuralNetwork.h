@@ -1189,8 +1189,11 @@ public:
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork(String file);
+        NeuralNetwork(File file);
         bool save    (String file); // TODO: load\Save from RAM and PROGMEM, EEPROM, FRAM and other medias
+        bool save    (File file);
         bool load    (String file);
+        bool load    (File file);
         bool save_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
@@ -1226,6 +1229,16 @@ public:
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork::NeuralNetwork(String file){
+            #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
+                isAllocdWithNew = false;
+            #endif
+            #if defined(REDUCE_RAM_STATIC_REFERENCE)
+                me = this;
+            #endif
+            load(file);
+        }
+
+        NeuralNetwork::NeuralNetwork(File file){
             #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
                 isAllocdWithNew = false;
             #endif
@@ -1749,10 +1762,8 @@ public:
     
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
-        bool NeuralNetwork::save(String file)
+        bool NeuralNetwork::save(File myFile)
         {
-            File myFile = SD.open(file.c_str(), SD_NN_WRITE_MODE); // it seems that c_str() doesn't work with UNO ...
-
             if (myFile){
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     unsigned int totalNumOfWeights = 0; // we write 0 so we can seek at the end and set the real value
@@ -1790,6 +1801,17 @@ public:
                 return true;
             }
             return false;
+        }
+
+        bool NeuralNetwork::save(String file)
+        {
+            File myFile = SD.open(file.c_str(), SD_NN_WRITE_MODE); // it seems that c_str() doesn't work with UNO ...
+
+            bool saved = save(myFile);
+
+            myFile.close();
+
+            return saved;
         }
 
         bool NeuralNetwork::save_old(String file)
@@ -1832,12 +1854,9 @@ public:
         }
 
 
-        bool NeuralNetwork::load(String file)
-        {
+        bool NeuralNetwork::load(File myFile) {
             if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
                 pdestract();
-
-            File myFile = SD.open(file.c_str());
 
             if (myFile) {
                 isAllocdWithNew = true;
@@ -1930,10 +1949,21 @@ public:
                         #endif
                     #endif
                 }
-                myFile.close();
                 return true;
             }
             return false;
+        }
+
+        bool NeuralNetwork::load(String file)
+        {
+
+            File myFile = SD.open(file.c_str());
+
+            bool loaded = load(myFile);
+
+            myFile.close();
+
+            return loaded;
         }
 
         bool NeuralNetwork::load_old(String file)
