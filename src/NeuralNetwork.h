@@ -64,7 +64,7 @@
 #define __NN_VERSION__ "VERSION: 3.0.0"\n
 
 // - That gives you access to the standard types and constants of the Arduino language.
-#include "Arduino.h"
+// #include "Arduino.h"
 
 // https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
 // considering there's a scope it's looking for the library if you declare it above the #include <NeuralNetwork.h> it will enable the functionality else no.. meaning that I don't need to worry about destructor optimization #8
@@ -1189,11 +1189,11 @@ public:
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
         NeuralNetwork(String file);
-        NeuralNetwork(File file);
+        NeuralNetwork(File& file);
         bool save    (String file); // TODO: load\Save from RAM and PROGMEM, EEPROM, FRAM and other medias
-        bool save    (File file);
+        bool save    (File& file);
         bool load    (String file);
-        bool load    (File file);
+        bool load    (File& file);
         bool save_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
@@ -1238,7 +1238,7 @@ public:
             load(file);
         }
 
-        NeuralNetwork::NeuralNetwork(File file){
+        NeuralNetwork::NeuralNetwork(File& file){
             #if defined(SUPPORTS_SD_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
                 isAllocdWithNew = false;
             #endif
