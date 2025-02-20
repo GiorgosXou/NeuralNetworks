@@ -1762,7 +1762,7 @@ public:
     
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY)
-        bool NeuralNetwork::save(File myFile)
+        bool NeuralNetwork::save(File& myFile)
         {
             if (myFile){
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -1854,7 +1854,7 @@ public:
         }
 
 
-        bool NeuralNetwork::load(File myFile) {
+        bool NeuralNetwork::load(File& myFile) {
             if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
                 pdestract();
 
