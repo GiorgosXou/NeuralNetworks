@@ -153,6 +153,9 @@
 #define IS_CONST
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
+        #if defined(ESP32)
+            #error "[1] 0B10000000 USE_PROGMEM on ESP32 is emulated, therefore it's not really supported."
+        #endif
         #define USE_PROGMEM
         #define NO_BACKPROP
         #undef IS_CONST
