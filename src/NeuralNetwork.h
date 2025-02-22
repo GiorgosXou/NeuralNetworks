@@ -1748,12 +1748,9 @@ public:
             for (unsigned int i = numberOflayers - 2; i > 0; i--)
             {
                 layers[i].BackPropHidden(&layers[i + 1], layers[i - 1].outputs);
-                delete[] layers[i + 1].preLgamma;
             }
 
             layers[0].BackPropHidden(&layers[1], _inputs);
-
-            delete[] layers[1].preLgamma;
             delete[] layers[0].preLgamma;
         }
     #endif
@@ -3108,6 +3105,8 @@ public:
             #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 *bias -= bias_Delta * me->LearningRateOfBiases;
             #endif
+
+            delete[] frontLayer->preLgamma;
         }
     #endif
 
