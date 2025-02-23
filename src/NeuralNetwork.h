@@ -1299,7 +1299,10 @@ public:
                         break;
                     }
                     delete[] layers[i].outputs;
-                    // #endif
+                    // this macro-condition is needed since this runs even if NO_BACKPROP
+                    #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
+                        delete[] layers[i].outputs;
+                    #endif
                     i++;
                 }
 
