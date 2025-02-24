@@ -384,7 +384,7 @@
         #error "You can't USE_EXTERNAL_FRAM with HillClimb yet."
     #endif
     #if defined(USE_INT_QUANTIZATION)
-        #error "You can't USE_INT_QUANTIZATION with HillClimb yet ."
+        #error "You can't USE_INT_QUANTIZATION with HillClimb yet."
     #endif
     #if defined(USE_PROGMEM)
         #error "You can't USE_PROGMEM with HillClimb"
@@ -1017,7 +1017,7 @@ private:
         // "Extra Math"
         DFLOAT erf(DFLOAT x);
 
-        //if i acctually consider using other complicated activation functions i might need to think again about the before_Activation_output Array [...]
+        //if i actually consider using other complicated activation functions i might need to think again about the before_Activation_output Array [...]
         DFLOAT Sigmoid    (const DFLOAT &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
         DFLOAT SigmoidDer (const DFLOAT &fx); // Derivative of Sigmoid Activation Function.
         
