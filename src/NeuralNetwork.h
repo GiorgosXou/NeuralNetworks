@@ -2822,25 +2822,15 @@ public:
     
     DFLOAT NeuralNetwork::Layer::erf(DFLOAT x)
     {
-        // constants | don't trust the precision you see here
-        DFLOAT a1 =  0.254829592;
-        DFLOAT a2 = -0.284496736;
-        DFLOAT a3 =  1.421413741;
-        DFLOAT a4 = -1.453152027;
-        DFLOAT a5 =  1.061405429;
-        DFLOAT p  =  0.3275911;
+        DFLOAT sign = (x < 0) ? -1.0 : 1.0;
 
-        // Save the sign of x
-        int sign = 1;
-        if (x < 0)
-            sign = -1;
         x = fabs(x);
 
-        // A&S formula 7.1.26
-        DFLOAT t = 1.0/(1.0 + p*x);
-        DFLOAT y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
+        // A&S formula 7.1.26 (Abramowitz & Stegun)
+        DFLOAT t = 1.0/(1.0 + 0.3275911*x);
 
-        return sign*y;
+        // return sign*y;
+        return sign*(1.0 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - 0.284496736)*t + 0.254829592)*t*exp(-x*x));
     }
 
     /*
