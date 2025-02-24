@@ -183,10 +183,12 @@
         //#define REDUCE_RAM_WEIGHTS_LVL1
     #endif
 
+    // NOTE: 2025-02-25 01:35:49 AM | #10 I just realised that it doesn't really matter,
+    // since it has to zero the preLgamma-arrays prior to BackPropopagation [...]
     #if ((_1_OPTIMIZE bitor 0B11110111) == 0B11111111)
         #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
         #undef MSG4
-        #define MSG4 \n- " [1] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enabled not switchable yet."
+        #define MSG4 \n- " [1] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enbaled not switchable."
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111011) == 0B11111111)
@@ -1294,11 +1296,10 @@ public:
                     #endif
                     */
 
-                    // #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                     if (i == numberOflayers-1){ // -1 because we need final-outputs(below) to be managed by user.
                         break;
                     }
-                    delete[] layers[i].outputs;
+
                     // this macro-condition is needed since this runs even if NO_BACKPROP
                     #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                         delete[] layers[i].outputs;
@@ -1741,7 +1742,7 @@ public:
             #if defined(SUPPORT_NO_HIDDEN_BACKPROP)
                 if (numberOflayers == 1) { // meaning 2 actual layers {0,1} input-output
                     layers[0].BackPropOutput(expected, _inputs);
-                    delete[] layers[0].preLgamma;
+                    delete[] layers[0].preLgamma; // #10
                     return;
                 }
             #endif
@@ -1754,7 +1755,7 @@ public:
             }
 
             layers[0].BackPropHidden(&layers[1], _inputs);
-            delete[] layers[0].preLgamma;
+            delete[] layers[0].preLgamma; // #10
         }
     #endif
 
@@ -2986,7 +2987,7 @@ public:
         void NeuralNetwork::Layer::BackPropOutput(const DFLOAT *_expected_, const DFLOAT *inputs)
         {
 
-            preLgamma = new DFLOAT[_numberOfInputs]{}; // create gamma of previous layer and initialize{} values to 0 .. meh
+            preLgamma = new DFLOAT[_numberOfInputs]{}; // create gamma of previous layer and initialize{} values to 0 .. meh  // #10
             
 
             #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
@@ -3065,7 +3066,7 @@ public:
             #if defined(ACTIVATION__PER_LAYER)
                 me->AtlayerIndex -= 1; 
             #endif
-            preLgamma = new DFLOAT[_numberOfInputs]{};
+            preLgamma = new DFLOAT[_numberOfInputs]{}; // #10
 
             #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                 DFLOAT bias_Delta = 1.0;
@@ -3099,7 +3100,7 @@ public:
                 *bias -= bias_Delta * me->LearningRateOfBiases;
             #endif
 
-            delete[] frontLayer->preLgamma;
+            delete[] frontLayer->preLgamma;  // #10
         }
     #endif
 
