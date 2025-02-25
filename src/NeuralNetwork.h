@@ -267,6 +267,9 @@
     #endif
 
     #if ((_2_OPTIMIZE bitor 0B11101111) == 0B11111111)
+        #if defined(ESP32)
+            #error "[2] 0B00010000 PROGMEM on ESP32 is emulated, therefore F() macro is not really supported."
+        #endif
         #undef MSG13
         #define MSG13 \n- " [2] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
         #undef F_MACRO
