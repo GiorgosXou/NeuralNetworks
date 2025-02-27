@@ -3,8 +3,8 @@
 * This sketch utilizes a computationally-expensive but memmory-efficient Hill-Climbing algorithm,
 * It requires only a few constant-size bytes of extra RAM to train any neural network (NN).
 * The algorithm is primarily designed for fine-tuning pre-trained NNs using _3_OPTIMIZE 0B00100000.
-* Making it suitable for low-end MCUs like the ATtiny85.
 * However, in this specific example, the alternative _3_OPTIMIZE 0B01000000 is used to demonstrate full training.
+* In case of need for dynamic-changes in learning-rates, see _3_OPTIMIZE 0B00010000 (HILL_CLIMB_DYNAMIC_LEARNING_RATES support).
 */
 
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)

@@ -367,11 +367,14 @@
         #define NO_BACKPROP
     #endif
 
-    // #if ((_3_OPTIMIZE bitor 0B11101111) == 0B11111111)
-    //     #undef MSG19
-    //     #define MSG19 \n- " [3] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (SUPPORT_NO_HIDDEN_BACKPROP)."
-    //     #define SUPPORT_NO_HIDDEN_BACKPROP
-    // #endif
+    #if ((_3_OPTIMIZE bitor 0B11101111) == 0B11111111)
+        #if !defined(RAM_EFFICIENT_HILL_CLIMB) and !defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+            #error "You can't use (HILL_CLIMB_DYNAMIC_LEARNING_RATES) without enabling either (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)"
+        #endif
+        #undef MSG19
+        #define MSG19 \n- " [3] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled support for (HILL_CLIMB_DYNAMIC_LEARNING_RATES)."
+        #define HILL_CLIMB_DYNAMIC_LEARNING_RATES
+    #endif
 
     #if ((_3_OPTIMIZE bitor 0B11110111) == 0B11111111)
         #undef MSG20
@@ -1141,7 +1144,7 @@ public:
     unsigned int numberOflayers = 0; // Number of layers.
 
 
-    // unsigned float doesn't exist..? lol
+    // unsigned float doesn't exist..? lol // #11
     #if !defined (NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
         DFLOAT LearningRateOfWeights = 0.33 ; // Learning Rate of Weights.
         #if !defined(NO_BIAS)
@@ -1201,6 +1204,13 @@ public:
     DFLOAT loss  (DFLOAT &sum, DFLOAT &loss, unsigned int batch_size);        
 
     #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+        #if defined(HILL_CLIMB_DYNAMIC_LEARNING_RATES) // #11 | those variables should be private but anyways for now ...
+            DFLOAT OldLearningRateOfWeights = 0.33 ; // Old Learning Rate of Weights in cases where learning rate changes dynamically by the user.
+            #if !defined(NO_BIAS)
+                DFLOAT OldLearningRateOfBiases  = 0.066; // Old Learning Rate of Biases in cases where learning rate changes dynamically by the user.
+            #endif
+        #endif
+
         unsigned int nn_seed   = 0;
         DFLOAT       old_error = -1;
         void climb(int8_t direction);
@@ -1417,9 +1427,17 @@ public:
             : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)  // Delegate to the second constructor | this is better, even though it uses a few extra bytes (the compiler doesn't optimize directly the values of learning rates)
         #endif
         {
+            // no need for this since there's ... && old_error != -1
+            // #if defined(HILL_CLIMB_DYNAMIC_LEARNING_RATES) // #11
+            //     OldLearningRateOfWeights = LRw;
+            // #endif
             LearningRateOfWeights = LRw; // Initializing the Learning Rate of Weights
             #if !defined(NO_BIAS)
                 LearningRateOfBiases = LRb; // Initializing the Learning Rate of Biases
+                // no need for this since theres ... && old_error != -1
+                // #if defined(HILL_CLIMB_DYNAMIC_LEARNING_RATES) // #11
+                //     OldLearningRateOfBiases = LRb;
+                // #endif
             #endif
         }
 
@@ -1684,6 +1702,13 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 i_j = 0;
             #endif
+
+            #if defined(HILL_CLIMB_DYNAMIC_LEARNING_RATES) // #11
+                OldLearningRateOfWeights = LearningRateOfWeights;
+                #if !defined(NO_BIAS)
+                    OldLearningRateOfBiases = LearningRateOfBiases;
+                #endif
+            #endif
             
             // random(-1,2) means {-1,0,1}
             for (unsigned int l = 0; l < numberOflayers; l++){
@@ -1719,8 +1744,17 @@ public:
                 return false;
 
             if (error > old_error && old_error != -1){ // -1 to prevent first loop from "reverting"
+                // revert potential changes in dynamic LearningRates
+                #if defined(HILL_CLIMB_DYNAMIC_LEARNING_RATES) // #11
+                    LearningRateOfWeights = OldLearningRateOfWeights;
+                    #if !defined(NO_BIAS)
+                        LearningRateOfBiases = OldLearningRateOfBiases;
+                    #endif
+                #endif
+
                 // climb-back\revert-changes
                 --nn_seed;
+                // ++ to skip the bad seed later on
                 randomSeed(nn_seed++);
                 climb(-1);
             }
