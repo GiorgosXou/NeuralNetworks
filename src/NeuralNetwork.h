@@ -1202,7 +1202,7 @@ public:
 
     #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
         unsigned int nn_seed   = 0;
-        DFLOAT       old_error = 0;
+        DFLOAT       old_error = -1;
         void climb(int8_t direction);
         bool HillClimb(DFLOAT error, DFLOAT tolerance);
     #endif
@@ -1718,7 +1718,7 @@ public:
             if (error <= tolerance)
                 return false;
 
-            if (error > old_error){
+            if (error > old_error && old_error != -1){ // -1 to prevent first loop from "reverting"
                 // climb-back\revert-changes
                 --nn_seed;
                 randomSeed(nn_seed++);
