@@ -1735,7 +1735,7 @@ public:
         * A computationally-expensive but memmory-efficient Hill-Climbing algorithm,
         * that uses barely any extra amount of RAM to train the NN. (Just a few bytes)
         * WARNING: This algorithm may not work with MCUs that utilize TRNG 
-        * (True-PRNG) at the back-end of `random()` function, if not any fallback
+        * (True-RNG) at the back-end of `random()` function, if not any fallback
         * to PRNG via eg. `randomSeed()` exists.
         */
         bool NeuralNetwork::HillClimb(DFLOAT error, DFLOAT tolerance)
@@ -1757,10 +1757,12 @@ public:
                 // ++ to skip the bad seed later on
                 randomSeed(nn_seed++);
                 climb(-1);
+            }else{
+                // if we revert we keep the same old_error, else:
+                old_error = error;
             }
 
             // climb-up\retry
-            old_error = error;
             randomSeed(nn_seed++);
             climb(1);
 
