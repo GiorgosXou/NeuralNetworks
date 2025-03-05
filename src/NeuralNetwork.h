@@ -628,7 +628,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT9 1
     #define ACTIVATION
@@ -645,7 +644,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT10 1
     #define ACTIVATION
@@ -662,7 +660,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT11 1
     #define ACTIVATION
@@ -679,7 +676,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT12 1
     #define ACTIVATION
@@ -696,7 +692,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT13 1
     #define ACTIVATION
@@ -713,7 +708,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT14 1
     #define ACTIVATION
@@ -743,7 +737,6 @@
         #define CUSTOM_DF1_DEFINITION DFLOAT CUSTOM_DF1(const float &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA1
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -771,7 +764,6 @@
         #define CUSTOM_DF2_DEFINITION DFLOAT CUSTOM_DF2(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA2
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -799,7 +791,6 @@
         #define CUSTOM_DF3_DEFINITION DFLOAT CUSTOM_DF3(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA3
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -827,7 +818,6 @@
         #define CUSTOM_DF4_DEFINITION DFLOAT CUSTOM_DF4(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA4
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -855,7 +845,6 @@
         #define CUSTOM_DF5_DEFINITION DFLOAT CUSTOM_DF5(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA5
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -894,19 +883,6 @@
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
         #define AN_1 |> Sigmoid 
-    #endif
-#endif
-
-
-#if defined(NO_DERIVATIVE) and (defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW))
-    #if defined(ACTIVATION__PER_LAYER)
-        #if defined(ALL_ACTIVATION_FUNCTIONS)
-            #error "There's no derivative support for (ALL_ACTIVATION_FUNCTIONS)"
-        #else
-            #error "There's no derivative support for one of the activation-functions you enabled "
-        #endif
-    #else
-        #error "There's no derivative support for the activation-function you enabled"
     #endif
 #endif
 
@@ -1092,7 +1068,7 @@ public:
     #if defined(ACTIVATION__PER_LAYER)
         typedef DFLOAT (Layer::*method_function) (const DFLOAT &);
         static const method_function activation_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
-        #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+        #if !defined(NO_BACKPROP)
             static const method_function derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
         #endif  
         //https://stackoverflow.com/a/31708674/11465149
@@ -1675,6 +1651,55 @@ public:
         #endif
 
         return layers[i - 1].outputs;
+    }
+
+
+    void NeuralNetwork::Layer::ComputeSummedErrors(const DFLOAT *_expected_)
+    {
+        DFLOAT gamma;
+        // NOTE: summed errors exist at BackPropOutput too
+        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+            // ---> #9
+            unsigned int i = _numberOfOutputs;
+            do {
+                i--;
+                //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
+                gamma = (outputs[i] - _expected_[i]);
+                
+                    // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros
+                #if defined(CATEGORICAL_CROSS_ENTROPY)
+                    me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
+                #endif
+                #if defined(BINARY_CROSS_ENTROPY)
+                    me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
+                #endif
+                #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
+                    me->sumSquaredError += gamma * gamma; 
+                #endif
+            } while (i != 0);
+
+        #else
+            for (unsigned int i = 0; i < _numberOfOutputs; i++)
+            {
+                //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
+                //gamma = (outputs[i] - _expected_[i]) * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // outputs[i] is f(x) not x in this case, because i wanted to delete the array of inputs before activation
+
+                    //#3
+                gamma = (outputs[i] - _expected_[i]); 
+                
+                // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros again lol
+                #if defined(CATEGORICAL_CROSS_ENTROPY)
+                    me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
+                #endif
+                #if defined(BINARY_CROSS_ENTROPY)
+                    me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
+                #endif
+                #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
+                    me->sumSquaredError += gamma * gamma; 
+                #endif
+            }
+        #endif
+        
     }
 
 
@@ -2335,7 +2360,7 @@ public:
                 &NeuralNetwork::Layer::CUSTOM_AF5,
             #endif
         };
-        #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+        #if !defined(NO_BACKPROP)
             const NeuralNetwork::method_function NeuralNetwork::derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS] = {
                 #if defined(Sigmoid)
                     &NeuralNetwork::Layer::SigmoidDer,
@@ -2918,7 +2943,7 @@ public:
     DFLOAT NeuralNetwork::Layer::Mish          (const DFLOAT &x) {return x * Tanh(log(1 + exp(x)))                         ;}
     DFLOAT NeuralNetwork::Layer::Gaussian      (const DFLOAT &x) {return exp(-(x*x))                                       ;}
 
-    #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) || defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+    #if !defined(NO_BACKPROP)
 
         DFLOAT NeuralNetwork::Layer::SigmoidDer  (const DFLOAT &fx) { return fx - fx * fx                                                     ;} 
         DFLOAT NeuralNetwork::Layer::TanhDer     (const DFLOAT &fx) { return 1 - fx * fx                                                      ;}
@@ -2938,69 +2963,6 @@ public:
         DFLOAT NeuralNetwork::Layer::IdentityDer    (const DFLOAT &x ) {return 1                                                              ;}
 
 
-        void NeuralNetwork::Layer::ComputeSummedErrors(const DFLOAT *_expected_)
-        {
-            DFLOAT gamma;
-            // NOTE: summed errors exist at BackPropOutput too
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                // ---> #9
-                unsigned int i = _numberOfOutputs;
-                do {
-                    i--;
-                    //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
-                    gamma = (outputs[i] - _expected_[i]);
-                    
-                        // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros
-                    #if defined(CATEGORICAL_CROSS_ENTROPY)
-                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
-                    #endif
-                    #if defined(BINARY_CROSS_ENTROPY)
-                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
-                    #endif
-                    #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
-                        me->sumSquaredError += gamma * gamma; 
-                    #endif
-
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
-                    #endif
-                } while (i != 0);
-
-            #else
-                for (unsigned int i = 0; i < _numberOfOutputs; i++)
-                {
-                    //    γ  = (Error) * Derivative_of_Sigmoid_Activation_Function
-                    //gamma = (outputs[i] - _expected_[i]) * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // outputs[i] is f(x) not x in this case, because i wanted to delete the array of inputs before activation
-
-                        //#3
-                    gamma = (outputs[i] - _expected_[i]); 
-                    
-                    // I want to believe that it is being optimised/removed when not used | update 5/8/2021 ain't sure althought i've used "https://godbolt.org/" so... Macros again lol
-                    #if defined(CATEGORICAL_CROSS_ENTROPY)
-                        me->sumOfCategoricalCrossEntropy -= _expected_[i] * (DFLOAT)log(outputs[i]);
-                    #endif
-                    #if defined(BINARY_CROSS_ENTROPY)
-                        me->sumOfBinaryCrossEntropy -=  _expected_[i] * (DFLOAT)log(outputs[i]) + (1.0 - _expected_[i]) * (DFLOAT)log(1.0 - outputs[i]); // https://forum.arduino.cc/t/maths-help-log/339211 https://math.stackexchange.com/questions/293783/when-log-is-written-without-a-base-is-the-equation-normally-referring-to-log-ba
-                    #endif
-                    #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
-                        me->sumSquaredError += gamma * gamma; 
-                    #endif
-                    
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
-                    #endif
-                }
-            #endif
-            
-        }
-    #endif
-
-
-    #if !defined(NO_BACKPROP)
         void NeuralNetwork::Layer::CommonCompute(DFLOAT &gamma, DFLOAT preLgammaORgamma, const DFLOAT *inputs, unsigned int i, unsigned int j=0)
         {
             #if defined(ACTIVATION__PER_LAYER)
