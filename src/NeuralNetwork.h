@@ -628,7 +628,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT9 1
     #define ACTIVATION
@@ -645,7 +644,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT10 1
     #define ACTIVATION
@@ -662,7 +660,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT11 1
     #define ACTIVATION
@@ -679,7 +676,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT12 1
     #define ACTIVATION
@@ -696,7 +692,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT13 1
     #define ACTIVATION
@@ -713,7 +708,6 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
-    #define NO_DERIVATIVE
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT14 1
     #define ACTIVATION
@@ -743,7 +737,6 @@
         #define CUSTOM_DF1_DEFINITION DFLOAT CUSTOM_DF1(const float &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA1
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -771,7 +764,6 @@
         #define CUSTOM_DF2_DEFINITION DFLOAT CUSTOM_DF2(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA2
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -799,7 +791,6 @@
         #define CUSTOM_DF3_DEFINITION DFLOAT CUSTOM_DF3(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA3
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -827,7 +818,6 @@
         #define CUSTOM_DF4_DEFINITION DFLOAT CUSTOM_DF4(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA4
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -855,7 +845,6 @@
         #define CUSTOM_DF5_DEFINITION DFLOAT CUSTOM_DF5(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
-        #define NO_DERIVATIVE
         #undef NB
         #undef NB_CA5
         #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
@@ -894,19 +883,6 @@
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
         #define AN_1 |> Sigmoid 
-    #endif
-#endif
-
-
-#if defined(NO_DERIVATIVE) and (defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW))
-    #if defined(ACTIVATION__PER_LAYER)
-        #if defined(ALL_ACTIVATION_FUNCTIONS)
-            #error "There's no derivative support for (ALL_ACTIVATION_FUNCTIONS)"
-        #else
-            #error "There's no derivative support for one of the activation-functions you enabled "
-        #endif
-    #else
-        #error "There's no derivative support for the activation-function you enabled"
     #endif
 #endif
 
@@ -2960,12 +2936,6 @@ public:
                     #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
                         me->sumSquaredError += gamma * gamma; 
                     #endif
-
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
-                    #endif
                 } while (i != 0);
 
             #else
@@ -2986,12 +2956,6 @@ public:
                     #endif
                     #if defined(MEAN_SQUARED_ERROR) or defined(DEFAULT_LOSS)
                         me->sumSquaredError += gamma * gamma; 
-                    #endif
-                    
-                    #if defined(ACTIVATION__PER_LAYER)
-                        gamma = gamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                    #else
-                        gamma = gamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
                     #endif
                 }
             #endif
