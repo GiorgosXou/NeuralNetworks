@@ -1534,9 +1534,8 @@ public:
         #if defined(USE_PROGMEM)
             layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
         #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-            unsigned int tmp_addr = address;
+            unsigned int tmp_addr = address; // variable for restoring address back to the original\start, could be and instance-variable too...
             layers[0].type_memmory_FeedForward_Individual(input, Individual_Input);
-            address = tmp_addr;
         #else
             layers[0].FeedForward_Individual(input, Individual_Input);
         #endif
@@ -1546,27 +1545,9 @@ public:
         {
             Individual_Input=0;
 
-            #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-                #if defined(MULTIPLE_BIASES_PER_LAYER)
-                    #if defined(ACTIVATION__PER_LAYER)
-                        address += SIZEOF_FX + layers[0]._numberOfOutputs * sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
-                    #else
-                        address +=             layers[0]._numberOfOutputs * sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
-                    #endif
-                #elif defined(NO_BIAS)
-                    #if defined(ACTIVATION__PER_LAYER)
-                        address += SIZEOF_FX + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
-                    #else
-                        address +=           + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
-                    #endif
-                #else
-                    #if defined(ACTIVATION__PER_LAYER)
-                        address += SIZEOF_FX + sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
-                    #else
-                        address +=           + sizeof(IDFLOAT) + (sizeof(IDFLOAT) * layers[0]._numberOfInputs * layers[0]._numberOfOutputs);
-                    #endif
-                #endif
-            #endif
+            #if defined(MULTIPLE_BIASES_PER_LAYER) and (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
+                address -= sizeof(IDFLOAT);
+            #endif 
         
             #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
                 delete[] layers[numberOflayers - 1].outputs;
@@ -1594,6 +1575,9 @@ public:
             #endif
             return  layers[i - 1].outputs;
         }
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            address = tmp_addr;
+        #endif
 
         return NULL;
     }
@@ -2683,8 +2667,7 @@ public:
             #endif
 
             IDFLOAT tmp_jweight;
-            unsigned int i;
-            for (i = 0; i < _numberOfOutputs; i++) 
+            for (unsigned int i = 0; i < _numberOfOutputs; i++) 
             {
                 if (j == 0){
                     #if defined(NO_BIAS)
@@ -2700,9 +2683,6 @@ public:
                     outputs[i] += input * tmp_jweight MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
                 me->address += _numberOfInputs * sizeof(IDFLOAT); 
-                #if defined(MULTIPLE_BIASES_PER_LAYER) // This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
-                    *bias = me->get_type_memmory_value<IDFLOAT>(me->address);
-                #endif
 
                 // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
                 if (j == _numberOfInputs -1){
@@ -2715,6 +2695,9 @@ public:
                         outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                     #endif
                 }
+                #if defined(MULTIPLE_BIASES_PER_LAYER) //WARN: This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
+                    *bias = me->get_type_memmory_value<IDFLOAT>(me->address);
+                #endif
             }
             #if defined(MULTIPLE_BIASES_PER_LAYER)
                 delete bias;
