@@ -1282,7 +1282,11 @@ public:
 
                     // #if !defined(USE_PROGMEM)
                     #if !defined(NO_BIAS)
-                        delete layers[i].bias;
+                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                            delete[] layers[i].bias;
+                        #else
+                            delete layers[i].bias;
+                        #endif
                     #endif
                     // #endif
 
