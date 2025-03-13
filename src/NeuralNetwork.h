@@ -2651,7 +2651,7 @@ public:
                 #else
                     #if defined(NO_BIAS)
                         #if defined(ACTIVATION__PER_LAYER)
-                            me->address += SIZEOF_FX 
+                            me->address += SIZEOF_FX;
                         #endif
                     #else
                         #if defined(ACTIVATION__PER_LAYER)
