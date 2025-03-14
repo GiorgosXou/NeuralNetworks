@@ -172,7 +172,7 @@ Due to *(my uncertainty and)* the strict RAM optimization that allows the librar
 |**0**|```#define Sigmoid```   |<sup><sub>NN.layers-></sub></sup>```Sigmoid(&x)```  |  ```1/(1+e^(-x))``` |
 |**1**|```#define Tanh```      |<sup><sub>NN.layers-></sub></sup>```Tanh(&x)```     |  ```(e^(2*x)-1)/(e^(2*x)+1)``` |
 |**2**|```#define ReLU```      |<sup><sub>NN.layers-></sub></sup>```ReLU(&x)```     |  ```(x>0)?x:0``` |
-|**3**|```#define LeakyELU```  |<sup><sub>NN.layers-></sub></sup>```LeakyELU(&x)``` |  ```(x>0)?x:AlphaLeaky*x``` |
+|**3**|```#define LeakyReLU```  |<sup><sub>NN.layers-></sub></sup>```LeakyReLU(&x)``` |  ```(x>0)?x:AlphaLeaky*x``` |
 |**4**|```#define ELU```       |<sup><sub>NN.layers-></sub></sup>```ELU(&x)```      |  ```(x>0)?x:AlphaELU*(e^(x)-1)``` |
 |**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELU(&x)```     |  ```(x>0)?x:AlphaSELU*(e^(x)-1)``` |
 |**6**|```#define Softmax```   |<sup><sub>NN.layers-></sub></sup>```Softmax(&x)```| ```void``` "complicated implementation" |
@@ -188,7 +188,7 @@ Due to *(my uncertainty and)* the strict RAM optimization that allows the librar
 |**0**|```#define Sigmoid```   |<sup><sub>NN.layers-></sub></sup>```SigmoidDer(&fx)``` |  ```fx-fx*fx``` |
 |**1**|```#define Tanh```      |<sup><sub>NN.layers-></sub></sup>```TanhDer(&fx)```|  ```1-fx*fx``` |
 |**2**|```#define ReLU```      |<sup><sub>NN.layers-></sub></sup>```ReLUDer(&fx)```|  ```(fx>0)?1:0``` |
-|**3**|```#define LeakyELU```  |<sup><sub>NN.layers-></sub></sup>```LeakyELUDer(&fx)```|  ```(fx>0)?1:AlphaLeaky``` |
+|**3**|```#define LeakyReLU```  |<sup><sub>NN.layers-></sub></sup>```LeakyReLUDer(&fx)```|  ```(fx>0)?1:AlphaLeaky``` |
 |**4**|```#define ELU```       |<sup><sub>NN.layers-></sub></sup>```ELUDer(&fx)```|  ```(fx>0)?1:fx+AlphaELU``` |
 |**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELUDer(&fx)```|  ```(fx>0)?LamdaSELU:fx+AlphaSELU*LamdaSELU``` |
 |**6**|```#define Softmax```   |<sup><sub>NN.layers-></sub></sup>```SoftmaxDer(&fx)```|  ```fx * (1  - fx)``` |
@@ -201,7 +201,7 @@ if you want to use other activation function from the default one, just define o
 #define Sigmoid //[default] No need definition, for single activation across network
 #define Tanh
 #define ReLU
-#define LeakyELU
+#define LeakyReLU
 #define ELU
 #define SELU
 ...
@@ -223,7 +223,7 @@ If you want to drastically reduce ROM & slightly RAM size you can Define which F
         #define Sigmoid // 0
         //#define Tanh
         //#define ReLU
-        //#define LeakyELU
+        //#define LeakyReLU
         #define ELU     // 1
         #define SELU    // 2
         ...
@@ -245,7 +245,7 @@ byte Actv_Functions[] = {   1, ..., 2, 0};
         #define Sigmoid // 0
         //#define Tanh
         //#define ReLU
-        //#define LeakyELU
+        //#define LeakyReLU
         #define ELU  // 1
         #define SELU // 2
         #define CUSTOM_AF1 my_act_fun1 // 3
@@ -287,7 +287,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 ##  ```DFLOAT``` Variables Of Activation Functions 
 | Enabling MACRO | Activation Variables| Default | Explenation|
 |    ------   | ------ | ------ | ------ |
-|```#define LeakyELU```|NN.AlphaLeaky| 0.01   | the α of Leaky |
+|```#define LeakyReLU```|NN.AlphaLeaky| 0.01   | the α of Leaky |
 |```#define ELU```     |NN.AlphaELU  | 1      | the α of ELU   |
 |```#define SELU```    |NN.AlphaSELU | 1.6733 | the α of SELU  |
 |```#define SELU```    |NN.LamdaSELU | 1.0507 | the λ of SELU  |

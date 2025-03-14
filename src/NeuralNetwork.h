@@ -514,6 +514,10 @@
 #define NB
 
 
+#if defined(LeakyELU)
+    #error "Replace LeakyELU with LeakyReLU. That was a stupid typo of mine."
+#endif
+
 #if defined(Sigmoid) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef AN_1
     #undef ACT1
@@ -552,19 +556,19 @@
     #define ReLU ReLU
     #define AN_3 |> ReLU 
 #endif
-#if defined(LeakyELU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
+#if defined(LeakyReLU) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef AN_4
     #undef ACT4
-    #undef LeakyELU
+    #undef LeakyReLU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT4 1
     #define ACTIVATION
-    #define ACTIVATION_FUNCTION LeakyELU
+    #define ACTIVATION_FUNCTION LeakyReLU
     #define SUPPORTS_CLIPPING // i mean  "supports" / usually-needs  ?
-    #define LeakyELU LeakyELU
-    #define AN_4 |> LeakyELU 
+    #define LeakyReLU LeakyReLU
+    #define AN_4 |> LeakyReLU 
 #endif
 #if defined(ELU)  && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
     #undef AN_5
@@ -1016,8 +1020,8 @@ private:
         DFLOAT ReLU       (const DFLOAT &x ); 
         DFLOAT ReLUDer    (const DFLOAT &fx); // x is also fx on ReLU
 
-        DFLOAT LeakyELU   (const DFLOAT &x );
-        DFLOAT LeakyELUDer(const DFLOAT &fx); 
+        DFLOAT LeakyReLU   (const DFLOAT &x );
+        DFLOAT LeakyReLUDer(const DFLOAT &fx); 
 
         DFLOAT ELU        (const DFLOAT &x ); // α = 1 
         DFLOAT ELUDer     (const DFLOAT &fx); 
@@ -1104,7 +1108,7 @@ public:
 
     // no negative values allowed, (just saying..)
     // Alphas and Lamdas of Activation Functions | #6 MACROS.
-    #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
+    #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
         DFLOAT AlphaLeaky = 0.01   ;
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
@@ -2298,8 +2302,8 @@ public:
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
                 &NeuralNetwork::Layer::ReLU,
             #endif
-            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
-                &NeuralNetwork::Layer::LeakyELU,
+            #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
+                &NeuralNetwork::Layer::LeakyReLU,
             #endif
             #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
                 &NeuralNetwork::Layer::ELU,
@@ -2359,8 +2363,8 @@ public:
                 #if defined(ReLU)
                     &NeuralNetwork::Layer::ReLUDer,
                 #endif
-                #if defined(LeakyELU)
-                    &NeuralNetwork::Layer::LeakyELUDer,
+                #if defined(LeakyReLU)
+                    &NeuralNetwork::Layer::LeakyReLUDer,
                 #endif
                 #if defined(ELU)
                     &NeuralNetwork::Layer::ELUDer,
@@ -2907,8 +2911,8 @@ public:
     DFLOAT NeuralNetwork::Layer::ReLU          (const DFLOAT &x) { return (x > 0) ? x : 0                                  ;}
 
     // REMINDER: They are wrapped in #defines because of their Alphas
-    #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyELU)
-        DFLOAT NeuralNetwork::Layer::LeakyELU  (const DFLOAT &x) { return (x > 0) ? x : me->AlphaLeaky * x                 ;}
+    #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
+        DFLOAT NeuralNetwork::Layer::LeakyReLU  (const DFLOAT &x) { return (x > 0) ? x : me->AlphaLeaky * x                 ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
         DFLOAT NeuralNetwork::Layer::ELU       (const DFLOAT &x) { return (x > 0) ? x : me->AlphaELU  * (exp(x) - 1)       ;}
@@ -2936,8 +2940,8 @@ public:
         DFLOAT NeuralNetwork::Layer::TanhDer     (const DFLOAT &fx) { return 1 - fx * fx                                                      ;}
         DFLOAT NeuralNetwork::Layer::ReLUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : 0                                                 ;} 
 
-        #if defined(LeakyELU)    
-            DFLOAT NeuralNetwork::Layer::LeakyELUDer(const DFLOAT &fx) { return (fx > 0) ? 1 : me->AlphaLeaky                                 ;} 
+        #if defined(LeakyReLU)    
+            DFLOAT NeuralNetwork::Layer::LeakyReLUDer(const DFLOAT &fx) { return (fx > 0) ? 1 : me->AlphaLeaky                                 ;} 
         #endif
         #if defined(ELU)
             DFLOAT NeuralNetwork::Layer::ELUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : fx + me->AlphaELU                              ;} 
