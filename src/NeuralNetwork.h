@@ -1011,30 +1011,30 @@ private:
         DFLOAT erf(DFLOAT x);
 
         //if i actually consider using other complicated activation functions i might need to think again about the before_Activation_output Array [...]
-        DFLOAT Sigmoid    (const DFLOAT &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
-        DFLOAT SigmoidDer (const DFLOAT &fx); // Derivative of Sigmoid Activation Function.
+        DFLOAT Sigmoid     (const DFLOAT &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
+        DFLOAT SigmoidDer  (const DFLOAT &fx); // Derivative of Sigmoid Activation Function.
         
-        DFLOAT Tanh       (const DFLOAT &x ); 
-        DFLOAT TanhDer    (const DFLOAT &fx); 
+        DFLOAT Tanh        (const DFLOAT &x );
+        DFLOAT TanhDer     (const DFLOAT &fx);
 
-        DFLOAT ReLU       (const DFLOAT &x ); 
-        DFLOAT ReLUDer    (const DFLOAT &fx); // x is also fx on ReLU
+        DFLOAT ReLU        (const DFLOAT &x );
+        DFLOAT ReLUDer     (const DFLOAT &fx); // x is also fx on ReLU
 
         DFLOAT LeakyReLU   (const DFLOAT &x );
-        DFLOAT LeakyReLUDer(const DFLOAT &fx); 
+        DFLOAT LeakyReLUDer(const DFLOAT &fx);
 
-        DFLOAT ELU        (const DFLOAT &x ); // α = 1 
-        DFLOAT ELUDer     (const DFLOAT &fx); 
+        DFLOAT ELU         (const DFLOAT &x ); // α = 1
+        DFLOAT ELUDer      (const DFLOAT &fx);
         
-        DFLOAT SELU       (const DFLOAT &x ); // Maybe use https://stackoverflow.com/a/42264773/11465149
-        DFLOAT SELUDer    (const DFLOAT &fx); 
+        DFLOAT SELU        (const DFLOAT &x ); // Maybe use https://stackoverflow.com/a/42264773/11465149
+        DFLOAT SELUDer     (const DFLOAT &fx);
 
-        void   Softmax    ();
-        DFLOAT SoftmaxSum (const DFLOAT &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax 
-        DFLOAT SoftmaxDer (const DFLOAT &fx);
+        void   Softmax     ();
+        DFLOAT SoftmaxSum  (const DFLOAT &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax
+        DFLOAT SoftmaxDer  (const DFLOAT &fx);
 
-        DFLOAT Identity   (const DFLOAT &x );
-        DFLOAT IdentityDer(const DFLOAT &x );
+        DFLOAT Identity    (const DFLOAT &x );
+        DFLOAT IdentityDer (const DFLOAT &x );
 
         // Custom Activation Fuctions Definitions (eg. DFLOAT CUSTOM_AFX(...);)
         CUSTOM_AF1_DEFINITION
