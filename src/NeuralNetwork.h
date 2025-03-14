@@ -1282,6 +1282,7 @@ public:
                         {
                             delete[] layers[i].weights[j];
                         }
+                        delete[] layers[i].weights; // Delete the array of pointers
                     #endif
 
                     // #if !defined(USE_PROGMEM)
