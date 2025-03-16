@@ -7,6 +7,7 @@
 [EXAMPLE_DOUBLE_XOR_BACKPROP_INO]: ./examples/Basic/Backpropagation_double_Xor/Backpropagation_double_Xor.ino
 [EXAMPLE_INT_QUANTIZED_XOR_INO]: ./examples/Other/Int_quantized_double_Xor_PROGMEM/Int_quantized_double_Xor_PROGMEM.ino
 [EXAMPLE_DOUBLE_PRECISION]: ./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino
+[EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]: ./examples/Other/RAM_Efficient_HillClimb_double_xor/RAM_Efficient_HillClimb_double_xor.ino
 
 
 # Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
@@ -74,6 +75,7 @@ Understanding the Basics of a Neural Network:
 - - [Using a custom function made by you][EXAMPLE_CUSTOM_FUNCTIONS_INO]
 - - [Support for 8Byte "double" instead of "float"](./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino 'Precision_for_8byte_double ')
 - - [Recognizing handwritten digits (MNIST) ✨][EXAMPLE_FEED_INDIVIDUAL_INO]
+- - [RAM Efficient HillClimb double xor ✨][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]
 
 
 # 📌 Important
@@ -81,7 +83,8 @@ Understanding the Basics of a Neural Network:
 2. In case of error with 'POINTER_REGS' click [here](https://forum.arduino.cc/index.php?topic=613857.0)
 3. `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
 4. Ensure you use (32-bit) floats during training unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties).
-5. <details><summary><b>And most important, destructor wont free last-layer's outputs!</b></summary><b>By design</b>, the destructor won't free\deallocate the last layer's outputs, allowing you to continue using <a href="https://github.com/GiorgosXou/NeuralNetworks/blob/9ffc36f6e897fe486e2d58ecf8d2cbb9848f71e9/examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino#L7">these outputs</a> through the pointer in your sketch. <b>To fully delete</b> the neural-network and free the associated resources, <b>it's your responsibility to:</b> either <code>delete[] outputs</code> <b>or</b> <code>delete[] NN.layers[NN.numberOflayers - 1].outputs;</code> <ins>at the end of the scope</ins>. <b>Additionally</b>, with <code>NN.load(file)</code>: ensure you deleted last-layer's <code>*outputs</code> in your sketch, in case you plan to re-use the same pointer for capturing the outputs of the newly-loaded-NN's feedforward.</details>
+5. If you want support for Back-propagation **without hidden-layers** see [`_3_OPTIMIZE 0B00001000`](#define-macro-properties)
+6. <details><summary><b>And most important, destructor wont free last-layer's outputs!</b></summary><b>By design</b>, the destructor won't free\deallocate the last layer's outputs, allowing you to continue using <a href="https://github.com/GiorgosXou/NeuralNetworks/blob/9ffc36f6e897fe486e2d58ecf8d2cbb9848f71e9/examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino#L7">these outputs</a> through the pointer in your sketch. <b>To fully delete</b> the neural-network and free the associated resources, <b>it's your responsibility to:</b> either <code>delete[] outputs</code> <b>or</b> <code>delete[] NN.layers[NN.numberOflayers - 1].outputs;</code> <ins>at the end of the scope</ins>. <b>Additionally</b>, with <code>NN.load(file)</code>: ensure you deleted last-layer's <code>*outputs</code> in your sketch, in case you plan to re-use the same pointer for capturing the outputs of the newly-loaded-NN's feedforward.</details>
 
 
 # 🔬 Tested on
@@ -139,6 +142,13 @@ Understanding the Basics of a Neural Network:
 |`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
 |`save(x)`| String \ u_int|bool \ u_int| <details><summary>Saves NN to storage media</summary> SD \ internal-EEPROM or external-FRAM</details>|
 |`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM. The same is true for the rest of memmory-types)_</details>|
+
+<br>
+
+##  ```Type``` Other Functions
+| NN Functions | Input(s)<span>&nbsp;&nbsp;</span>|Output(s)<span>&nbsp;</span>|<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>| 
+| ------ | ------ | ------ | ------ |
+| ```HillClimb(error, tolerance)``` | [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference'), [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') | bool | [See example][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]|
 
 <br>
 
@@ -327,7 +337,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. **Important note:** in case you want to `delete[] NN->layers[NN->numberOflayers - 1].outputs;` make sure afterwards to `...outputs = NULL` *(if you plan to `feedforward` again later in your sketch)*. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|
 | ```0B00100000``` |<sup><sub>❌</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
 | ```0B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
-| ```0B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable yet.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
+| ```0B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
 | ```0B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should either update `NN.me` manually before using the next one like `NN.me = &NN2` or just use `_2_OPTIMIZE 0B00000010` instead</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
 | ```0B00000010``` |<sup><sub>📌</sub></sup>|<details><summary>Disables MSE function</summary>Disables the default loss function \| Reduces ROM, RAM & CPU consumption, althought usually needed for backpropagation</details> |<sub><sup>`DISABLE_MSE`</sup></sub>|
 | ```0B00000001``` |<sup><sub>ⓘ</sub></sup>|<details><summary>Use 8-Byte double instead of float</summary>This will work only if your MCU supports 8byte doubles eg. Arduino UNO DOESN'T *([see also example][EXAMPLE_DOUBLE_PRECISION])*</details>  |<sub><sup>`USE_64_BIT_DOUBLE`</sup></sub>|
@@ -336,13 +346,16 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
 | ```0B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
 | ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`F_MACRO`</sup></sub>|
-| ```0B00001000```  |<sup><sub>📌</sub></sup>|<details><summary>Use `int16_t` quantization</summary> Weights and biases are stored as `int16_t` *(2-bytes each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `float` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
-| ```0B00000100```  |<sup><sub></sub></sup>|<details><summary>Use `int8_t ` quantization</summary>Weights and biases are stored as `int8_t` *(1-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `int16_t` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
+| ```0B00001000```  |<sup><sub>⚠️📌</sub></sup>|<details><summary>Use `int16_t` quantization</summary> Weights and biases are stored as `int16_t` *(2-bytes each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `float` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
+| ```0B00000100```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use `int8_t ` quantization</summary>Weights and biases are stored as `int8_t` *(1-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `int16_t` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
 | ```0B00000010```  |<sup><sub></sub></sup>|<details><summary><sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub> for multiple NN </summary>It does the same thing as `REDUCE_RAM_STATIC_REFERENCE` but for multiple NN objects *(instead for just one)*. If you use `FeedForward_Individual` It is recommended to fallback to the original `_1_OPTIMIZE 0B00000100` and manually change `NN.me`</details> |<sub><sup>`...FOR_MULTIPLE_NN_OBJECTS`</sup></sub>|
 | ```0B00000001```  |<sup><sub>⚠️📌</sub></sup>|<details><summary>Disables backpropagation</summary>Disabling backpropagation when it's not automatically disabled, helps reduce the size of your sketch.</details> |<sub><sup>`NO_BACKPROP`<sup></sub>|
 |  **_3_OPTIMIZE** | | | |
 | ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>external<span>&nbsp;</span>FRAM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from an external FRAM. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`USE_EXTERNAL_FRAM`</sup></sub>|
-  
+| ```0B01000000``` | <sup><sub></sub></sup> | <details><summary>Enables RAM-efficient Hill-Climbing</summary> a computationally-expensive but memmory-efficient Hill-Climbing algorithm. Requires only a few constant-size bytes of extra RAM to train any neural network (NN). The algorithm is primarily designed for fine-tuning pre-trained NNs using `_3_OPTIMIZE 0B00100000` instead. see also: [example][EXAMPLE_EXTERNAL_FRAM_INO]</details> |<sub><sup>`RAM_EFFICIENT_HILL_CLIMB`</sup></sub>|
+| ```0B00100000``` | <sup><sub>⚠️</sub></sup> | <details><summary>Same as above but for fine-tuning</summary>Enables RAM-efficient Hill-Climbing but only for pre-trained NNs, such that you only use it for fine-tuning. see also: [example][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]</details> |<sub><sup>`RAM_...CLIMB_WITHOUT_NEW`</sup></sub>|
+| ```0B00010000``` | <sup><sub></sub></sup> | <details><summary>Dynamic learning-rates for Hill-Climb</summary>In case of need for dynamic-changes in learning-rates durin Hill Climbing. see also: [example][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]</details> |<sub><sup>`...DYNAMIC_LEARNING_RATES`</sup></sub>|
+| ```0B00001000``` | <sup><sub></sub></sup> | <details><summary>Support BackProp without hidden-layers</summary></details> |<sub><sup>`SUPPORT_NO_HIDDEN_BACKPROP`</sup></sub>|
 
 <br>
 
