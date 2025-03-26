@@ -387,6 +387,19 @@
 // _4_OPTIMIZE will be here <-------------------------------
 
 
+// Keyword-based NN optimizations
+/// Messages
+#define RNN_MSG
+
+/// USE_RNN_LAYERS_ONLY && NO_BACKPROP
+#if defined(USE_RNN__NB)
+    #undef RNN_MSG
+    #define RNN_MSG [𝗥𝗡𝗡]
+    #define USE_RNN_LAYERS_ONLY
+    #define NO_BACKPROP
+#endif
+
+
 // TODO: Once I'll add support for FRAM I need to change those errors for RAM_EFFICIENT_HILL_CLIMB to inform the user to use RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW instead! 
 // Because there is no initialization nor destrcuction proccess of dynamic parameters during FRAM usage
 #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
@@ -907,7 +920,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 \n\n 𝗨𝗦𝗜𝗡𝗚 [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -955,6 +968,10 @@ private:
             IS_CONST IDFLOAT *bias;     // bias    of this     layer  | or biases if MULTIPLE_BIASES_PER_LAYER enabled | Please do not wrap it into #ifdef USE_INTERNAL_EEPROM because it is being used when type_memmory_FeedForward_Individual
         #endif
         DFLOAT *outputs;                // outputs of this     layer  [1D Array] pointers.
+
+        #if defined(USE_RNN_LAYERS_ONLY)
+            DFLOAT *hiddenStates;       // previous timestep's outputs of this layer  [1D Array] pointers.
+        #endif
         
         //#if defined(REDUCE_RAM_WEIGHTS_LVL1)
         //    IDFLOAT *weights;         // weights of this     layer  [1D Array] pointers.                             #(used if     #REDUCE_RAM_WEIGHTS_LVL1   defined)         
@@ -1273,6 +1290,10 @@ public:
     void NeuralNetwork::pdestract()
     {
         #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8 // !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM)
+            
+            //NOTE: SPECIAL CASE
+            #define SPECIAL_CASE_DESTRUCTION
+
             if (isAllocdWithNew){ // Because of undefined behavior in some MCUs like ESP32-C3
                 unsigned int i=0;
                 while(true) // for (unsigned int i = 0; i < numberOflayers; i++)
@@ -1305,6 +1326,11 @@ public:
                         break;
                     }
 
+                    //NOTE: SEE SPECIAL CASE
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        delete[] layers[i].hiddenStates;
+                    #endif
+
                     // this macro-condition is needed since this runs even if NO_BACKPROP
                     #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                         delete[] layers[i].outputs;
@@ -1319,12 +1345,33 @@ public:
                 #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                     for (unsigned int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                         delete[] layers[i].outputs;
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            delete[] layers[i].hiddenStates;
+                        #endif
+                    }
+
+                    //NOTE: SEE SPECIAL CASE
+
+                #elif defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int i = 0; i < numberOflayers; i++){
+                        delete[] layers[i].hiddenStates;
                     }
                 #endif
             }
         #elif !defined(REDUCE_RAM_DELETE_OUTPUTS)
             for (unsigned int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                 delete[] layers[i].outputs;
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    delete[] layers[i].hiddenStates;
+                #endif
+            }
+
+            //NOTE: SPECIAL CASE
+            #define SPECIAL_CASE_DESTRUCTION
+
+        #elif defined(USE_RNN_LAYERS_ONLY)
+            for (unsigned int i = 0; i < numberOflayers; i++){
+                delete[] layers[i].hiddenStates;
             }
         #endif
 
@@ -1335,6 +1382,10 @@ public:
         #endif  
 
         if (numberOflayers !=0){
+            //NOTE: SPECIAL CASE
+            #if defined(USE_RNN_LAYERS_ONLY) && defined(SPECIAL_CASE_DESTRUCTION)
+                delete[] layers[numberOflayers -1].hiddenStates;
+            #endif
             delete[] layers;
         }
     }
@@ -1394,7 +1445,12 @@ public:
                 #else
                     layers[i] = Layer(layer_[i], layer_[i + 1], &default_Weights[weightsFromPoint], &default_Bias[i],this);
                 #endif
-                weightsFromPoint += layer_[i] * layer_[i + 1];
+
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    weightsFromPoint += layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1]);
+                #else
+                    weightsFromPoint += layer_[i] * layer_[i + 1];
+                #endif
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
                 biasesFromPoint += layer_[i + 1];
@@ -1737,13 +1793,18 @@ public:
                     #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
                         layers[l].bias[i] += (LearningRateOfBiases * random(-1,2) * direction);
                     #endif
-                    for (unsigned int j = 0; j < layers[l]._numberOfInputs; j++){
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            weights[i_j++] += (LearningRateOfWeights * random(-1,2) * direction);
-                        #else
-                            layers[l].weights[i][j] += (LearningRateOfWeights * random(-1,2) * direction);
-                        #endif
-                    }
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        for (unsigned int j = 0; j < (layers[l]._numberOfInputs+layers[l]._numberOfOutputs); j++)
+                    #else
+                        for (unsigned int j = 0; j < layers[l]._numberOfInputs; j++)
+                    #endif
+                        {
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                weights[i_j++] += (LearningRateOfWeights * random(-1,2) * direction);
+                            #else
+                                layers[l].weights[i][j] += (LearningRateOfWeights * random(-1,2) * direction);
+                            #endif
+                        }
                 }
             }
         }
@@ -1867,13 +1928,18 @@ public:
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
                             myFile.write(reinterpret_cast<byte*>(&layers[n].bias[i]), sizeof(*NeuralNetwork::Layer::bias));
                         #endif
-                        for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                myFile.write(reinterpret_cast<byte*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
-                            #else
-                                myFile.write(reinterpret_cast<byte*>(&layers[n].weights[i][j]), sizeof(**NeuralNetwork::Layer::weights)); // I would had used i_j but I have totalNumOfWeights so... :)
-                            #endif
-                        }
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            for(unsigned int j=0; j<(layers[n]._numberOfOutputs+layers[n]._numberOfInputs); j++)
+                        #else
+                            for(unsigned int j=0; j<layers[n]._numberOfInputs; j++)
+                        #endif
+                            {
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    myFile.write(reinterpret_cast<byte*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
+                                #else
+                                    myFile.write(reinterpret_cast<byte*>(&layers[n].weights[i][j]), sizeof(**NeuralNetwork::Layer::weights));
+                                #endif
+                            }
                     }
                 }
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -1920,14 +1986,20 @@ public:
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
                                 myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i])); 
                             #endif
-                            for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
-                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                    myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
-                                #else
-                                    myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j])); 
-                                #endif
-                                totalNumOfWeights++;
-                            }
+
+                            #if defined(USE_RNN_LAYERS_ONLY)
+                                for(unsigned int j=0; j<(layers[n]._numberOfOutputs+layers[n]._numberOfInputs); j++)
+                            #else
+                                for(unsigned int j=0; j<layers[n]._numberOfInputs; j++)
+                            #endif
+                                {
+                                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                        myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
+                                    #else
+                                        myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j])); 
+                                    #endif
+                                    totalNumOfWeights++;
+                                }
                         }
                     }
                     myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
@@ -1950,7 +2022,7 @@ public:
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     // TODO: remove count_ij in favor of i_j (if so, reminder: at the end, set it to zero again) see also issue #32
                     unsigned int count_ij; // it needs to be unsigned since we write an unsigned :P
-                    myFile.read(reinterpret_cast<byte*>(&count_ij), sizeof(count_ij));
+                    myFile.read(reinterpret_cast<byte*>(&count_ij), sizeof(count_ij)); // don't worry it takes into account USE_RNN_LAYERS_ONLY
                     weights = new IDFLOAT[count_ij];
                     i_j = 0;
                     count_ij = 0;
@@ -2006,11 +2078,18 @@ public:
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
                                 myFile.read(reinterpret_cast<byte*>(&layers[i].bias[j]), sizeof(*NeuralNetwork::Layer::bias));
                             #endif
-                            layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
 
-                            for(unsigned int k=0; k<tmp_layerInputs; k++){
-                                myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k]), sizeof(**NeuralNetwork::Layer::weights));
-                            }
+                            #if defined(USE_RNN_LAYERS_ONLY)
+                                layers[i].weights[j] = new IDFLOAT[tmp_layerInputs+tmp_layerOutputs];
+                                for(unsigned int k=0; k<tmp_layerInputs+tmp_layerOutputs; k++){
+                                    myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k]), sizeof(**NeuralNetwork::Layer::weights));
+                                }
+                            #else
+                                layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
+                                for(unsigned int k=0; k<tmp_layerInputs; k++){
+                                    myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k]), sizeof(**NeuralNetwork::Layer::weights));
+                                }
+                            #endif
                         }
                     #else // I won't elif here cause I want to have a clear image of the "division" below
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2018,14 +2097,26 @@ public:
 
                                 myFile.read(reinterpret_cast<byte*>(&tmp_bias[j]), sizeof(*tmp_bias));
 
-                                for(unsigned int k=0; k<tmp_layerInputs; k++){
-                                    myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
-                                }
+                                #if defined(USE_RNN_LAYERS_ONLY)
+                                    for(unsigned int k=0; k<tmp_layerInputs+tmp_layerOutputs; k++){
+                                        myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                    }
+                                #else
+                                    for(unsigned int k=0; k<tmp_layerInputs; k++){
+                                        myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                    }
+                                #endif
                             }
                         #else
-                            for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
-                                myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
-                            }
+                            #if defined(USE_RNN_LAYERS_ONLY)
+                                for(unsigned int j=0; j<((tmp_layerInputs + tmp_layerOutputs) * tmp_layerOutputs); j++){
+                                    myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                }
+                            #else
+                                for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
+                                    myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                }
+                            #endif
                         #endif
 
                         #if defined(NO_BIAS)
@@ -2141,15 +2232,21 @@ public:
                                         layers[i].bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
                                     #endif
                                 #endif
-                                layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
-                                for(unsigned int k=0; k<tmp_layerInputs; k++){
-                                    #if !defined(USE_INT_QUANTIZATION)
-                                        tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                        layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                    #else
-                                        layers[i].weights[j][k] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                    #endif
-                                }
+                                #if defined(USE_RNN_LAYERS_ONLY)
+                                    layers[i].weights[j] = new IDFLOAT[tmp_layerInputs+tmp_layerOutputs];
+                                    for(unsigned int k=0; k<tmp_layerInputs+tmp_layerOutputs; k++)
+                                #else
+                                    layers[i].weights[j] = new IDFLOAT[tmp_layerInputs];
+                                    for(unsigned int k=0; k<tmp_layerInputs; k++)
+                                #endif
+                                    {
+                                        #if !defined(USE_INT_QUANTIZATION)
+                                            tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                            layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                        #else
+                                            layers[i].weights[j][k] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                        #endif
+                                    }
                             }
                         #else // I won't elif here cause I want to have a clear image of the "division" below
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
@@ -2160,26 +2257,35 @@ public:
                                     #else
                                         tmp_bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
                                     #endif
-                                    for(unsigned int k=0; k<tmp_layerInputs; k++){
-                                        #if !defined(USE_INT_QUANTIZATION)
-                                            tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                            weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                        #else
-                                            weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                        #endif
-                                        count_ij++;
-                                    }
+
+                                    #if defined(USE_RNN_LAYERS_ONLY)
+                                        for(unsigned int k=0; k<tmp_layerInputs+tmp_layerOutputs; k++)
+                                    #else
+                                        for(unsigned int k=0; k<tmp_layerInputs; k++)
+                                    #endif
+                                        {
+                                            #if !defined(USE_INT_QUANTIZATION)
+                                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                                weights[count_ij++] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                            #else
+                                                weights[count_ij++] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                            #endif
+                                        }
                                 }
                             #else
-                                for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++){
-                                    #if !defined(USE_INT_QUANTIZATION)
-                                        tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                        weights[count_ij] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                    #else
-                                        weights[count_ij] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                    #endif
-                                    count_ij++;
-                                }
+                                #if defined(USE_RNN_LAYERS_ONLY)
+                                    for(unsigned int j=0; j<tmp_layerInputs * tmp_layerOutputs; j++)
+                                #else
+                                    for(unsigned int j=0; j<(tmp_layerInputs+tmp_layerOutputs) * tmp_layerOutputs; j++)
+                                #endif
+                                    {
+                                        #if !defined(USE_INT_QUANTIZATION)
+                                            tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                            weights[count_ij++] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                        #else
+                                            weights[count_ij++] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                        #endif
+                                    }
                             #endif
                         #endif
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
@@ -2233,14 +2339,18 @@ public:
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
                             put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].bias[i]);
                         #endif
-                        for(unsigned int j=0; j<layers[n]._numberOfInputs; j++){
-                            #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].weights[i][j]);
-                            #else
-                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, weights[i_j]);
-                                i_j++;
-                            #endif
-                        }
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            for(unsigned int j=0; j<(layers[n]._numberOfInputs+layers[n]._numberOfOutputs); j++)
+                        #else
+                            for(unsigned int j=0; j<layers[n]._numberOfInputs; j++)
+                        #endif
+                            {
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, weights[i_j++]);
+                                #else
+                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].weights[i][j]);
+                                #endif
+                            }
                     }
                 }
                 put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  tmp_addr, layers[numberOflayers-1]._numberOfOutputs);
@@ -2408,6 +2518,8 @@ public:
             NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN )
         #endif
         {
+            // TODO: Implement USE_RNN_LAYERS_ONLY for !REDUCE_RAM_WEIGHTS_LVL2
+
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
 
@@ -2418,15 +2530,24 @@ public:
             #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
             #endif
-            
+
+            #if defined(USE_RNN_LAYERS_ONLY)
+                hiddenStates = new DFLOAT[_numberOfOutputs]; 
+            #endif
 
             #if !defined(NO_BIAS) // TODO: REDUCE_RAM_BIASES "common reference"
                 bias = default_Bias; //                          ##1    Bias as Default Bias. Biases if defined MULTIPLE_BIASES_PER_LAYER | A reference
             #endif
             weights = new IS_CONST IDFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (IDFLOAT) weights.
 
-            for (unsigned int i = 0; i < _numberOfOutputs; i++)              // [matrix] (_numberOfOutputs * _numberOfInputs)
-                weights[i] = &default_Weights[i * _numberOfInputs]; // Passing Default weights to ##1 weights by reference.  
+            for (unsigned int i = 0; i < _numberOfOutputs; i++){              // [matrix] (_numberOfOutputs * _numberOfInputs)
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    hiddenStates[i] = 0;
+                    weights[i] = &default_Weights[i * (_numberOfInputs + _numberOfOutputs)]; // Passing Default weights to ##1 weights by reference.  
+                #else
+                    weights[i] = &default_Weights[i * _numberOfInputs]; // Passing Default weights to ##1 weights by reference.  
+                #endif
+            }
         }
     #endif
 
@@ -2447,6 +2568,10 @@ public:
         #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
             outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
         #endif
+
+        #if defined(USE_RNN_LAYERS_ONLY)
+            hiddenStates = new DFLOAT[_numberOfOutputs]{}; 
+        #endif
         
         #if !defined(NO_BIAS)
             bias = default_Bias; //                          ##1    Bias as Default Bias. Biases if defined MULTIPLE_BIASES_PER_LAYER | A reference
@@ -2457,6 +2582,7 @@ public:
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN ) // TODO: IDFLOAT support 
         {
+            // TODO: Implement USE_RNN_LAYERS_ONLY for !REDUCE_RAM_WEIGHTS_LVL2
 
             _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
             _numberOfOutputs = NumberOfOutputs;                           // ##1       Number of Outputs.
@@ -2468,6 +2594,9 @@ public:
             #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];                     // ##1    New Array of Outputs.
             #endif 
+            #if defined(USE_RNN_LAYERS_ONLY)
+                hiddenStates = new DFLOAT[_numberOfOutputs]; 
+            #endif
             #if !defined(REDUCE_RAM_WEIGHTS_COMMON)      
                 weights = new IDFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (IDFLOAT) weights.
             #endif
@@ -2484,18 +2613,26 @@ public:
                     weights[i] = new IDFLOAT[_numberOfInputs];
                 #endif
 
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    hiddenStates[i] = 0;
+                #endif
+
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                     bias[i] = (IDFLOAT)random(-90000, 90000) / 100000;
                 #endif
                 
-                for (unsigned int j = 0; j < _numberOfInputs; j++)
-                {
-                    #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
-                        me->weights[me->i_j++] = (IDFLOAT)random(-90000, 90000) / 100000;
-                    #else
-                        weights[i][j] = (IDFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
-                    #endif
-                }
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int j = 0; j < (_numberOfInputs + _numberOfOutputs); j++)
+                #else
+                    for (unsigned int j = 0; j < _numberOfInputs; j++)
+                #endif
+                    {
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
+                            me->weights[me->i_j++] = (IDFLOAT)random(-90000, 90000) / 100000;
+                        #else
+                            weights[i][j] = (IDFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
+                        #endif
+                    }
             }
 
         }
@@ -2512,6 +2649,10 @@ public:
 
             #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
+            #endif
+
+            #if defined(USE_RNN_LAYERS_ONLY)
+                hiddenStates = new DFLOAT[_numberOfOutputs]{}; 
             #endif
         }
     #endif
@@ -2555,6 +2696,15 @@ public:
 
             // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
             if (j == _numberOfInputs -1){
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int k = 0; k < _numberOfOutputs; k++){
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            outputs[i] += hiddenStates[k] * PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #else
+                            outputs[i] += hiddenStates[k] * PGM_READ_IDFLOAT(&weights[i][_numberOfInputs+k]) MULTIPLY_BY_INT_IF_QUANTIZATION; // if double pgm_read_dword 
+                        #endif
+                    }
+                #endif
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
@@ -2562,6 +2712,10 @@ public:
                     me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
+                #endif
+            }else{
+                #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    me->i_j += _numberOfOutputs;
                 #endif
             }
         }
@@ -2574,6 +2728,12 @@ public:
             #elif defined(Softmax)
                 Softmax();
             #endif
+
+            // Update the hidden states **after** all outputs are computed
+            #if defined(USE_RNN_LAYERS_ONLY)
+                for (unsigned int k = 0; k < _numberOfOutputs; k++)
+                    hiddenStates[k] = outputs[k];
+            #endif 
         }
     }
 
@@ -2615,6 +2775,15 @@ public:
 
             // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
             if (j == _numberOfInputs -1){
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int k = 0; k < _numberOfOutputs; k++){
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            outputs[i] += hiddenStates[k] * me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #else
+                            outputs[i] += hiddenStates[k] * weights[i][_numberOfInputs+k] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #endif
+                    }
+                #endif
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
@@ -2622,6 +2791,10 @@ public:
                     me->sumOfSoftmax += outputs[i];
                 #else
                     outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                #endif
+            }else{
+                #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    me->i_j += _numberOfOutputs;
                 #endif
             }
         }
@@ -2634,6 +2807,12 @@ public:
             #elif defined(Softmax)
                 Softmax();
             #endif
+
+            // Update the hidden states **after** all outputs are computed
+            #if defined(USE_RNN_LAYERS_ONLY)
+                for (unsigned int k = 0; k < _numberOfOutputs; k++)
+                    hiddenStates[k] = outputs[k];
+            #endif 
         }
     }
 
@@ -2695,6 +2874,11 @@ public:
 
                 // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
                 if (j == _numberOfInputs -1){
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        for (unsigned int k = 0; k < _numberOfOutputs; k++){
+                            outputs[i] += hiddenStates[k] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        }
+                    #endif
                     #if defined(ACTIVATION__PER_LAYER)
                         outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                     #elif defined(Softmax)
@@ -2703,8 +2887,12 @@ public:
                     #else
                         outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                     #endif
+                }else{
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        me->address += _numberOfOutputs * sizeof(IDFLOAT); 
+                    #endif
                 }
-                #if defined(MULTIPLE_BIASES_PER_LAYER) //WARN: This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial address is not less than 4 bytes away from the end)
+                #if defined(MULTIPLE_BIASES_PER_LAYER) //WARN: This line is suspicious in case of when reading beyond EEPROM's length (which might happen if the initial-address (until the length of the NN in type-memmory) is not less than 4 bytes away from the end)
                     *bias = me->get_type_memmory_value<IDFLOAT>(me->address);
                 #endif
             }
@@ -2723,6 +2911,12 @@ public:
                         Softmax();
                 #elif defined(Softmax)
                     Softmax();
+                #endif
+
+                // Update the hidden states **after** all outputs are computed
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int k = 0; k < _numberOfOutputs; k++)
+                        hiddenStates[k] = outputs[k];
                 #endif
             }
         }
@@ -2755,6 +2949,12 @@ public:
                     outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 }
 
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int j = 0; j < _numberOfOutputs; j++){
+                        outputs[i] += hiddenStates[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    }
+                #endif
+
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i]);
                 #elif defined(Softmax)
@@ -2772,6 +2972,12 @@ public:
             #elif defined(Softmax)
                 Softmax();
             #endif
+
+            // Update the hidden states **after** all outputs are computed
+            #if defined(USE_RNN_LAYERS_ONLY)
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                    hiddenStates[i] = outputs[i];
+            #endif 
         }
     #endif
 
@@ -2802,6 +3008,17 @@ public:
                         outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #endif
                 }
+
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int j = 0; j < _numberOfOutputs; j++){
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            outputs[i] += hiddenStates[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #else
+                            outputs[i] += hiddenStates[j] * PGM_READ_IDFLOAT(&weights[i][_numberOfInputs+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #endif
+                    }
+                #endif
+
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
                 #elif defined(Softmax)
@@ -2819,6 +3036,12 @@ public:
             #elif defined(Softmax)
                 Softmax();
             #endif
+
+            // Update the hidden states **after** all outputs are computed
+            #if defined(USE_RNN_LAYERS_ONLY)
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                    hiddenStates[i] = outputs[i];
+            #endif 
         }
 
         void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs) //*
@@ -2861,6 +3084,17 @@ public:
                         #endif
                     }
                 #endif
+                
+                // TODO: SIMD SUPPORT too
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int j = 0; j < _numberOfOutputs; j++){
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            outputs[i] += hiddenStates[j] * me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #else
+                            outputs[i] += hiddenStates[j] * weights[i][_numberOfInputs+j] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #endif
+                    }
+                #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
@@ -2879,6 +3113,13 @@ public:
             #elif defined(Softmax)
                 Softmax();
             #endif
+
+            // Update the hidden states **after** all outputs are computed
+            #if defined(USE_RNN_LAYERS_ONLY)
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                    hiddenStates[i] = outputs[i];
+            #endif 
+
             // return outputs;
         } 
     #endif
@@ -3115,6 +3356,9 @@ public:
                 #else
                     Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                 #endif
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    Serial.print(F_MACRO("RNN "));
+                #endif
                 Serial.print(_numberOfInputs);
                 Serial.print(F_MACRO("x"));
                 Serial.print(_numberOfOutputs);
@@ -3134,6 +3378,7 @@ public:
                         Serial.print(F_MACRO("   B:"));
                         Serial.println(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
+
                     Serial.print(i + 1);
                     Serial.print(F_MACRO(" "));
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
@@ -3145,6 +3390,20 @@ public:
                         Serial.print(F_MACRO(" "));
                     }
                     Serial.println();
+
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        Serial.print(F_MACRO("  "));
+                        for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                        {
+                            tmp_ijweight = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            Serial.print(F_MACRO(" U:"));
+                            if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
+                            Serial.print(tmp_ijweight, DFLOAT_LEN);
+                            Serial.print(F_MACRO(" "));
+                        }
+                        Serial.println();
+                    #endif
+
                 }
                 Serial.println(F_MACRO("----------------------"));
             }
@@ -3153,6 +3412,9 @@ public:
             { 
                 #if defined(USE_INT_QUANTIZATION)
                     Serial.print(F_MACRO("INT_Q "));
+                #endif
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    Serial.print(F_MACRO("RNN "));
                 #endif
                 Serial.print(_numberOfInputs);
                 Serial.print(F_MACRO("x"));
@@ -3173,6 +3435,7 @@ public:
                         Serial.print(F_MACRO("   B:"));
                         Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
+
                     Serial.print(i + 1);
                     Serial.print(F_MACRO(" "));
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
@@ -3188,6 +3451,28 @@ public:
                         Serial.print(F_MACRO(" "));
                     }
                     Serial.println();
+
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        Serial.print(F_MACRO("  "));
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                            {
+                                Serial.print(F_MACRO(" U:"));
+                                if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
+                                Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                Serial.print(F_MACRO(" "));
+                            }
+                        #else
+                            for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
+                            {
+                                Serial.print(F_MACRO(" U:"));
+                                if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
+                                Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                Serial.print(F_MACRO(" "));
+                            }
+                        #endif
+                        Serial.println();
+                    #endif
                 }
                 Serial.println(F_MACRO("----------------------"));
 
@@ -3199,6 +3484,9 @@ public:
                     Serial.print(F_MACRO("INT_Q PROGMEM "));
                 #else
                     Serial.print(F_MACRO("PROGMEM "));
+                #endif
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    Serial.print(F_MACRO("RNN "));
                 #endif
                 Serial.print(_numberOfInputs);
                 Serial.print(F_MACRO("x"));
@@ -3219,6 +3507,7 @@ public:
                         Serial.print(F_MACRO("   B:"));
                         Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
+
                     Serial.print(i + 1);
                     Serial.print(" ");
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
@@ -3235,6 +3524,28 @@ public:
                         Serial.print(F_MACRO(" "));
                     }
                     Serial.println();
+
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        Serial.print(F_MACRO("  "));
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                            {
+                                Serial.print(F_MACRO(" U:"));
+                                if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                                Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                Serial.print(F_MACRO(" "));
+                            }
+                        #else
+                            for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
+                            {
+                                Serial.print(F_MACRO(" U:"));
+                                if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
+                                Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                Serial.print(F_MACRO(" "));
+                            }
+                        #endif
+                        Serial.println();
+                    #endif
                 }
                 Serial.println(F_MACRO("----------------------"));
             }
