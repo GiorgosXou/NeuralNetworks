@@ -454,7 +454,7 @@
     #endif
 #endif
 
-// REMINDER DO NOT UNCOMMENT THIS!!!!!! BECAUSE IT WILL RESULT ON ESP32-C3 NOT COMPILING WITH USE_PROGMEM or USE_INTERNAL_EEPROM AT ALL | i keep it here as a future reminder
+// REMINDER DO NOT UNCOMMENT THIS!!!!!! BECAUSE IT WILL RESULT ON ESP32-S3 NOT COMPILING WITH USE_PROGMEM or USE_INTERNAL_EEPROM AT ALL | i keep it here as a future reminder
 // #if defined(ESP_SUPPORTS_SIMD) and (defined(USE_PROGMEM) or defined(USE_INTERNAL_EEPROM))
 //     #error "There's no support for SIMD use with USE_PROGMEM or USE_INTERNAL_EEPROM yet."
 // #endif
