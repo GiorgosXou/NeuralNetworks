@@ -146,6 +146,8 @@
 
 #define MULTIPLY_BY_INT_IF_QUANTIZATION
 
+#define ACCUMULATED_DOT_PRODUCT_OF accumulatedDotProduct
+
 #define ATOL atol
 #define LLONG long
 #define DFLOAT float
@@ -450,6 +452,14 @@
         #define MSG7 \n- " [2] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
     #else
         #define ESP_SUPPORTS_SIMD
+        #undef ACCUMULATED_DOT_PRODUCT_OF
+        // TODO: tmp_dest will be removed once I implement the custom-assembly-dotprod function of esp32 and stuff
+        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+            // We keep me->i_j+= len; for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
+            #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; me->i_j+=len; } while(0)
+        #else
+            #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
+        #endif
         #include "esp_dsp.h"
     #endif
 #endif
@@ -1007,6 +1017,13 @@ private:
             void type_memmory_FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
         #endif
 
+        //NOTE: src2 is IDFLOAT not just DFLOAT !!! | src2 is meant to be weights
+        void accumulatedDotProduct        (const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
+        void PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            void type_memmory_accumulatedDotProductWithSrc2Address(const DFLOAT *src, DFLOAT *dest, unsigned int len);
+        #endif
+
         void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
         void FdF_PROGMEM(const DFLOAT *inputs);
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
@@ -1084,6 +1101,11 @@ private:
 
 
 public:
+
+    #if defined(ESP_SUPPORTS_SIMD)
+        DFLOAT tmp_dest; // TODO: tmp_dest will be removed once I implement the custom-assembly-dotprod function of esp32 and stuff
+    #endif
+
     //just like "static IDFLOAT *wights" [...]  i might have a function to switch? | 2024-05-28 07:21:09 PM UPDATE: not sure what I meant back then... comment was moved here since `inline` change (this date), see also issue #35
     // this is the part where we declare an array-of-pointers-to-(activation and derivative) functions 
     #if defined(ACTIVATION__PER_LAYER)
@@ -2697,13 +2719,11 @@ public:
             // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
             if (j == _numberOfInputs -1){
                 #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int k = 0; k < _numberOfOutputs; k++){
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += hiddenStates[k] * PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #else
-                            outputs[i] += hiddenStates[k] * PGM_READ_IDFLOAT(&weights[i][_numberOfInputs+k]) MULTIPLY_BY_INT_IF_QUANTIZATION; // if double pgm_read_dword 
-                        #endif
-                    }
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        PROGMEM_accumulatedDotProduct(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
+                    #else
+                        PROGMEM_accumulatedDotProduct(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                    #endif
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
@@ -2776,13 +2796,11 @@ public:
             // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
             if (j == _numberOfInputs -1){
                 #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int k = 0; k < _numberOfOutputs; k++){
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += hiddenStates[k] * me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #else
-                            outputs[i] += hiddenStates[k] * weights[i][_numberOfInputs+k] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #endif
-                    }
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs); 
+                    #else
+                        ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                    #endif
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
@@ -2818,6 +2836,13 @@ public:
 
 
     #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+        void NeuralNetwork::Layer::type_memmory_accumulatedDotProductWithSrc2Address(const DFLOAT *src, DFLOAT *dest, unsigned int len)
+        {
+            for (unsigned int i = 0; i < len; i++)
+                *dest += src[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+        }
+
+
         void NeuralNetwork::Layer::type_memmory_FeedForward_Individual(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
         {
             // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
@@ -2875,9 +2900,7 @@ public:
                 // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
                 if (j == _numberOfInputs -1){
                     #if defined(USE_RNN_LAYERS_ONLY)
-                        for (unsigned int k = 0; k < _numberOfOutputs; k++){
-                            outputs[i] += hiddenStates[k] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        }
+                        type_memmory_accumulatedDotProductWithSrc2Address(hiddenStates, &outputs[i], _numberOfOutputs);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER)
                         outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
@@ -2944,15 +2967,12 @@ public:
                     outputs[i] = tmp_bias;
                 #endif
 
-                for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
-                {
-                    outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                }
-
                 #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int j = 0; j < _numberOfOutputs; j++){
-                        outputs[i] += hiddenStates[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    }
+                    type_memmory_accumulatedDotProductWithSrc2Address(inputs, &outputs[i], _numberOfInputs);
+                    type_memmory_accumulatedDotProductWithSrc2Address(hiddenStates, &outputs[i], _numberOfOutputs);
+                #else // if simple ANN-MLP
+                    for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
+                        outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
@@ -2983,6 +3003,28 @@ public:
 
 
     #if !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
+        void NeuralNetwork::Layer::accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
+        {
+            for (unsigned int i = 0; i < len; i++)
+                *dest += src1[i] * src2[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
+
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
+            #endif
+        }
+
+
+        void NeuralNetwork::Layer::PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
+        {
+            for (unsigned int i = 0; i < len; i++)
+                *dest += src1[i] * PGM_READ_IDFLOAT(&src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
+            #endif
+        }
+
+
         void NeuralNetwork::Layer::FdF_PROGMEM(const DFLOAT *inputs) //*
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
@@ -3000,23 +3042,18 @@ public:
                     outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
                 #endif
 
-                for (unsigned int j = 0; j < _numberOfInputs; j++) 
-                {
-                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #else
-                        outputs[i] += inputs[j] * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #endif
-                }
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    PROGMEM_accumulatedDotProduct(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); // #12
+                #else
+                    PROGMEM_accumulatedDotProduct(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                #endif
 
                 #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int j = 0; j < _numberOfOutputs; j++){
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += hiddenStates[j] * PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #else
-                            outputs[i] += hiddenStates[j] * PGM_READ_IDFLOAT(&weights[i][_numberOfInputs+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #endif
-                    }
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        PROGMEM_accumulatedDotProduct(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
+                    #else
+                        PROGMEM_accumulatedDotProduct(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                    #endif
                 #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
@@ -3044,6 +3081,7 @@ public:
             #endif 
         }
 
+
         void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs) //*
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
@@ -3053,49 +3091,28 @@ public:
             //feed forwards
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
-                #if defined(ESP_SUPPORTS_SIMD)
-                    #if !defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        dsps_dotprod_f32(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
-                    #else
-                        dsps_dotprod_f32(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); 
-                        me->i_j+= _numberOfInputs;
-                    #endif
-
-                    #if defined(MULTIPLE_BIASES_PER_LAYER) // No need for MULTIPLY_BY_INT_IF_QUANTIZATION because there's no SIMD support for it// TODO: REDUCE_RAM_BIASES "common reference" 
-                        outputs[i] += bias[i]; 
-                    #elif !defined(NO_BIAS)
-                        outputs[i] += *bias;
-                    #endif
+                #if defined(NO_BIAS)
+                    outputs[i] = 0;
+                #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                    outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
                 #else
-                    #if defined(NO_BIAS)
-                        outputs[i] = 0;
-                    #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #else
-                        outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #endif
+                    outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
+                #endif
 
-                    for (unsigned int j = 0; j < _numberOfInputs; j++)
-                    {
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += inputs[j] * me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #else
-                            outputs[i] += inputs[j] * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION; // (neuron[i]'s 1D array/vector of inputs) * (neuron[i]'s 2D array/matrix weights) = neuron[i]'s output
-                        #endif
-                    }
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    ACCUMULATED_DOT_PRODUCT_OF(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); // #12 [see also a03b1609fe7ec40fdc9b10d62c93134adc098b12] for a plain MLP/ANN an inlined code with me->i_j++, would redure the sketch about a few bytes for UNO. Instead of this, that's now | I may TODO: a macro for this case too 
+                #else
+                    ACCUMULATED_DOT_PRODUCT_OF(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                #endif
+
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs); 
+                    #else
+                        ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                    #endif
                 #endif
                 
-                // TODO: SIMD SUPPORT too
-                #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int j = 0; j < _numberOfOutputs; j++){
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += hiddenStates[j] * me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #else
-                            outputs[i] += hiddenStates[j] * weights[i][_numberOfInputs+j] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        #endif
-                    }
-                #endif
-
                 #if defined(ACTIVATION__PER_LAYER)
                     outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
                 #elif defined(Softmax)
