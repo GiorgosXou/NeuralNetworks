@@ -1525,7 +1525,11 @@ public:
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
                 for (unsigned int i = 0; i < numberOflayers; i++)
-                    i_j += layer_[i] * layer_[i + 1];
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        i_j += layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1]);
+                    #else
+                        i_j += layer_[i] * layer_[i + 1];
+                    #endif
                 
                 weights = new DFLOAT[i_j];
                 i_j=0;
