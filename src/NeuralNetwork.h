@@ -2544,8 +2544,6 @@ public:
             NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN )
         #endif
         {
-            // TODO: Implement USE_RNN_LAYERS_ONLY for !REDUCE_RAM_WEIGHTS_LVL2
-
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
 
@@ -2608,8 +2606,6 @@ public:
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, NeuralNetwork * const NN ) // TODO: IDFLOAT support 
         {
-            // TODO: Implement USE_RNN_LAYERS_ONLY for !REDUCE_RAM_WEIGHTS_LVL2
-
             _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
             _numberOfOutputs = NumberOfOutputs;                           // ##1       Number of Outputs.
 
@@ -2636,7 +2632,11 @@ public:
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-                    weights[i] = new IDFLOAT[_numberOfInputs];
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        weights[i] = new IDFLOAT[_numberOfInputs + _numberOfOutputs];
+                    #else
+                        weights[i] = new IDFLOAT[_numberOfInputs];
+                    #endif
                 #endif
 
                 #if defined(USE_RNN_LAYERS_ONLY)
