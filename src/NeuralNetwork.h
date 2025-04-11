@@ -1354,9 +1354,6 @@ public:
         numberOflayers = NumberOflayers - 1;
 
         layers = new Layer[numberOflayers]; // there has to be a faster way by alocating memory for example...
-        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-            layers[numberOflayers -1].outputs = NULL;
-        #endif
 
         #if defined(ACTIVATION__PER_LAYER)
             ActFunctionPerLayer = _ActFunctionPerLayer;
@@ -1399,8 +1396,11 @@ public:
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
                 biasesFromPoint += layer_[i + 1];
             #endif
-            
         }
+
+        #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+            layers[numberOflayers -1].outputs = NULL;
+        #endif
     }
 
     #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
@@ -1433,9 +1433,6 @@ public:
             numberOflayers = NumberOflayers - 1;
 
             layers = new Layer[numberOflayers];
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                layers[numberOflayers -1].outputs = NULL;
-            #endif
 
             #if defined(ACTIVATION__PER_LAYER)
                 ActFunctionPerLayer = _ActFunctionPerLayer;
@@ -1454,9 +1451,11 @@ public:
             #endif
 
             for (unsigned int i = 0; i < numberOflayers; i++)
-            {
                 layers[i] =  Layer(layer_[i], layer_[i + 1],this);
-            }
+
+            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                layers[numberOflayers -1].outputs = NULL;
+            #endif
         }
     #endif
 
@@ -1958,9 +1957,6 @@ public:
 
                 myFile.read(reinterpret_cast<byte*>(&numberOflayers), sizeof(numberOflayers));
                 layers = new Layer[numberOflayers];
-                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                    layers[numberOflayers -1].outputs = NULL;
-                #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
                     isAlreadyLoadedOnce = true;
@@ -2035,6 +2031,10 @@ public:
                         #endif
                     #endif
                 }
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    layers[numberOflayers -1].outputs = NULL;
+                #endif
+
                 return true;
             }
             return false;
@@ -2075,9 +2075,6 @@ public:
 
                     numberOflayers = myFile.readStringUntil('\n').toInt() - 1; // reminder I removed +1 from save
                     layers = new Layer[numberOflayers]; 
-                    #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                        layers[numberOflayers -1].outputs = NULL;
-                    #endif
 
                     #if defined(ACTIVATION__PER_LAYER)
                         isAlreadyLoadedOnce = true;
@@ -2191,6 +2188,11 @@ public:
                         #endif
                     }
                     myFile.close();
+
+                    #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                        layers[numberOflayers -1].outputs = NULL;
+                    #endif
+
                     return true;
                 }
                 return false;
