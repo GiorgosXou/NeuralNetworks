@@ -895,6 +895,7 @@
         // ACTIVATE ALL FUNCTIONS
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
+        #undef ALL_A
         #define ALL_A |> "(ALL_ACTIVATION_FUNCTIONS)"
         #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
         #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
