@@ -140,6 +140,7 @@
 #define MSG18
 #define MSG19
 #define MSG20
+#define MSG21
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -147,6 +148,11 @@
 #define MULTIPLY_BY_INT_IF_QUANTIZATION
 
 #define ACCUMULATED_DOT_PRODUCT_OF accumulatedDotProduct
+
+//NOTE: IF YOU ARE A DEVELOPER\PROGRAMMER SEE #13 (and follow DISABLE_STATIC_FOR_ACTS)
+#define IS_STATIC static
+#define IS_IN_LAYER_SCOPE
+#define IS_THIS
 
 #define ATOL atol
 #define LLONG long
@@ -382,6 +388,12 @@
         #undef MSG20
         #define MSG20 \n- " [3] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (SUPPORT_NO_HIDDEN_BACKPROP)."
         #define SUPPORT_NO_HIDDEN_BACKPROP
+    #endif
+
+    #if ((_3_OPTIMIZE bitor 0B11111011) == 0B11111111) // see #13
+        #undef MSG21
+        #define MSG21 \n- " [3] 0B00000100 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is used."
+        #define DISABLE_STATIC_FOR_ACTS
     #endif
 #endif
 
@@ -755,13 +767,13 @@
     #undef CUSTOM_AF1_DEFINITION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
-    #define CUSTOM_AF1_DEFINITION DFLOAT CUSTOM_AF1(const DFLOAT &x);
+    #define CUSTOM_AF1_DEFINITION IS_STATIC DFLOAT CUSTOM_AF1(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
     #if defined(CUSTOM_DF1)
         #undef CUSTOM_DF1
         #undef CUSTOM_DF1_DEFINITION
         #define CUSTOM_DF1 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF1, Der)
-        #define CUSTOM_DF1_DEFINITION DFLOAT CUSTOM_DF1(const float &fx);
+        #define CUSTOM_DF1_DEFINITION IS_STATIC DFLOAT CUSTOM_DF1(const float &fx);
     #else
         #define NO_BACKPROP
         #undef NB
@@ -782,13 +794,13 @@
     #undef CUSTOM_AF2_DEFINITION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
-    #define CUSTOM_AF2_DEFINITION DFLOAT CUSTOM_AF2(const DFLOAT &x);
+    #define CUSTOM_AF2_DEFINITION IS_STATIC DFLOAT CUSTOM_AF2(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
     #if defined(CUSTOM_DF2)
         #undef CUSTOM_DF2
         #undef CUSTOM_DF2_DEFINITION
         #define CUSTOM_DF2 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF2, Der)
-        #define CUSTOM_DF2_DEFINITION DFLOAT CUSTOM_DF2(const DFLOAT &fx);
+        #define CUSTOM_DF2_DEFINITION IS_STATIC DFLOAT CUSTOM_DF2(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
         #undef NB
@@ -809,13 +821,13 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
-    #define CUSTOM_AF3_DEFINITION DFLOAT CUSTOM_AF3(const DFLOAT &x);
+    #define CUSTOM_AF3_DEFINITION IS_STATIC DFLOAT CUSTOM_AF3(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
     #if defined(CUSTOM_DF3)
         #undef CUSTOM_DF3
         #undef CUSTOM_DF3_DEFINITION
         #define CUSTOM_DF3 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF3, Der)
-        #define CUSTOM_DF3_DEFINITION DFLOAT CUSTOM_DF3(const DFLOAT &fx);
+        #define CUSTOM_DF3_DEFINITION IS_STATIC DFLOAT CUSTOM_DF3(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
         #undef NB
@@ -836,13 +848,13 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
-    #define CUSTOM_AF4_DEFINITION DFLOAT CUSTOM_AF4(const DFLOAT &x);
+    #define CUSTOM_AF4_DEFINITION IS_STATIC DFLOAT CUSTOM_AF4(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
     #if defined(CUSTOM_DF4)
         #undef CUSTOM_DF4
         #undef CUSTOM_DF4_DEFINITION
         #define CUSTOM_DF4 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF4, Der)
-        #define CUSTOM_DF4_DEFINITION DFLOAT CUSTOM_DF4(const DFLOAT &fx);
+        #define CUSTOM_DF4_DEFINITION IS_STATIC DFLOAT CUSTOM_DF4(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
         #undef NB
@@ -863,13 +875,13 @@
     #undef ACTIVATION_FUNCTION
     #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
-    #define CUSTOM_AF5_DEFINITION DFLOAT CUSTOM_AF5(const DFLOAT &x);
+    #define CUSTOM_AF5_DEFINITION IS_STATIC DFLOAT CUSTOM_AF5(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
     #if defined(CUSTOM_DF5)
         #undef CUSTOM_DF5
         #undef CUSTOM_DF5_DEFINITION
         #define CUSTOM_DF5 CONCATENATE_WITHOUT_SPACE(CUSTOM_AF5, Der)
-        #define CUSTOM_DF5_DEFINITION DFLOAT CUSTOM_DF5(const DFLOAT &fx);
+        #define CUSTOM_DF5_DEFINITION IS_STATIC DFLOAT CUSTOM_DF5(const DFLOAT &fx);
     #else
         #define NO_BACKPROP
         #undef NB
@@ -893,6 +905,11 @@
 #if !defined(ACTIVATION)
     #if defined(ACTIVATION__PER_LAYER)
         // ACTIVATE ALL FUNCTIONS
+        #if !defined(DISABLE_STATIC_FOR_ACTS)
+            #undef MSG21
+            #define DISABLE_STATIC_FOR_ACTS 
+            #define MSG21 \n- " [3] 0B00000100 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to (ALL_ACTIVATION_FUNCTIONS), specifically due to Softmax."
+        #endif
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
         #undef ALL_A
@@ -927,11 +944,30 @@
     #define  DEFAULT_LOSS
 #endif
 
+// #13 | Don't Worry about IS_STATIC in CUSTOM_AFX, I just relised that even though they are defined with the previous definition of IS_STATIC, it happens that the definition is expanded when used not when defined!
+// "Macros are never replaced in the body of a #define directive..." see also https://stackoverflow.com/a/42096144/11465149
+#if defined(DISABLE_STATIC_FOR_ACTS) || defined(Softmax)
+    #if defined(Softmax)
+        // Even though this condition is not necessary yet, it's nice to be here just in case I do anything more crazy involving (DISABLE_STATIC_FOR_ACTS) somewhere else in the future
+        #if !defined(DISABLE_STATIC_FOR_ACTS)
+            #define DISABLE_STATIC_FOR_ACTS
+        #endif
+        #undef MSG21
+        #define MSG21 \n- " [3] 0B00000100 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax."
+    #endif
+    #undef IS_STATIC
+    #undef IS_IN_LAYER_SCOPE
+    #undef IS_THIS
+    #define IS_STATIC
+    #define IS_IN_LAYER_SCOPE Layer::
+    #define IS_THIS this->*
+#endif
+
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -1043,33 +1079,33 @@ private:
 
 
         // "Extra Math"
-        DFLOAT erf(DFLOAT x);
+        IS_STATIC DFLOAT erf(DFLOAT x);
 
         //if i actually consider using other complicated activation functions i might need to think again about the before_Activation_output Array [...]
-        DFLOAT Sigmoid     (const DFLOAT &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
-        DFLOAT SigmoidDer  (const DFLOAT &fx); // Derivative of Sigmoid Activation Function.
+        IS_STATIC DFLOAT Sigmoid     (const DFLOAT &x ); // Sigmoid Activation Function 1/(1+e^(-x)) .
+        IS_STATIC DFLOAT SigmoidDer  (const DFLOAT &fx); // Derivative of Sigmoid Activation Function.
         
-        DFLOAT Tanh        (const DFLOAT &x );
-        DFLOAT TanhDer     (const DFLOAT &fx);
+        IS_STATIC DFLOAT Tanh        (const DFLOAT &x );
+        IS_STATIC DFLOAT TanhDer     (const DFLOAT &fx);
 
-        DFLOAT ReLU        (const DFLOAT &x );
-        DFLOAT ReLUDer     (const DFLOAT &fx); // x is also fx on ReLU
+        IS_STATIC DFLOAT ReLU        (const DFLOAT &x );
+        IS_STATIC DFLOAT ReLUDer     (const DFLOAT &fx); // x is also fx on ReLU
 
-        DFLOAT LeakyReLU   (const DFLOAT &x );
-        DFLOAT LeakyReLUDer(const DFLOAT &fx);
+        IS_STATIC DFLOAT LeakyReLU   (const DFLOAT &x );
+        IS_STATIC DFLOAT LeakyReLUDer(const DFLOAT &fx);
 
-        DFLOAT ELU         (const DFLOAT &x ); // α = 1
-        DFLOAT ELUDer      (const DFLOAT &fx);
+        IS_STATIC DFLOAT ELU         (const DFLOAT &x ); // α = 1
+        IS_STATIC DFLOAT ELUDer      (const DFLOAT &fx);
         
-        DFLOAT SELU        (const DFLOAT &x ); // Maybe use https://stackoverflow.com/a/42264773/11465149
-        DFLOAT SELUDer     (const DFLOAT &fx);
+        IS_STATIC DFLOAT SELU        (const DFLOAT &x ); // Maybe use https://stackoverflow.com/a/42264773/11465149
+        IS_STATIC DFLOAT SELUDer     (const DFLOAT &fx);
 
         void   Softmax     ();
-        DFLOAT SoftmaxSum  (const DFLOAT &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax
-        DFLOAT SoftmaxDer  (const DFLOAT &fx);
+        IS_STATIC DFLOAT SoftmaxSum  (const DFLOAT &x ); // returns exp(outputs[i] + (*bias)) to each output and then sums it into sumOfSoftmax
+        IS_STATIC DFLOAT SoftmaxDer  (const DFLOAT &fx);
 
-        DFLOAT Identity    (const DFLOAT &x );
-        DFLOAT IdentityDer (const DFLOAT &x );
+        IS_STATIC DFLOAT Identity    (const DFLOAT &x );
+        IS_STATIC DFLOAT IdentityDer (const DFLOAT &x );
 
         // Custom Activation Fuctions Definitions (eg. DFLOAT CUSTOM_AFX(...);)
         CUSTOM_AF1_DEFINITION
@@ -1085,12 +1121,12 @@ private:
         CUSTOM_DF5_DEFINITION
 
         // NO_BACKPROP support
-        DFLOAT BinaryStep (const DFLOAT &x );
-        DFLOAT Softplus   (const DFLOAT &x );
-        DFLOAT SiLU       (const DFLOAT &x );
-        DFLOAT GELU       (const DFLOAT &x );
-        DFLOAT Mish       (const DFLOAT &x );
-        DFLOAT Gaussian   (const DFLOAT &x );
+        IS_STATIC DFLOAT BinaryStep (const DFLOAT &x );
+        IS_STATIC DFLOAT Softplus   (const DFLOAT &x );
+        IS_STATIC DFLOAT SiLU       (const DFLOAT &x );
+        IS_STATIC DFLOAT GELU       (const DFLOAT &x );
+        IS_STATIC DFLOAT Mish       (const DFLOAT &x );
+        IS_STATIC DFLOAT Gaussian   (const DFLOAT &x );
         
 
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
@@ -1110,7 +1146,7 @@ public:
     //just like "static IDFLOAT *wights" [...]  i might have a function to switch? | 2024-05-28 07:21:09 PM UPDATE: not sure what I meant back then... comment was moved here since `inline` change (this date), see also issue #35
     // this is the part where we declare an array-of-pointers-to-(activation and derivative) functions 
     #if defined(ACTIVATION__PER_LAYER)
-        typedef DFLOAT (Layer::*method_function) (const DFLOAT &);
+        typedef DFLOAT (IS_IN_LAYER_SCOPE *method_function) (const DFLOAT &);
         static const method_function activation_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
         #if !defined(NO_BACKPROP)
             static const method_function derivative_Function_ptrs[NUM_OF_USED_ACTIVATION_FUNCTIONS];
@@ -2733,7 +2769,7 @@ public:
                     #endif
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
                     me->sumOfSoftmax += outputs[i];
@@ -2810,7 +2846,7 @@ public:
                     #endif
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
                     me->sumOfSoftmax += outputs[i];
@@ -2910,7 +2946,7 @@ public:
                         type_memmory_accumulatedDotProductWithSrc2Address(hiddenStates, &outputs[i], _numberOfOutputs);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER)
-                        outputs[i] = ((this)->*(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                        outputs[i] = (IS_THIS(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                     #elif defined(Softmax)
                         outputs[i] = exp(outputs[i]);
                         me->sumOfSoftmax += outputs[i];
@@ -2983,7 +3019,7 @@ public:
                 #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[fx])(outputs[i]);
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[fx])(outputs[i]);
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
                     me->sumOfSoftmax += outputs[i];
@@ -3064,7 +3100,7 @@ public:
                 #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
                     me->sumOfSoftmax += outputs[i];
@@ -3121,7 +3157,7 @@ public:
                 #endif
                 
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = ((this)->*(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
                     me->sumOfSoftmax += outputs[i];
@@ -3223,7 +3259,7 @@ public:
         void NeuralNetwork::Layer::CommonCompute(DFLOAT &gamma, DFLOAT preLgammaORgamma, const DFLOAT *inputs, unsigned int i, unsigned int j=0)
         {
             #if defined(ACTIVATION__PER_LAYER)
-                gamma = preLgammaORgamma * ((this)->*(derivative_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                gamma = preLgammaORgamma * (IS_THIS(derivative_Function_ptrs[me->ActFunctionPerLayer[me->AtlayerIndex]]))(outputs[i]);
             #else
                 gamma = preLgammaORgamma * DERIVATIVE_OF(ACTIVATION_FUNCTION, outputs[i]); // if i remember well , frontLayer->preLgamma[i] means current layer gamma?
             #endif
@@ -3588,4 +3624,5 @@ public:
 #6 https://stackoverflow.com/questions/68689135/unusual-behavior-unnecessary-variables-inside-a-class-result-in-extra-bytes-of
 
 In Arduino log() = ln = natural logarithm = logarithm with base e 
+ - DISABLE_STATIC_FOR_ACTS
 */
