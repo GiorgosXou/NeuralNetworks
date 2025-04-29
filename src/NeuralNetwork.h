@@ -154,6 +154,9 @@
 #define IS_IN_LAYER_SCOPE
 #define IS_THIS
 
+// Optional Bias Macro, inlines/appends x if biases are enabled (not-NO_BIAS), else it does nothing
+#define OPTIONAL_BIAS(x) , x
+
 #define ATOL atol
 #define LLONG long
 #define DFLOAT float
@@ -261,6 +264,8 @@
 
     #if ((_2_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #undef MSG11
+        #undef OPTIONAL_BIAS
+        #define OPTIONAL_BIAS(x)
         #define MSG11 \n- " [2] 0B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
         #define HAS_NO_BIAS true
         #define NO_BIAS
@@ -1236,18 +1241,10 @@ public:
     // Here we only check for RAM_EFFICIENT_HILL_CLIMB because the whole purpose of RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW is to reduce sketch size by removing initialization and deconstructor logic
     #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
         NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL);                                              // #0
-        #if defined(NO_BIAS)
-            NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, byte *_ActFunctionPerLayer = NULL);          // #0
-        #else
-            NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, const DFLOAT &LRb, byte *_ActFunctionPerLayer = NULL);          // #0
-        #endif
+        NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw OPTIONAL_BIAS(const DFLOAT &LRb), byte *_ActFunctionPerLayer = NULL);          // #0
     #endif
-    #if defined(NO_BIAS)
-        NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
-    #else
-        NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
-    #endif
-    // NeuralNetwork(const unsigned int *layer_, const PROGMEM DFLOAT *default_Weights, const PROGMEM DFLOAT *default_Bias, const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
+    NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias), const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer = NULL); // #1
+    // NeuralNetwork(const unsigned int *layer_, const PROGMEM DFLOAT *default_Weights OPTIONAL_BIAS(const PROGMEM DFLOAT *default_Bias), const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
     
     void  reset_Individual_Input_Counter();
     DFLOAT *FeedForward_Individual(const DFLOAT &input);
@@ -1452,11 +1449,7 @@ public:
 
 
 
-    #if defined(NO_BIAS)
-        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
-    #else
-        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
-    #endif
+    NeuralNetwork::NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias), const unsigned int &NumberOflayers, byte *_ActFunctionPerLayer)
     {
         #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
             isAllocdWithNew = false;
@@ -1519,13 +1512,8 @@ public:
     }
 
     #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
-        #if defined(NO_BIAS)
-            NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, byte *_ActFunctionPerLayer )
-            : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)
-        #else
-            NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw, const DFLOAT &LRb,  byte *_ActFunctionPerLayer )
-            : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)  // Delegate to the second constructor | this is better, even though it uses a few extra bytes (the compiler doesn't optimize directly the values of learning rates)
-        #endif
+        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers, const DFLOAT &LRw OPTIONAL_BIAS(const DFLOAT &LRb),  byte *_ActFunctionPerLayer )
+        : NeuralNetwork(layer_, NumberOflayers, _ActFunctionPerLayer)  // Delegate to the second constructor | this is better, even though it uses a few extra bytes (the compiler doesn't optimize directly the values of learning rates)
         {
             // no need for this since there's ... && old_error != -1
             // #if defined(HILL_CLIMB_DYNAMIC_LEARNING_RATES) // #11
@@ -2577,11 +2565,7 @@ public:
 
 
     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-        #if defined(NO_BIAS)
-            NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, NeuralNetwork * const NN )
-        #else
-            NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias, NeuralNetwork * const NN )
-        #endif
+        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias), NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
