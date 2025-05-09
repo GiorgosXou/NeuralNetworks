@@ -1190,14 +1190,14 @@ public:
     // no negative values allowed, (just saying..)
     // Alphas and Lamdas of Activation Functions | #6 MACROS.
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
-        DFLOAT AlphaLeaky = 0.01   ;
+        static DFLOAT AlphaLeaky;
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-        DFLOAT AlphaSELU  = 1.6733 ; 
-        DFLOAT LamdaSELU  = 1.0507 ;
+        static DFLOAT AlphaSELU;
+        static DFLOAT LamdaSELU;
     #endif        
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
-        DFLOAT AlphaELU   = 1      ;
+        static DFLOAT AlphaELU;
     #endif
 
 
@@ -1299,6 +1299,16 @@ public:
     void print();
      
 };
+#if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
+    DFLOAT NeuralNetwork::AlphaLeaky = 0.01   ;
+#endif
+#if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
+    DFLOAT NeuralNetwork::AlphaSELU  = 1.6733 ;
+    DFLOAT NeuralNetwork::LamdaSELU  = 1.0507 ;
+#endif
+#if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
+    DFLOAT NeuralNetwork::AlphaELU   = 1.0    ;
+#endif
 #if defined(REDUCE_RAM_STATIC_REFERENCE)
     NeuralNetwork *NeuralNetwork::me;
 #endif
@@ -3198,13 +3208,13 @@ public:
 
     // REMINDER: They are wrapped in #defines because of their Alphas
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
-        DFLOAT NeuralNetwork::Layer::LeakyReLU  (const DFLOAT &x) { return (x > 0) ? x : me->AlphaLeaky * x                 ;}
+        DFLOAT NeuralNetwork::Layer::LeakyReLU  (const DFLOAT &x) { return (x > 0) ? x : AlphaLeaky * x                ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
-        DFLOAT NeuralNetwork::Layer::ELU       (const DFLOAT &x) { return (x > 0) ? x : me->AlphaELU  * (exp(x) - 1)       ;}
+        DFLOAT NeuralNetwork::Layer::ELU       (const DFLOAT &x) { return (x > 0) ? x : AlphaELU  * (exp(x) - 1)       ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-        DFLOAT NeuralNetwork::Layer::SELU      (const DFLOAT &x) { return (x > 0) ? x : me->AlphaSELU * (exp(x) - 1)       ;}
+        DFLOAT NeuralNetwork::Layer::SELU      (const DFLOAT &x) { return (x > 0) ? x : AlphaSELU * (exp(x) - 1)       ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
         DFLOAT NeuralNetwork::Layer::SoftmaxSum(const DFLOAT &x) { DFLOAT tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
@@ -3227,13 +3237,13 @@ public:
         DFLOAT NeuralNetwork::Layer::ReLUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : 0                                                 ;} 
 
         #if defined(LeakyReLU)    
-            DFLOAT NeuralNetwork::Layer::LeakyReLUDer(const DFLOAT &fx) { return (fx > 0) ? 1 : me->AlphaLeaky                                 ;} 
+            DFLOAT NeuralNetwork::Layer::LeakyReLUDer(const DFLOAT &fx) { return (fx > 0) ? 1 : AlphaLeaky                                 ;}
         #endif
         #if defined(ELU)
-            DFLOAT NeuralNetwork::Layer::ELUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : fx + me->AlphaELU                              ;} 
+            DFLOAT NeuralNetwork::Layer::ELUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : fx + AlphaELU                              ;}
         #endif
         #if defined(SELU)
-            DFLOAT NeuralNetwork::Layer::SELUDer    (const DFLOAT &fx) { return (fx > 0) ? me->LamdaSELU : fx + me->AlphaSELU * me->LamdaSELU ;} 
+            DFLOAT NeuralNetwork::Layer::SELUDer    (const DFLOAT &fx) { return (fx > 0) ? LamdaSELU : fx + AlphaSELU * LamdaSELU ;}
         #endif
         
         DFLOAT NeuralNetwork::Layer::SoftmaxDer     (const DFLOAT &fx) { return fx * (1 - fx)                                                 ;} // hmm...?
