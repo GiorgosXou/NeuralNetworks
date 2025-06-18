@@ -465,7 +465,7 @@
     #undef EXPLICIT_NN_TYPE_ARCHITECTURE
     #define EXPLICIT_NN_TYPE_ARCHITECTURE GRU_Only_
     #if defined(GRU_ACT) // I may add GRU_DER (...ivative) when I 'll support backprop
-        #define Softmax_ID 1
+        #define ID_Softmax 1
         #define MAP_HELPER(x) ID_ ## x
         #define INDEX_NN(x) MAP_HELPER(x)
         #if INDEX_NN(GRU_ACT) == ID_Softmax // https://stackoverflow.com/a/79556797/11465149
