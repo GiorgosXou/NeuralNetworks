@@ -1389,8 +1389,8 @@ public:
     DFLOAT NeuralNetwork::AlphaLeaky = 0.01   ;
 #endif
 #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-    DFLOAT NeuralNetwork::AlphaSELU  = 1.6733 ;
-    DFLOAT NeuralNetwork::LamdaSELU  = 1.0507 ;
+    DFLOAT NeuralNetwork::AlphaSELU  = 1.67326324;
+    DFLOAT NeuralNetwork::LamdaSELU  = 1.05070098;
 #endif
 #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
     DFLOAT NeuralNetwork::AlphaELU   = 1.0    ;
