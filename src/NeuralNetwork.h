@@ -1855,7 +1855,7 @@ public:
             layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, FeedForward)(inputs);
         #endif
 
-        unsigned int i = 1;
+        unsigned int i = 1;  // TODO: replace i with AtlayerIndex when ACTIVATION__PER_LAYER (don't forget `AtlayerIndex = 1`) OR alternativly you could pass the index to (in this case) FeedForward(input, OPTIONAL_AT_LAYER_INDEX(i)) [...]
         for (; i < numberOflayers; i++)
         {
             #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
