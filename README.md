@@ -184,7 +184,7 @@ Due to *(my uncertainty and)* the strict RAM optimization that allows the librar
 |**2**|```#define ReLU```      |<sup><sub>NN.layers-></sub></sup>```ReLU(&x)```     |  ```(x>0)?x:0``` |
 |**3**|```#define LeakyReLU```  |<sup><sub>NN.layers-></sub></sup>```LeakyReLU(&x)``` |  ```(x>0)?x:AlphaLeaky*x``` |
 |**4**|```#define ELU```       |<sup><sub>NN.layers-></sub></sup>```ELU(&x)```      |  ```(x>0)?x:AlphaELU*(e^(x)-1)``` |
-|**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELU(&x)```     |  ```(x>0)?x:AlphaSELU*(e^(x)-1)``` |
+|**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELU(&x)```     |  ```(x>=0)?x*LamdaSELU:LamdaSELU*AlphaSELU*(e^(x)-1)``` |
 |**6**|```#define Softmax```   |<sup><sub>NN.layers-></sub></sup>```Softmax(&x)```| ```void``` "complicated implementation" |
 |**7**|```#define Identity```  |<sup><sub>NN.layers-></sub></sup>```Identity(&x)```|  ```x``` |
 | | | <center>**```NO_BACKPROP``` SUPPORT**</center> | |
@@ -200,7 +200,7 @@ Due to *(my uncertainty and)* the strict RAM optimization that allows the librar
 |**2**|```#define ReLU```      |<sup><sub>NN.layers-></sub></sup>```ReLUDer(&fx)```|  ```(fx>0)?1:0``` |
 |**3**|```#define LeakyReLU```  |<sup><sub>NN.layers-></sub></sup>```LeakyReLUDer(&fx)```|  ```(fx>0)?1:AlphaLeaky``` |
 |**4**|```#define ELU```       |<sup><sub>NN.layers-></sub></sup>```ELUDer(&fx)```|  ```(fx>0)?1:fx+AlphaELU``` |
-|**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELUDer(&fx)```|  ```(fx>0)?LamdaSELU:fx+AlphaSELU*LamdaSELU``` |
+|**5**|```#define SELU```      |<sup><sub>NN.layers-></sub></sup>```SELUDer(&fx)```|  ```(fx>=0)?LamdaSELU:fx+AlphaSELU*LamdaSELU``` |
 |**6**|```#define Softmax```   |<sup><sub>NN.layers-></sub></sup>```SoftmaxDer(&fx)```|  ```fx * (1  - fx)``` |
 |**7**|```#define Identity```  |<sup><sub>NN.layers-></sub></sup>```IdentityDer(&x)```|  ```x``` |
 

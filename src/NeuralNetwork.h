@@ -3434,7 +3434,7 @@ public:
         DFLOAT NeuralNetwork::Layer::ELU       (const DFLOAT &x) { return (x > 0) ? x : AlphaELU  * (exp(x) - 1)       ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
-        DFLOAT NeuralNetwork::Layer::SELU      (const DFLOAT &x) { return (x > 0) ? x : AlphaSELU * (exp(x) - 1)       ;}
+        DFLOAT NeuralNetwork::Layer::SELU      (const DFLOAT &x) { return (x >= 0) ? x * LamdaSELU : LamdaSELU * AlphaSELU * (exp(x) - 1)       ;}
     #endif
     #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
         DFLOAT NeuralNetwork::Layer::SoftmaxSum(const DFLOAT &x) { DFLOAT tmp = exp(x); me->sumOfSoftmax +=tmp; return tmp  ;}
@@ -3463,7 +3463,7 @@ public:
             DFLOAT NeuralNetwork::Layer::ELUDer     (const DFLOAT &fx) { return (fx > 0) ? 1 : fx + AlphaELU                              ;}
         #endif
         #if defined(SELU)
-            DFLOAT NeuralNetwork::Layer::SELUDer    (const DFLOAT &fx) { return (fx > 0) ? LamdaSELU : fx + AlphaSELU * LamdaSELU ;}
+            DFLOAT NeuralNetwork::Layer::SELUDer    (const DFLOAT &fx) { return (fx >= 0) ? LamdaSELU : fx + AlphaSELU * LamdaSELU ;}
         #endif
         
         DFLOAT NeuralNetwork::Layer::SoftmaxDer     (const DFLOAT &fx) { return fx * (1 - fx)                                                 ;} // hmm...?
