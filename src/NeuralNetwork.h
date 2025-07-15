@@ -154,7 +154,7 @@
 #define IS_IN_LAYER_SCOPE
 #define IS_THIS
 
-// Determins whether or not it supports FeedForward_Individual-type functions eg. when USE_GRU_LAYERS_ONLY it #undefs it
+// Determins whether or not it supports FeedForward_Individual-type functions eg. when USE_GRU_LAYERS_ONLY or USE_LSTM_LAYERS_ONLY it #undefs it
 #define SUPPORTS_INDIVIDUAL_FEEDFORWARD
 
 // Optional Bias Macro, inlines/appends x if biases are enabled (not-NO_BIAS), else it does nothing
@@ -417,8 +417,9 @@
 /// Messages
 #define RNN_MSG
 #define GRU_MSG
+#define LSTM_MSG
 
-/// Casting/Converting the Function of NN into Type: ANN RNN GRU etc. when needed (In the case of SimpleRNN it's not necessary since it's merged with ANN's functions-logic)
+/// Casting/Converting the Function of NN into Type: LSTM GRU ANN RNN etc. when needed (In the case of SimpleRNN it's not necessary since it's merged with ANN's functions-logic)
 /// When Blank it default to either ANN or RNN
 #define EXPLICIT_NN_TYPE_ARCHITECTURE
 #define EXPAND_MACRO(x, y) x ## y
@@ -429,11 +430,14 @@
     #undef RNN_MSG
     #define RNN_MSG [𝗥𝗡𝗡]
     #define USE_RNN_LAYERS_ONLY
+    #define HAS_HIDDEN_STATES
     #define NO_BACKPROP
 
 #elif defined(USE_GRU__NB) // (TensorFlow GRU(...reset_after=False)
     #undef GRU_MSG
     #define USE_GRU_LAYERS_ONLY
+    #define HAS_HIDDEN_STATES
+    #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
     // 2025-04-30 02:19:56 PM  TODO: It might be a good idea to have both "single-bias" but also "single-bias-per-gate" (make sure to iterate biasesFromPoint if per-gate)
     // 2025-04-30 02:31:34 PM  NOTE: But make sure to use a selective-OPTIONAL_BIAS type-of macro instead of this #14 | 2025-05-03 03:21:35 AM I guess?
@@ -476,6 +480,53 @@
     #else
         #define GRU_ACTIVATION_FUNCTION Sigmoid
         #define GRU_MSG [𝗚𝗥𝗨]
+    #endif
+
+#elif defined(USE_LSTM__NB)
+    #undef LSTM_MSG
+    #define USE_LSTM_LAYERS_ONLY
+    #define HAS_HIDDEN_STATES
+    #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
+    #define NO_BACKPROP
+    #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) // 2025-05-03 03:16:53 AM  TODO: support
+        #error "As of now LSTM are NOT suported with HillClimb."
+    #endif
+    #if defined(USE_PROGMEM) // 2025-04-08 10:45:18 AM  TODO: USE_PROGMEM support
+        #error "As of now LSTM are NOT suported with (USE_PROGMEM)."
+    #endif
+    #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
+        #error "As of now LSTM are NOT suported with (USE_INTERNAL_EEPROM)."
+    #endif
+    #if defined(USE_EXTERNAL_FRAM) // 2025-04-08 10:45:18 AM  TODO: USE_EXTERNAL_FRAM support
+        #error "As of now LSTM are NOT suported with (USE_EXTERNAL_FRAM)."
+    #endif
+    #if defined(Softmax) // #16
+        #error "There is no Softmax support when you (USE_LSTM_LAYERS_ONLY)"
+    #endif
+    #if defined(SUPPORTS_SD_FUNCTIONALITY) // 2025-05-18 06:36:01 PM  TODO:
+        #undef SUPPORTS_SD_FUNCTIONALITY
+        #undef SD_MIGRATE_MSG
+    #endif
+    #if defined(SUPPORTS_FS_FUNCTIONALITY) // 2025-05-18 06:36:08 PM  TODO:
+        #undef SUPPORTS_FS_FUNCTIONALITY
+    #endif
+    // LSTM doesn't support FeedForward_Individual-type functions yet, therefore we #undef it
+    #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
+    // Defining Explicit type architecture of the NN
+    #undef EXPLICIT_NN_TYPE_ARCHITECTURE
+    #define EXPLICIT_NN_TYPE_ARCHITECTURE LSTM_Only_
+    #if defined(LSTM_ACT) // I may add LSTM_DER (...ivative) when I 'll support backprop
+        #define ID_Softmax 1
+        #define MAP_HELPER(x) ID_ ## x
+        #define INDEX_NN(x) MAP_HELPER(x)
+        #if INDEX_NN(LSTM_ACT) == ID_Softmax // https://stackoverflow.com/a/79556797/11465149
+            #error "(LSTM_ACT) You are not allowed to use Softmax-activation-function for gates."
+        #endif
+        #define LSTM_ACTIVATION_FUNCTION LSTM_ACT
+        #define LSTM_MSG [𝗟𝗦𝗧𝗠.LSTM_ACT]
+    #else
+        #define LSTM_ACTIVATION_FUNCTION Sigmoid
+        #define LSTM_MSG [𝗟𝗦𝗧𝗠]
     #endif
 #endif
 
@@ -971,8 +1022,8 @@
 #if !defined(ACTIVATION)
     #if defined(ACTIVATION__PER_LAYER)
         // ACTIVATE ALL FUNCTIONS
-        #if defined(USE_GRU_LAYERS_ONLY) // #16
-            #error "There's no support for (ALL_ACTIVATION_FUNCTIONS) with GRU since Softmax is not supported. Please explicitly #define any activation-function you want."
+        #if defined(USE_GRU_LAYERS_ONLY) or defined(USE_LSTM_LAYERS_ONLY)// #16
+            #error "There's no support for (ALL_ACTIVATION_FUNCTIONS) with GRU or LSTM, since Softmax is not supported. Please explicitly #define any activation-function you want."
         #endif
         #if !defined(DISABLE_STATIC_FOR_ACTS)
             #undef MSG21
@@ -1036,7 +1087,7 @@
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG GRU_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG GRU_MSG LSTM_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 // i might change static variables to plain variables and just pass a pointer from outer class?
@@ -1087,13 +1138,17 @@ private:
         #endif
         DFLOAT *outputs;                // outputs of this     layer  [1D Array] pointers.
 
-        // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS | I need to also make an optimization for static fixed size gatedOutputs amongs NNs and layers (a bit more manual labor for end-user though). Could be done for outputs too, although it might be a bit more complex
-        // inside NeuralNetwork class? definatelly something like: DFLOAT gatedOutputs[CONST_GATED_SIZE];
-        #if defined(USE_GRU_LAYERS_ONLY)
-            DFLOAT *gatedOutputs; // GRU: (z_t) The Outputs of update-gate at time t & (r_t) The Outputs of reset-gate at time t
+        #if defined(USE_LSTM_LAYERS_ONLY)
+            DFLOAT *cellStates;       // LSTM cell-states of this layer at time t  [1D Array] pointers.
         #endif
 
-        #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+        // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS | I need to also make an optimization for static fixed size gatedOutputs amongs NNs and layers (a bit more manual labor for end-user though). Could be done for outputs too, although it might be a bit more complex
+        // inside NeuralNetwork class? definatelly something like: DFLOAT gatedOutputs[CONST_GATED_SIZE];
+        #if defined(HAS_GATED_OUTPUTS)
+            DFLOAT *gatedOutputs; // GRU: (z_t) The Outputs of update-gate at time t & (r_t) The Outputs of reset-gate at time t || LSTM: Gates [...]
+        #endif
+
+        #if defined(HAS_HIDDEN_STATES)
             DFLOAT *hiddenStates;       // previous timestep's outputs of this layer  [1D Array] pointers.
         #endif
         
@@ -1140,9 +1195,14 @@ private:
             void type_memmory_accumulatedDotProductWithSrc2Address(const DFLOAT *src, DFLOAT *dest, unsigned int len);
         #endif
 
-        #if defined(USE_GRU_LAYERS_ONLY)
+        #if defined(HAS_GATED_OUTPUTS)
             template< typename T > void gateActivationOf(const DFLOAT *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T activate, DFLOAT *_outputs, const unsigned int offset=0);
+        #endif
+        #if defined(USE_GRU_LAYERS_ONLY)
             void GRU_Only_FeedForward(const DFLOAT *inputs);
+        #endif
+        #if defined(USE_LSTM_LAYERS_ONLY)
+            void LSTM_Only_FeedForward(const DFLOAT *inputs);
         #endif
 
         void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
@@ -1214,7 +1274,7 @@ private:
         
 
         // Print related functions
-        #if defined(USE_GRU_LAYERS_ONLY)
+        #if defined(USE_GRU_LAYERS_ONLY) or defined(USE_LSTM_LAYERS_ONLY)
             void printGateWeights(const IDFLOAT *w, const unsigned int len);
             void gatePrint(const unsigned int offset OPTIONAL_MULTI_BIAS(const IDFLOAT *b));
         #endif
@@ -1478,11 +1538,15 @@ public:
                         break;
                     }
 
-                    #if defined(USE_GRU_LAYERS_ONLY) // NOTE: SEE SPECIAL CASE
+                    #if defined(USE_LSTM_LAYERS_ONLY) // NOTE: SEE SPECIAL CASE
+                        delete[] layers[i].cellStates;
+                    #endif
+
+                    #if defined(HAS_GATED_OUTPUTS) // NOTE: SEE SPECIAL CASE
                         delete[] layers[i].gatedOutputs; // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     #endif
 
-                    #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY) // NOTE: SEE SPECIAL CASE
+                    #if defined(HAS_HIDDEN_STATES) // NOTE: SEE SPECIAL CASE
                         delete[] layers[i].hiddenStates;
                     #endif
 
@@ -1500,19 +1564,25 @@ public:
                 #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                     for (unsigned int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                         delete[] layers[i].outputs;
-                        #if defined(USE_GRU_LAYERS_ONLY)
+                        #if defined(USE_LSTM_LAYERS_ONLY)
+                            delete[] layers[i].cellStates;
+                        #endif
+                        #if defined(HAS_GATED_OUTPUTS)
                             delete[] layers[i].gatedOutputs; // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                         #endif
-                        #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+                        #if defined(HAS_HIDDEN_STATES)
                             delete[] layers[i].hiddenStates;
                         #endif
                     }
 
                     //NOTE: SEE SPECIAL CASE
 
-                #elif defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+                #elif defined(HAS_HIDDEN_STATES)
                     for (unsigned int i = 0; i < numberOflayers; i++){
-                        #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                        #if defined(USE_LSTM_LAYERS_ONLY)
+                            delete[] layers[i].cellStates;
+                        #endif
+                        #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                             delete[] layers[i].gatedOutputs;
                         #endif
                         delete[] layers[i].hiddenStates;
@@ -1522,10 +1592,13 @@ public:
         #elif !defined(REDUCE_RAM_DELETE_OUTPUTS)
             for (unsigned int i = 0; i < numberOflayers -1; i++){ // -1 because we need final-outputs to be managed by user.
                 delete[] layers[i].outputs;
-                #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    delete[] layers[i].cellStates;
+                #endif
+                #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     delete[] layers[i].gatedOutputs;
                 #endif
-                #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+                #if defined(HAS_HIDDEN_STATES)
                     delete[] layers[i].hiddenStates;
                 #endif
             }
@@ -1533,9 +1606,12 @@ public:
             //NOTE: SPECIAL CASE
             #define SPECIAL_CASE_DESTRUCTION
 
-        #elif defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+        #elif defined(HAS_HIDDEN_STATES)
             for (unsigned int i = 0; i < numberOflayers; i++){
-                #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    delete[] layers[i].cellStates;
+                #endif
+                #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     delete[] layers[i].gatedOutputs;
                 #endif
                 delete[] layers[i].hiddenStates;
@@ -1550,8 +1626,11 @@ public:
 
         if (numberOflayers !=0){
             //NOTE: SPECIAL CASE
-            #if (defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)) && defined(SPECIAL_CASE_DESTRUCTION)
-                #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_HIDDEN_STATES) && defined(SPECIAL_CASE_DESTRUCTION)
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    delete[] layers[numberOflayers -1].cellStates;
+                #endif
+                #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     delete[] layers[numberOflayers -1].gatedOutputs;
                 #endif
                 delete[] layers[numberOflayers -1].hiddenStates;
@@ -1609,7 +1688,9 @@ public:
                     layers[i] = Layer(layer_[i], layer_[i + 1], &default_Weights[weightsFromPoint], &default_Bias[i],this);
                 #endif
 
-                #if defined(USE_GRU_LAYERS_ONLY)
+                #if defined(USE_LSTM_LAYERS_ONLY) 
+                    weightsFromPoint += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 4; // 4 = Forget Update Output CellState
+                #elif defined(USE_GRU_LAYERS_ONLY)
                     weightsFromPoint += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 3; // 3 = Reset Hidden Update
                 #elif defined(USE_RNN_LAYERS_ONLY)
                     weightsFromPoint += layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1]);
@@ -1618,7 +1699,9 @@ public:
                 #endif
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
-                #if defined(USE_GRU_LAYERS_ONLY)
+                #if defined(USE_LSTM_LAYERS_ONLY) 
+                    biasesFromPoint += layer_[i + 1] * 4; // 4 gates * Units\layer_[i] = Forget Update Output CellState
+                #elif defined(USE_GRU_LAYERS_ONLY)
                     biasesFromPoint += layer_[i + 1] * 3; // 3 gates * Units\layer_[i] | (TensorFlow GRU(...reset_after=False)) if True then this should be: 3 gates * Units * 2 bias_vectors)
                 #else
                     biasesFromPoint += layer_[i + 1];
@@ -1667,7 +1750,9 @@ public:
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
                 for (unsigned int i = 0; i < numberOflayers; i++)
-                    #if defined(USE_GRU_LAYERS_ONLY)
+                    #if defined(USE_LSTM_LAYERS_ONLY) 
+                        i_j += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 4; // 4 = Forget Update Output CellState
+                    #elif defined(USE_GRU_LAYERS_ONLY)
                         i_j += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 3; // 3 = Reset Hidden Update 
                     #elif defined(USE_RNN_LAYERS_ONLY)
                         i_j += layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1]);
@@ -1769,7 +1854,7 @@ public:
             #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
                 me = this;
             #endif
-            //NOTE: When/if GRU gets supported, don't forget to add FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE,...
+            //NOTE: When/if GRU or LSTM gets supported, don't forget to add FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE,...
             #if defined(USE_PROGMEM)
                 layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
             #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
@@ -2707,12 +2792,16 @@ public:
                 outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
             #endif
 
-            #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                 gatedOutputs = new DFLOAT[_numberOfOutputs];
             #endif
 
-            #if defined(USE_GRU_LAYERS_ONLY) || defined(USE_RNN_LAYERS_ONLY)
+            #if defined(HAS_HIDDEN_STATES)
                 hiddenStates = new DFLOAT[_numberOfOutputs]; 
+            #endif
+
+            #if defined(USE_LSTM_LAYERS_ONLY)
+                cellStates = new DFLOAT[_numberOfOutputs];
             #endif
 
             #if !defined(NO_BIAS) // TODO: REDUCE_RAM_BIASES "common reference"
@@ -2721,10 +2810,15 @@ public:
             weights = new IS_CONST IDFLOAT *[_numberOfOutputs]; //      ##1    New Array of Pointers to (IDFLOAT) weights.
 
             for (unsigned int i = 0; i < _numberOfOutputs; i++){              // [matrix] (_numberOfOutputs * _numberOfInputs)
-                #if defined(USE_GRU_LAYERS_ONLY) || defined(USE_RNN_LAYERS_ONLY)
+                #if defined(HAS_HIDDEN_STATES)
                     hiddenStates[i] = 0;
                 #endif
-                #if defined(USE_GRU_LAYERS_ONLY) 
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    cellStates[i] = 0;
+                #endif
+                #if defined(USE_LSTM_LAYERS_ONLY) 
+                    weights[i] = &default_Weights[i * ((_numberOfInputs + _numberOfOutputs) * 4)]; // Passing Default weights to ##1 weights by reference.  
+                #elif defined(USE_GRU_LAYERS_ONLY) 
                     weights[i] = &default_Weights[i * ((_numberOfInputs + _numberOfOutputs) * 3)]; // Passing Default weights to ##1 weights by reference.  
                 #elif defined(USE_RNN_LAYERS_ONLY)
                     weights[i] = &default_Weights[i * (_numberOfInputs + _numberOfOutputs)]; // Passing Default weights to ##1 weights by reference.  
@@ -2753,12 +2847,16 @@ public:
             outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
         #endif
 
-        #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+        #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
             gatedOutputs = new DFLOAT[_numberOfOutputs];
         #endif
 
-        #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+        #if defined(HAS_HIDDEN_STATES)
             hiddenStates = new DFLOAT[_numberOfOutputs]{}; 
+        #endif
+
+        #if defined(USE_LSTM_LAYERS_ONLY)
+            cellStates = new DFLOAT[_numberOfOutputs]{};
         #endif
         
         #if !defined(NO_BIAS)
@@ -2780,22 +2878,27 @@ public:
             #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];                     // ##1    New Array of Outputs.
             #endif 
-            #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_GATED_OUTPUTS)  // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                 gatedOutputs = new DFLOAT[_numberOfOutputs];
             #endif
-            #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+            #if defined(HAS_HIDDEN_STATES)
                 hiddenStates = new DFLOAT[_numberOfOutputs]; 
+            #endif
+            #if defined(USE_LSTM_LAYERS_ONLY)
+                cellStates = new DFLOAT[_numberOfOutputs];
             #endif
             #if !defined(REDUCE_RAM_WEIGHTS_COMMON)      
                 weights = new IDFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (IDFLOAT) weights.
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                #if defined(USE_GRU_LAYERS_ONLY)
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    bias = new IDFLOAT[_numberOfOutputs*4];                 // ##1    New LSTM     Biases
+                #elif defined(USE_GRU_LAYERS_ONLY)
                     bias = new IDFLOAT[_numberOfOutputs*3];                 // ##1    New GRU      Biases
                 #else         
                     bias = new IDFLOAT[_numberOfOutputs];                   // ##1    New          Biases
                 #endif         
-            #elif !defined(NO_BIAS) // TODO: Investigate if with GRU anything changes
+            #elif !defined(NO_BIAS) // TODO: Investigate if with GRU or LSTM anything changes
                 bias = new IDFLOAT;                                         // ##1    New          Bias   .
                 *bias = 1.0; // SuS cause IDFLOAT
             #endif
@@ -2803,7 +2906,9 @@ public:
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-                    #if defined(USE_GRU_LAYERS_ONLY)
+                    #if defined(USE_LSTM_LAYERS_ONLY)
+                        weights[i] = new IDFLOAT[(_numberOfInputs + _numberOfOutputs) * 4];
+                    #elif defined(USE_GRU_LAYERS_ONLY)
                         weights[i] = new IDFLOAT[(_numberOfInputs + _numberOfOutputs) * 3];
                     #elif defined(USE_RNN_LAYERS_ONLY)
                         weights[i] = new IDFLOAT[_numberOfInputs + _numberOfOutputs];
@@ -2812,12 +2917,18 @@ public:
                     #endif
                 #endif
 
-                #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+                #if defined(HAS_HIDDEN_STATES)
                     hiddenStates[i] = 0;
+                #endif
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    cellStates[i] = 0;
                 #endif
 
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                    #if defined(USE_GRU_LAYERS_ONLY)
+                    #if defined(USE_LSTM_LAYERS_ONLY)
+                        for (unsigned int j = i * 4; j < (i + 1) * 4; ++j) // Meh... It may not be the fastest/energy-efficient but I think it's fine since it is just initialization and as of 2025-05-23 03:23:35 PM Backpop is not implemented yet
+                            bias[j] = (IDFLOAT)random(-90000, 90000) / 100000;
+                    #elif defined(USE_GRU_LAYERS_ONLY)
                         for (unsigned int j = i * 3; j < (i + 1) * 3; ++j) // Meh... It may not be the fastest/energy-efficient but I think it's fine since it is just initialization and as of 2025-04-06 09:20:50 PM Backpop is not implemented yet
                             bias[j] = (IDFLOAT)random(-90000, 90000) / 100000;
                     #else
@@ -2825,7 +2936,9 @@ public:
                     #endif
                 #endif
                 
-                #if defined(USE_GRU_LAYERS_ONLY)
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    for (unsigned int j = 0; j < ((_numberOfInputs + _numberOfOutputs)*4); j++)
+                #elif defined(USE_GRU_LAYERS_ONLY)
                     for (unsigned int j = 0; j < ((_numberOfInputs + _numberOfOutputs)*3); j++)
                 #elif defined(USE_RNN_LAYERS_ONLY)
                     for (unsigned int j = 0; j < (_numberOfInputs + _numberOfOutputs); j++)
@@ -2857,12 +2970,16 @@ public:
                 outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
             #endif
 
-            #if defined(USE_GRU_LAYERS_ONLY) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                 gatedOutputs = new DFLOAT[_numberOfOutputs];
             #endif
 
-            #if defined(USE_RNN_LAYERS_ONLY) || defined(USE_GRU_LAYERS_ONLY)
+            #if defined(HAS_HIDDEN_STATES)
                 hiddenStates = new DFLOAT[_numberOfOutputs]{}; 
+            #endif
+
+            #if defined(USE_LSTM_LAYERS_ONLY)
+                cellStates = new DFLOAT[_numberOfOutputs]{};
             #endif
         }
     #endif
@@ -3335,7 +3452,9 @@ public:
         } 
 
 
-        #if defined(USE_GRU_LAYERS_ONLY)
+
+        // TODO: (for both GRU & LSTM) when their recurrent-activation-function and their activation-function is the same, then remove T activate and replace activate with the macro ACTIVATION_FUNCTION
+        #if defined(HAS_GATED_OUTPUTS)
             // gateAccumulatedDotProductWithActivationAndBiases 
             //  NOTE: Don't worry about offset=0, as far as I tested, it gets optimised for REDUCE_RAM_WEIGHTS_LVL2 via the compilation since it never gets used
             template< typename T >
@@ -3361,8 +3480,10 @@ public:
                     _outputs[i] = activate(_outputs[i]);
                 }
             }
+        #endif
 
 
+        #if defined(USE_GRU_LAYERS_ONLY)
             void NeuralNetwork::Layer::GRU_Only_FeedForward(const DFLOAT *inputs)
             {
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
@@ -3394,6 +3515,49 @@ public:
                 }
 
                 // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS
+            }
+        #endif
+
+
+        #if defined(USE_LSTM_LAYERS_ONLY)
+            void NeuralNetwork::Layer::LSTM_Only_FeedForward(const DFLOAT *inputs)
+            {
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    outputs = new DFLOAT[_numberOfOutputs];
+                #endif
+                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs]; ...
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
+
+                for (unsigned int i=0; i < _numberOfOutputs; i++) // c_t = f_t * c_t-1 ... | Could be SIMD?
+                    cellStates[i] *= gatedOutputs[i];
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs]), LSTM_ACTIVATION_FUNCTION, gatedOutputs, (_numberOfInputs+_numberOfOutputs)); // u_t (Update-Gate at time t) #14
+
+                // CellState-Gate
+                #if defined(ACTIVATION__PER_LAYER)
+                    gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2]), (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]]), outputs, (_numberOfInputs+_numberOfOutputs)*2); // #14
+                #else
+                    gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2]), ACTIVATION_FUNCTION, outputs, (_numberOfInputs+_numberOfOutputs)*2); // #14
+                #endif
+
+                for (unsigned int i=0; i < _numberOfOutputs; i++) // ... + u_t * CellStateGate_t
+                    cellStates[i] += gatedOutputs[i] * outputs[i];
+
+
+                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS | Since we don't need it anymore
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*3]), LSTM_ACTIVATION_FUNCTION, outputs, (_numberOfInputs+_numberOfOutputs)*3); // o_t (Output-Gate at time t) #14
+
+                for (unsigned int i=0; i < _numberOfOutputs; i++){
+                    #if defined(ACTIVATION__PER_LAYER)
+                        outputs[i] *= (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(cellStates[i]);
+                    #else
+                        outputs[i] *= ACTIVATION_FUNCTION(cellStates[i]);
+                    #endif
+                    hiddenStates[i] = outputs[i];
+                }
+
             }
         #endif
     #endif
@@ -3681,215 +3845,254 @@ public:
                 }
                 Serial.println(F_MACRO("----------------------"));
             }
-        #elif defined(USE_GRU_LAYERS_ONLY)
+        #else
+            #if defined(USE_GRU_LAYERS_ONLY) || defined(USE_LSTM_LAYERS_ONLY)
 
-            void NeuralNetwork::Layer::printGateWeights(const IDFLOAT *w, const unsigned int len)
-            {
-                for (unsigned int i = 0; i < len; i++){
-                    Serial.print(F_MACRO(" W:"));
-                    if (w[i] > 0) Serial.print(F_MACRO(" "));
-                    Serial.print(w[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                }
-                Serial.println();
-
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    me->i_j += len;
-                #endif
-            }
-
-
-            void NeuralNetwork::Layer::gatePrint(const unsigned int offset OPTIONAL_MULTI_BIAS(const IDFLOAT *b))
-            {
-                for (unsigned int i = 0; i < _numberOfOutputs; i++){
-                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                        Serial.print(F_MACRO("   B:"));
-                        Serial.println(b[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    #endif
+                void NeuralNetwork::Layer::printGateWeights(const IDFLOAT *w, const unsigned int len)
+                {
+                    for (unsigned int i = 0; i < len; i++){
+                        Serial.print(F_MACRO(" W:"));
+                        if (w[i] > 0) Serial.print(F_MACRO(" "));
+                        Serial.print(w[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    }
+                    Serial.println();
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        Serial.print(i+1); Serial.print(" "); printGateWeights(&me->weights[me->i_j], _numberOfInputs);
-                        Serial.print(i+1); Serial.print(" "); printGateWeights(&me->weights[me->i_j], _numberOfOutputs); 
-                    #else
-                        Serial.print(i+1); Serial.print(" "); printGateWeights(&weights[i][offset], _numberOfInputs);
-                        Serial.print(i+1); Serial.print(" "); printGateWeights(&weights[i][offset + _numberOfInputs], _numberOfOutputs);
+                        me->i_j += len;
                     #endif
                 }
-            }
 
 
-            void NeuralNetwork::Layer::GRU_Only_print()
-            { 
-                #if defined(USE_INT_QUANTIZATION)
-                    Serial.print(F_MACRO("INT_Q "));
-                #endif
-                Serial.print(F_MACRO("GRU ((("));
-                Serial.print(_numberOfInputs);
-                Serial.print(F_MACRO("x"));
-                Serial.print(_numberOfOutputs);
-                Serial.print(F_MACRO(")+("));
-                Serial.print(_numberOfOutputs);
-                Serial.print(F_MACRO("x"));
-                Serial.print(_numberOfOutputs);
-                Serial.print(F_MACRO("))x3) "));
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    Serial.print(F_MACRO("| bias:"));
-                    Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                #endif
-                #if defined(ACTIVATION__PER_LAYER)
-                    Serial.print(F_MACRO("| F(x):"));
-                    Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-                #endif
-                Serial.println();
-
-                Serial.println(F_MACRO("- RESET -" )); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
-                Serial.println(F_MACRO("- HIDDEN -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
-                Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2])); // #14
-
-                Serial.println();
-                Serial.println(F_MACRO("----------------------"));
-            }
-        #else
-            void NeuralNetwork::Layer::print()
-            { 
-                #if defined(USE_INT_QUANTIZATION)
-                    Serial.print(F_MACRO("INT_Q "));
-                #endif
-                #if defined(USE_RNN_LAYERS_ONLY)
-                    Serial.print(F_MACRO("RNN "));
-                #endif
-                Serial.print(_numberOfInputs);
-                Serial.print(F_MACRO("x"));
-                Serial.print(_numberOfOutputs);
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    Serial.print(F_MACRO("| bias:"));
-                    Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                #endif
-                #if defined(ACTIVATION__PER_LAYER)
-                    Serial.print(F_MACRO("| F(x):"));
-                    Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-                #endif
-                Serial.println();
-
-                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                void NeuralNetwork::Layer::gatePrint(const unsigned int offset OPTIONAL_MULTI_BIAS(const IDFLOAT *b))
                 {
-                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                        Serial.print(F_MACRO("   B:"));
-                        Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    #endif
-
-                    Serial.print(i + 1);
-                    Serial.print(F_MACRO(" "));
-                    for (unsigned int j = 0; j < _numberOfInputs; j++)
-                    {
-                        Serial.print(F_MACRO(" W:"));
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
-                            Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                        #else
-                            if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
-                            Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++){
+                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                            Serial.print(F_MACRO("   B:"));
+                            Serial.println(b[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
-                        Serial.print(F_MACRO(" "));
+
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            Serial.print(i+1); Serial.print(" "); printGateWeights(&me->weights[me->i_j], _numberOfInputs);
+                            Serial.print(i+1); Serial.print(" "); printGateWeights(&me->weights[me->i_j], _numberOfOutputs); 
+                        #else
+                            Serial.print(i+1); Serial.print(" "); printGateWeights(&weights[i][offset], _numberOfInputs);
+                            Serial.print(i+1); Serial.print(" "); printGateWeights(&weights[i][offset + _numberOfInputs], _numberOfOutputs);
+                        #endif
                     }
+                }
+            #endif
+
+
+            #if defined(USE_GRU_LAYERS_ONLY)
+                void NeuralNetwork::Layer::GRU_Only_print()
+                { 
+                    #if defined(USE_INT_QUANTIZATION)
+                        Serial.print(F_MACRO("INT_Q "));
+                    #endif
+                    Serial.print(F_MACRO("GRU ((("));
+                    Serial.print(_numberOfInputs);
+                    Serial.print(F_MACRO("x"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO(")+("));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("x"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("))x3) "));
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        Serial.print(F_MACRO("| bias:"));
+                        Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    #if defined(ACTIVATION__PER_LAYER)
+                        Serial.print(F_MACRO("| F(x):"));
+                        Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                    #endif
                     Serial.println();
 
+                    Serial.println(F_MACRO("- RESET -" )); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
+                    Serial.println(F_MACRO("- HIDDEN -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
+                    Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2])); // #14
+
+                    Serial.println();
+                    Serial.println(F_MACRO("----------------------"));
+                }
+
+            #elif defined(USE_LSTM_LAYERS_ONLY)
+                void NeuralNetwork::Layer::LSTM_Only_print()
+                { 
+                    #if defined(USE_INT_QUANTIZATION)
+                        Serial.print(F_MACRO("INT_Q "));
+                    #endif
+                    Serial.print(F_MACRO("LSTM ((("));
+                    Serial.print(_numberOfInputs);
+                    Serial.print(F_MACRO("x"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO(")+("));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("x"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("))x4) "));
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        Serial.print(F_MACRO("| bias:"));
+                        Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    #if defined(ACTIVATION__PER_LAYER)
+                        Serial.print(F_MACRO("| F(x):"));
+                        Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                    #endif
+                    Serial.println();
+
+                    Serial.println(F_MACRO("- FORGET -")); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
+                    Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
+                    Serial.println(F_MACRO("- CELL -"  )); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2]));
+                    Serial.println(F_MACRO("- OUTPUT -")); gatePrint((_numberOfInputs+_numberOfOutputs)*3 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*3])); // #14
+
+                    Serial.println();
+                    Serial.println(F_MACRO("----------------------"));
+                }
+
+            #else
+                void NeuralNetwork::Layer::print()
+                { 
+                    #if defined(USE_INT_QUANTIZATION)
+                        Serial.print(F_MACRO("INT_Q "));
+                    #endif
                     #if defined(USE_RNN_LAYERS_ONLY)
-                        Serial.print(F_MACRO("  "));
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            for (unsigned int j = 0; j < _numberOfOutputs; j++)
-                            {
-                                Serial.print(F_MACRO(" U:"));
+                        Serial.print(F_MACRO("RNN "));
+                    #endif
+                    Serial.print(_numberOfInputs);
+                    Serial.print(F_MACRO("x"));
+                    Serial.print(_numberOfOutputs);
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        Serial.print(F_MACRO("| bias:"));
+                        Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    #if defined(ACTIVATION__PER_LAYER)
+                        Serial.print(F_MACRO("| F(x):"));
+                        Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                    #endif
+                    Serial.println();
+
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                    {
+                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                            Serial.print(F_MACRO("   B:"));
+                            Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+
+                        Serial.print(i + 1);
+                        Serial.print(F_MACRO(" "));
+                        for (unsigned int j = 0; j < _numberOfInputs; j++)
+                        {
+                            Serial.print(F_MACRO(" W:"));
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                 if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
                                 Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
-                            }
-                        #else
-                            for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
-                            {
-                                Serial.print(F_MACRO(" U:"));
+                            #else
                                 if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
                                 Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
-                            }
-                        #endif
+                            #endif
+                            Serial.print(F_MACRO(" "));
+                        }
                         Serial.println();
-                    #endif
-                }
-                Serial.println(F_MACRO("----------------------"));
 
-            }
-
-            void NeuralNetwork::Layer::print_PROGMEM()
-            {
-                #if defined(USE_INT_QUANTIZATION)
-                    Serial.print(F_MACRO("INT_Q PROGMEM "));
-                #else
-                    Serial.print(F_MACRO("PROGMEM "));
-                #endif
-                #if defined(USE_RNN_LAYERS_ONLY)
-                    Serial.print(F_MACRO("RNN "));
-                #endif
-                Serial.print(_numberOfInputs);
-                Serial.print(F_MACRO("x"));
-                Serial.print(_numberOfOutputs);
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    Serial.print(F_MACRO("| bias:"));
-                    Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                #endif
-                #if defined(ACTIVATION__PER_LAYER)
-                    Serial.print(F_MACRO("| F(x):"));
-                    Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-                #endif
-                Serial.println();
-
-                for (unsigned int i = 0; i < _numberOfOutputs; i++)
-                {
-                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                        Serial.print(F_MACRO("   B:"));
-                        Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    #endif
-
-                    Serial.print(i + 1);
-                    Serial.print(" ");
-                    for (unsigned int j = 0; j < _numberOfInputs; j++)
-                    {
-                        //weights[i][j] = (DFLOAT)j;
-                        Serial.print(F_MACRO(" W:"));
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                            Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                        #else
-                            if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                            Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            Serial.print(F_MACRO("  "));
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                                {
+                                    Serial.print(F_MACRO(" U:"));
+                                    if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
+                                    Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                    Serial.print(F_MACRO(" "));
+                                }
+                            #else
+                                for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
+                                {
+                                    Serial.print(F_MACRO(" U:"));
+                                    if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
+                                    Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                    Serial.print(F_MACRO(" "));
+                                }
+                            #endif
+                            Serial.println();
                         #endif
-                        Serial.print(F_MACRO(" "));
                     }
+                    Serial.println(F_MACRO("----------------------"));
+
+                }
+
+                void NeuralNetwork::Layer::print_PROGMEM()
+                {
+                    #if defined(USE_INT_QUANTIZATION)
+                        Serial.print(F_MACRO("INT_Q PROGMEM "));
+                    #else
+                        Serial.print(F_MACRO("PROGMEM "));
+                    #endif
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        Serial.print(F_MACRO("RNN "));
+                    #endif
+                    Serial.print(_numberOfInputs);
+                    Serial.print(F_MACRO("x"));
+                    Serial.print(_numberOfOutputs);
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        Serial.print(F_MACRO("| bias:"));
+                        Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    #if defined(ACTIVATION__PER_LAYER)
+                        Serial.print(F_MACRO("| F(x):"));
+                        Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                    #endif
                     Serial.println();
 
-                    #if defined(USE_RNN_LAYERS_ONLY)
-                        Serial.print(F_MACRO("  "));
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            for (unsigned int j = 0; j < _numberOfOutputs; j++)
-                            {
-                                Serial.print(F_MACRO(" U:"));
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                    {
+                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                            Serial.print(F_MACRO("   B:"));
+                            Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+
+                        Serial.print(i + 1);
+                        Serial.print(" ");
+                        for (unsigned int j = 0; j < _numberOfInputs; j++)
+                        {
+                            //weights[i][j] = (DFLOAT)j;
+                            Serial.print(F_MACRO(" W:"));
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                 if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
                                 Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
-                            }
-                        #else
-                            for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
-                            {
-                                Serial.print(F_MACRO(" U:"));
+                            #else
                                 if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
                                 Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
-                            }
-                        #endif
+                            #endif
+                            Serial.print(F_MACRO(" "));
+                        }
                         Serial.println();
-                    #endif
+
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            Serial.print(F_MACRO("  "));
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                                {
+                                    Serial.print(F_MACRO(" U:"));
+                                    if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                                    Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                    Serial.print(F_MACRO(" "));
+                                }
+                            #else
+                                for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
+                                {
+                                    Serial.print(F_MACRO(" U:"));
+                                    if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
+                                    Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                    Serial.print(F_MACRO(" "));
+                                }
+                            #endif
+                            Serial.println();
+                        #endif
+                    }
+                    Serial.println(F_MACRO("----------------------"));
                 }
-                Serial.println(F_MACRO("----------------------"));
-            }
+            #endif
         #endif
     #endif
 
