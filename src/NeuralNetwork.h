@@ -1192,7 +1192,7 @@ private:
         void accumulatedDotProduct        (const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
         void PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-            void type_memmory_accumulatedDotProductWithSrc2Address(const DFLOAT *src, DFLOAT *dest, unsigned int len);
+            void type_memmory_accumulatedDotProduct(const DFLOAT *src, DFLOAT *dest, unsigned int len); // WithSrc2Address
         #endif
 
         #if defined(HAS_GATED_OUTPUTS)
@@ -3145,7 +3145,7 @@ public:
 
 
     #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-        void NeuralNetwork::Layer::type_memmory_accumulatedDotProductWithSrc2Address(const DFLOAT *src, DFLOAT *dest, unsigned int len)
+        void NeuralNetwork::Layer::type_memmory_accumulatedDotProduct(const DFLOAT *src, DFLOAT *dest, unsigned int len) // WithSrc2Address
         {
             for (unsigned int i = 0; i < len; i++)
                 *dest += src[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
@@ -3210,7 +3210,7 @@ public:
                     // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
                     if (j == _numberOfInputs -1){
                         #if defined(USE_RNN_LAYERS_ONLY)
-                            type_memmory_accumulatedDotProductWithSrc2Address(hiddenStates, &outputs[i], _numberOfOutputs);
+                            type_memmory_accumulatedDotProduct(hiddenStates, &outputs[i], _numberOfOutputs); // WithSrc2Address
                         #endif
                         #if defined(ACTIVATION__PER_LAYER)
                             outputs[i] = (IS_THIS(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
@@ -3279,8 +3279,8 @@ public:
                 #endif
 
                 #if defined(USE_RNN_LAYERS_ONLY)
-                    type_memmory_accumulatedDotProductWithSrc2Address(inputs, &outputs[i], _numberOfInputs);
-                    type_memmory_accumulatedDotProductWithSrc2Address(hiddenStates, &outputs[i], _numberOfOutputs);
+                    type_memmory_accumulatedDotProduct(inputs, &outputs[i], _numberOfInputs); // WithSrc2Address
+                    type_memmory_accumulatedDotProduct(hiddenStates, &outputs[i], _numberOfOutputs); // WithSrc2Address
                 #else // if simple ANN-MLP
                     for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
                         outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
