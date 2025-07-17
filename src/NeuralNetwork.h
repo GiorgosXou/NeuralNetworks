@@ -1206,7 +1206,7 @@ private:
         #endif
 
         void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
-        void FdF_PROGMEM(const DFLOAT *inputs);
+        void PROGMEM_FeedForward(const DFLOAT *inputs);
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             void type_memmory_FeedForward(const DFLOAT *inputs);
         #endif
@@ -1883,7 +1883,7 @@ public:
                         AtlayerIndex = i;
                     #endif  
                     #if defined(USE_PROGMEM)
-                        layers[i].FdF_PROGMEM(layers[i - 1].outputs);
+                        layers[i].PROGMEM_FeedForward(layers[i - 1].outputs);
                     #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM) 
                         layers[i].type_memmory_FeedForward(layers[i - 1].outputs);
                     #else
@@ -1932,7 +1932,7 @@ public:
         #endif
 
         #if defined(USE_PROGMEM)
-            layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, FdF_PROGMEM)(inputs);
+            layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, PROGMEM_FeedForward)(inputs);
         #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             unsigned int tmp_addr = address;
             layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, type_memmory_FeedForward)(inputs);
@@ -1948,7 +1948,7 @@ public:
             #endif  
 
             #if defined(USE_PROGMEM)
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, FdF_PROGMEM)(layers[i - 1].outputs);
+                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, PROGMEM_FeedForward)(layers[i - 1].outputs);
             #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, type_memmory_FeedForward)(layers[i - 1].outputs);
             #else
@@ -3336,7 +3336,7 @@ public:
         }
 
 
-        void NeuralNetwork::Layer::FdF_PROGMEM(const DFLOAT *inputs) //*
+        void NeuralNetwork::Layer::PROGMEM_FeedForward(const DFLOAT *inputs) //*
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];
