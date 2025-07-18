@@ -2645,7 +2645,7 @@ public:
                 AtlayerIndex = i;
             #endif  
             #if defined(USE_PROGMEM)
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, print_PROGMEM)();
+                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, PROGMEM_print)();
             #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, type_memmory_print)();
             #else
@@ -4021,7 +4021,7 @@ public:
 
                 }
 
-                void NeuralNetwork::Layer::print_PROGMEM()
+                void NeuralNetwork::Layer::PROGMEM_print()
                 {
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q PROGMEM "));
