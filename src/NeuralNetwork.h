@@ -3425,7 +3425,7 @@ public:
                 #endif
                 
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]); //if softmax then calls the SoftmaxSum | TODO: 2025-07-21 04:14:34 PM  Activation function could be in an `auto` variable outside the loop instead
                 #elif defined(Softmax)
                     outputs[i] = exp(outputs[i]);
                     me->sumOfSoftmax += outputs[i];
