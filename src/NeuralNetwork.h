@@ -226,6 +226,10 @@
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111110) == 0B11111111)
+        #include <float.h>
+        #if (DBL_MANT_DIG == FLT_MANT_DIG) // https://stackoverflow.com/questions/8751109
+            #error "Your MCU doesn't support 64bit/8byte double-precision !!! | (DBL_MANT_DIG == FLT_MANT_DIG)"
+        #endif
         #undef ATOL 
         #undef LLONG 
         #undef DFLOAT_LEN 
@@ -245,7 +249,7 @@
         }
 
         #undef MSG7
-        #define MSG7 \n- " [1] 0B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Not all MCUs support 64bit\8byte double (USE_64_BIT_DOUBLE)."
+        #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using 64bit\8byte double-precision (USE_64_BIT_DOUBLE)."
     #endif
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
