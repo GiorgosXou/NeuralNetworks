@@ -162,6 +162,9 @@
 // Optional Bias Macro, inlines/appends x if multiple biases are enabled (MULTIPLE_BIASES_PER_LAYER)
 #define OPTIONAL_MULTI_BIAS(x)
 
+// Determins the type of memmory on which the NN is running eg. RAM, EEPROM, PROGMEM, FRAM
+#define TYPE_MEMMORY_SUBSTRATE
+
 #define ATOL atol
 #define LLONG long
 #define DFLOAT float
@@ -173,6 +176,8 @@
         #if defined(ESP32)
             #error "[1] 0B10000000 USE_PROGMEM on ESP32 is emulated, therefore it's not really supported."
         #endif
+        #undef TYPE_MEMMORY_SUBSTRATE
+        #define TYPE_MEMMORY_SUBSTRATE PROGMEM_
         #define USE_PROGMEM
         #define NO_BACKPROP
         #undef IS_CONST
@@ -265,6 +270,8 @@
             #include <EEPROM.h>
             #define INCLUDES_EEPROM_H
         #endif
+        #undef TYPE_MEMMORY_SUBSTRATE
+        #define TYPE_MEMMORY_SUBSTRATE type_memmory_
     #endif
 
     #if ((_2_OPTIMIZE bitor 0B10111111) == 0B11111111)
@@ -369,6 +376,8 @@
         //     #include "FRAM.h"
         // #endif
         // no need for #define INCLUDES_FRAM_H
+        #undef TYPE_MEMMORY_SUBSTRATE
+        #define TYPE_MEMMORY_SUBSTRATE type_memmory_
     #endif
 
     #if ((_3_OPTIMIZE bitor 0B10111111) == 0B11111111)
@@ -421,9 +430,9 @@
 
 /// Casting/Converting the Function of NN into Type: LSTM GRU ANN RNN etc. when needed (In the case of SimpleRNN it's not necessary since it's merged with ANN's functions-logic)
 /// When Blank it default to either ANN or RNN
-#define EXPLICIT_NN_TYPE_ARCHITECTURE
-#define EXPAND_MACRO(x, y) x ## y
-#define FUNCTION_OF(nn_type, nn_function) EXPAND_MACRO(nn_type, nn_function)
+#define NN_TYPE_ARCHITECTURE
+#define EXPAND_MACRO(x, y, z) x ## y ## z
+#define FUNCTION_OF(nn_type, nn_mem_substrate, nn_function) EXPAND_MACRO(nn_type, nn_mem_substrate, nn_function)
 
 /// USE_RNN_LAYERS_ONLY && NO_BACKPROP
 #if defined(USE_RNN__NB)
@@ -466,8 +475,8 @@
     // GRU doesn't support FeedForward_Individual-type functions yet, therefore we #undef it
     #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
     // Defining Explicit type architecture of the NN
-    #undef EXPLICIT_NN_TYPE_ARCHITECTURE
-    #define EXPLICIT_NN_TYPE_ARCHITECTURE GRU_Only_
+    #undef NN_TYPE_ARCHITECTURE
+    #define NN_TYPE_ARCHITECTURE GRU_Only_
     #if defined(GRU_ACT) // I may add GRU_DER (...ivative) when I 'll support backprop
         #define ID_Softmax 1
         #define MAP_HELPER(x) ID_ ## x
@@ -513,8 +522,8 @@
     // LSTM doesn't support FeedForward_Individual-type functions yet, therefore we #undef it
     #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
     // Defining Explicit type architecture of the NN
-    #undef EXPLICIT_NN_TYPE_ARCHITECTURE
-    #define EXPLICIT_NN_TYPE_ARCHITECTURE LSTM_Only_
+    #undef NN_TYPE_ARCHITECTURE
+    #define NN_TYPE_ARCHITECTURE LSTM_Only_
     #if defined(LSTM_ACT) // I may add LSTM_DER (...ivative) when I 'll support backprop
         #define ID_Softmax 1
         #define MAP_HELPER(x) ID_ ## x
@@ -1180,36 +1189,46 @@ private:
         #endif
 
 
+        // NOTE: We keep all `Layer::...FeedForward_Individual` seperate insted of `void FUNCTION_OF(...)` for future implementation of multi-type-memmory NNs (during runtime)
         #if defined(SUPPORTS_INDIVIDUAL_FEEDFORWARD)
-            void FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
-            void FdF_Individual_PROGMEM(const DFLOAT &input, const unsigned int &j);
+            #if defined(USE_PROGMEM)
+                void PROGMEM_FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
+            #endif
             #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 void type_memmory_FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
             #endif
+            void FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
         #endif
 
-        //NOTE: src2 is IDFLOAT not just DFLOAT !!! | src2 is meant to be weights
-        void accumulatedDotProduct        (const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
-        void PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
+        // NOTE: src2 is IDFLOAT not just DFLOAT !!! | src2 is meant to be weights
+        // NOTE: We keep all `Layer::...accumulatedDotProduct` seperate insted of `void FUNCTION_OF(...)` for future implementation of multi-type-memmory NNs (during runtime)
+        #if defined(USE_PROGMEM)
+            void PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
+        #endif
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             void type_memmory_accumulatedDotProduct(const DFLOAT *src, DFLOAT *dest, unsigned int len); // WithSrc2Address
         #endif
+        void accumulatedDotProduct        (const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
 
         #if defined(HAS_GATED_OUTPUTS)
             template< typename T > void gateActivationOf(const DFLOAT *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T activate, DFLOAT *_outputs, const unsigned int offset=0);
         #endif
+
+        // NOTE: We keep all `Layer::...FeedForward` seperate insted of `void FUNCTION_OF(...)` for future implementation of multi-architectural NNs (during runtime)
         #if defined(USE_GRU_LAYERS_ONLY)
             void GRU_Only_FeedForward(const DFLOAT *inputs);
         #endif
         #if defined(USE_LSTM_LAYERS_ONLY)
             void LSTM_Only_FeedForward(const DFLOAT *inputs);
         #endif
-
-        void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
-        void PROGMEM_FeedForward(const DFLOAT *inputs);
+        #if defined(USE_PROGMEM)
+            void PROGMEM_FeedForward(const DFLOAT *inputs);
+        #endif
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             void type_memmory_FeedForward(const DFLOAT *inputs);
         #endif
+        void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
+
 
         #if !defined (NO_BACKPROP)
             void BackPropOutput(const DFLOAT *_expected_, const DFLOAT *inputs);
@@ -1278,11 +1297,17 @@ private:
             void printGateWeights(const IDFLOAT *w, const unsigned int len);
             void gatePrint(const unsigned int offset OPTIONAL_MULTI_BIAS(const IDFLOAT *b));
         #endif
-        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-            void FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE,type_memmory_print)();
+        #if defined(USE_GRU_LAYERS_ONLY)
+            void GRU_Only_print();
         #endif
-        void FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, print_PROGMEM)();
-        void FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, print)();
+        #if defined(USE_LSTM_LAYERS_ONLY)
+            void LSTM_Only_print();
+        #endif
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+            void type_memmory_print();
+        #endif
+        void PROGMEM_print();
+        void print();
     };  
 
 
@@ -1854,15 +1879,11 @@ public:
             #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
                 me = this;
             #endif
-            //NOTE: When/if GRU or LSTM gets supported, don't forget to add FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE,...
-            #if defined(USE_PROGMEM)
-                layers[0].FdF_Individual_PROGMEM(input, Individual_Input);
-            #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+
+            #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
                 unsigned int tmp_addr = address; // variable for restoring address back to the original\start, could be and instance-variable too...
-                layers[0].type_memmory_FeedForward_Individual(input, Individual_Input);
-            #else
-                layers[0].FeedForward_Individual(input, Individual_Input);
             #endif
+            layers[0].FUNCTION_OF(NN_TYPE_ARCHITECTURE, TYPE_MEMMORY_SUBSTRATE, FeedForward_Individual)(input, Individual_Input);
             Individual_Input++;
 
             if (Individual_Input == layers[0]._numberOfInputs)
@@ -1876,19 +1897,16 @@ public:
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
                     delete[] layers[numberOflayers - 1].outputs;
                 #endif
+
                 unsigned int i = 1;
                 for (; i < numberOflayers; i++)
                 {
                     #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
                         AtlayerIndex = i;
                     #endif  
-                    #if defined(USE_PROGMEM)
-                        layers[i].PROGMEM_FeedForward(layers[i - 1].outputs);
-                    #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM) 
-                        layers[i].type_memmory_FeedForward(layers[i - 1].outputs);
-                    #else
-                        layers[i].FeedForward(layers[i - 1].outputs);
-                    #endif
+
+                    layers[i].FUNCTION_OF(NN_TYPE_ARCHITECTURE, TYPE_MEMMORY_SUBSTRATE, FeedForward)(layers[i - 1].outputs);
+
                     #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                         delete[] layers[i - 1].outputs;
                     #endif
@@ -1931,14 +1949,10 @@ public:
             i_j=0;
         #endif
 
-        #if defined(USE_PROGMEM)
-            layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, PROGMEM_FeedForward)(inputs);
-        #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+        #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             unsigned int tmp_addr = address;
-            layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, type_memmory_FeedForward)(inputs);
-        #else
-            layers[0].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, FeedForward)(inputs);
         #endif
+        layers[0].FUNCTION_OF(NN_TYPE_ARCHITECTURE, TYPE_MEMMORY_SUBSTRATE, FeedForward)(inputs);
 
         unsigned int i = 1;  // TODO: replace i with AtlayerIndex when ACTIVATION__PER_LAYER (don't forget `AtlayerIndex = 1`) OR alternativly you could pass the index to (in this case) FeedForward(input, OPTIONAL_AT_LAYER_INDEX(i)) [...]
         for (; i < numberOflayers; i++)
@@ -1947,13 +1961,7 @@ public:
                 AtlayerIndex = i;
             #endif  
 
-            #if defined(USE_PROGMEM)
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, PROGMEM_FeedForward)(layers[i - 1].outputs);
-            #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, type_memmory_FeedForward)(layers[i - 1].outputs);
-            #else
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, FeedForward)(layers[i - 1].outputs);
-            #endif
+            layers[i].FUNCTION_OF(NN_TYPE_ARCHITECTURE, TYPE_MEMMORY_SUBSTRATE, FeedForward)(layers[i - 1].outputs);
 
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 delete[] layers[i - 1].outputs;
@@ -2644,13 +2652,7 @@ public:
             #if defined(ACTIVATION__PER_LAYER) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM) // not def USE_INTERNAL_EEPROM, because AtlayerIndex is not needed
                 AtlayerIndex = i;
             #endif  
-            #if defined(USE_PROGMEM)
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, PROGMEM_print)();
-            #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, type_memmory_print)();
-            #else
-                layers[i].FUNCTION_OF(EXPLICIT_NN_TYPE_ARCHITECTURE, print)();
-            #endif
+            layers[i].FUNCTION_OF(NN_TYPE_ARCHITECTURE, TYPE_MEMMORY_SUBSTRATE, print)();
         }
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             address = tmp_addr;
@@ -2982,177 +2984,98 @@ public:
                 cellStates = new DFLOAT[_numberOfOutputs]{};
             #endif
         }
+
+
+        void NeuralNetwork::Layer::type_memmory_accumulatedDotProduct(const DFLOAT *src1, DFLOAT *dest, unsigned int len) // WithSrc2Address
+        {
+            for (unsigned int i = 0; i < len; i++)
+                *dest += src1[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+        }
     #endif
 
 
     #if defined(SUPPORTS_INDIVIDUAL_FEEDFORWARD)
         // TODO: maybe create a static variable which will take a reference to a function. Once when j==0 (for output init) and once when j == _numberOfInputs -1
-        void NeuralNetwork::Layer::FdF_Individual_PROGMEM(const DFLOAT &input, const unsigned int &j)
-        {
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
-                if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
-                    outputs = new DFLOAT[_numberOfOutputs]; // ? speed ? or {} or memset .. it matters
-            #endif
-            //outputs[i] = 0; kai o midenismos se for
-
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                me->i_j = 0; // 1/2 only places that represents ony the i
-            #endif
-
-            //feed forwards
-            unsigned int i;
-            for (i = 0; i < _numberOfOutputs; i++)
+        #if defined(USE_PROGMEM)
+            void NeuralNetwork::Layer::PROGMEM_FeedForward_Individual(const DFLOAT &input, const unsigned int &j)
             {
-                if (j == 0){
-                    #if defined(NO_BIAS)
-                        outputs[i] = 0; // ? speed ? safe one..
-                    #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #else
-                        outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #endif
-                }
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
+                    if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
+                        outputs = new DFLOAT[_numberOfOutputs]; // ? speed ? or {} or memset .. it matters
+                #endif
+                //outputs[i] = 0; kai o midenismos se for
 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    outputs[i] += input * PGM_READ_IDFLOAT(&me->weights[me->i_j+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                #else
-                    outputs[i] += input * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION; // if double pgm_read_dword 
+                    me->i_j = 0; // 1/2 only places that represents ony the i
                 #endif
 
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    me->i_j += _numberOfInputs;
-                #endif
-
-                // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
-                if (j == _numberOfInputs -1){
-                    #if defined(USE_RNN_LAYERS_ONLY)
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            PROGMEM_accumulatedDotProduct(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
+                //feed forwards
+                unsigned int i;
+                for (i = 0; i < _numberOfOutputs; i++)
+                {
+                    if (j == 0){
+                        #if defined(NO_BIAS)
+                            outputs[i] = 0; // ? speed ? safe one..
+                        #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                            outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                         #else
-                            PROGMEM_accumulatedDotProduct(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                            outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
                         #endif
-                    #endif
-                    #if defined(ACTIVATION__PER_LAYER)
-                        outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
-                    #elif defined(Softmax)
-                        outputs[i] = exp(outputs[i]);
-                        me->sumOfSoftmax += outputs[i];
+                    }
+
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        outputs[i] += input * PGM_READ_IDFLOAT(&me->weights[me->i_j+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
+                        outputs[i] += input * PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION; // if double pgm_read_dword 
                     #endif
-                }else{
-                    #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        me->i_j += _numberOfOutputs;
+
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        me->i_j += _numberOfInputs;
                     #endif
-                }
-            }
 
-            if (j == _numberOfInputs -1){
-                #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                    // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                    if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
-                        Softmax();
-                #elif defined(Softmax)
-                    Softmax();
-                #endif
-
-                // Update the hidden states **after** all outputs are computed
-                #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int k = 0; k < _numberOfOutputs; k++)
-                        hiddenStates[k] = outputs[k];
-                #endif 
-            }
-        }
-
-
-        void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int &j)
-        {
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
-                if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
-                    outputs = new DFLOAT[_numberOfOutputs];
-            #endif
-            //outputs[i] = 0; kai o midenismos se for
-
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                me->i_j = 0; // 1/2 only places that represents ony the i
-            #endif
-
-            //feed forwards
-            unsigned int i;
-            for (i = 0; i < _numberOfOutputs; i++)
-            {
-                if (j == 0){
-                    #if defined(NO_BIAS)
-                        outputs[i] = 0; // ? speed ? safe one..
-                    #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #else
-                        outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
-                    #endif
-                }
-
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    outputs[i] += input * me->weights[me->i_j+j] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                #else
-                    outputs[i] += input * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION;
-                #endif
-
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    me->i_j += _numberOfInputs;
-                #endif
-
-                // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
-                if (j == _numberOfInputs -1){
-                    #if defined(USE_RNN_LAYERS_ONLY)
-                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs); 
+                    // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
+                    if (j == _numberOfInputs -1){
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                PROGMEM_accumulatedDotProduct(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
+                            #else
+                                PROGMEM_accumulatedDotProduct(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                            #endif
+                        #endif
+                        #if defined(ACTIVATION__PER_LAYER)
+                            outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                        #elif defined(Softmax)
+                            outputs[i] = exp(outputs[i]);
+                            me->sumOfSoftmax += outputs[i];
                         #else
-                            ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
                         #endif
-                    #endif
-                    #if defined(ACTIVATION__PER_LAYER)
-                        outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                    }else{
+                        #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            me->i_j += _numberOfOutputs;
+                        #endif
+                    }
+                }
+
+                if (j == _numberOfInputs -1){
+                    #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                        // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                        if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
+                            Softmax();
                     #elif defined(Softmax)
-                        outputs[i] = exp(outputs[i]);
-                        me->sumOfSoftmax += outputs[i];
-                    #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                        Softmax();
                     #endif
-                }else{
-                    #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        me->i_j += _numberOfOutputs;
-                    #endif
+
+                    // Update the hidden states **after** all outputs are computed
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        for (unsigned int k = 0; k < _numberOfOutputs; k++)
+                            hiddenStates[k] = outputs[k];
+                    #endif 
                 }
             }
 
-            if (j == _numberOfInputs -1){
-                #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                    // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                    if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
-                        Softmax();
-                #elif defined(Softmax)
-                    Softmax();
-                #endif
+        #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
 
-                // Update the hidden states **after** all outputs are computed
-                #if defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int k = 0; k < _numberOfOutputs; k++)
-                        hiddenStates[k] = outputs[k];
-                #endif 
-            }
-        }
-    #endif
-
-
-    #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-        void NeuralNetwork::Layer::type_memmory_accumulatedDotProduct(const DFLOAT *src, DFLOAT *dest, unsigned int len) // WithSrc2Address
-        {
-            for (unsigned int i = 0; i < len; i++)
-                *dest += src[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-        }
-
-
-        #if defined(SUPPORTS_INDIVIDUAL_FEEDFORWARD)
             void NeuralNetwork::Layer::type_memmory_FeedForward_Individual(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
             {
                 // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
@@ -3253,9 +3176,90 @@ public:
                     #endif
                 }
             }
+
+        #else
+
+            void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int &j)
+            {
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
+                    if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
+                        outputs = new DFLOAT[_numberOfOutputs];
+                #endif
+                //outputs[i] = 0; kai o midenismos se for
+
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    me->i_j = 0; // 1/2 only places that represents ony the i
+                #endif
+
+                //feed forwards
+                unsigned int i;
+                for (i = 0; i < _numberOfOutputs; i++)
+                {
+                    if (j == 0){
+                        #if defined(NO_BIAS)
+                            outputs[i] = 0; // ? speed ? safe one..
+                        #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                            outputs[i] = bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #else
+                            outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        #endif
+                    }
+
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        outputs[i] += input * me->weights[me->i_j+j] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #else
+                        outputs[i] += input * weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #endif
+
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        me->i_j += _numberOfInputs;
+                    #endif
+
+                    // when all individual inputs get summed and multiplied by their weights in their output, then pass them from the activation function
+                    if (j == _numberOfInputs -1){
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs); 
+                            #else
+                                ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                            #endif
+                        #endif
+                        #if defined(ACTIVATION__PER_LAYER)
+                            outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[0]])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                        #elif defined(Softmax)
+                            outputs[i] = exp(outputs[i]);
+                            me->sumOfSoftmax += outputs[i];
+                        #else
+                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                        #endif
+                    }else{
+                        #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            me->i_j += _numberOfOutputs;
+                        #endif
+                    }
+                }
+
+                if (j == _numberOfInputs -1){
+                    #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                        // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                        if (me->ActFunctionPerLayer[0] == SOFTMAX_POSITION_IN_ARRAY)
+                            Softmax();
+                    #elif defined(Softmax)
+                        Softmax();
+                    #endif
+
+                    // Update the hidden states **after** all outputs are computed
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        for (unsigned int k = 0; k < _numberOfOutputs; k++)
+                            hiddenStates[k] = outputs[k];
+                    #endif 
+                }
+            }
         #endif
+    #endif
 
 
+    #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
         void NeuralNetwork::Layer::type_memmory_FeedForward(const DFLOAT *inputs)
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
@@ -3314,6 +3318,76 @@ public:
 
 
     #if !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
+        #if defined(USE_PROGMEM)
+            void NeuralNetwork::Layer::PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
+            {
+                for (unsigned int i = 0; i < len; i++)
+                    *dest += src1[i] * PGM_READ_IDFLOAT(&src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+
+                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                    me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
+                #endif
+            }
+
+
+            void NeuralNetwork::Layer::PROGMEM_FeedForward(const DFLOAT *inputs) //*
+            {
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    outputs = new DFLOAT[_numberOfOutputs];
+                #endif
+                
+                //feed forwards
+                for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                {
+                    #if defined(NO_BIAS)
+                        outputs[i] = 0;
+                    #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                        outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #else
+                        outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
+                    #endif
+
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        PROGMEM_accumulatedDotProduct(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); // #12
+                    #else
+                        PROGMEM_accumulatedDotProduct(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                    #endif
+
+                    #if defined(USE_RNN_LAYERS_ONLY)
+                        #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                            PROGMEM_accumulatedDotProduct(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
+                        #else
+                            PROGMEM_accumulatedDotProduct(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
+                        #endif
+                    #endif
+
+                    #if defined(ACTIVATION__PER_LAYER)
+                        outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
+                    #elif defined(Softmax)
+                        outputs[i] = exp(outputs[i]);
+                        me->sumOfSoftmax += outputs[i];
+                    #else
+                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
+                    #endif
+                }
+
+                #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
+                    // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
+                    if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
+                        Softmax();
+                #elif defined(Softmax)
+                    Softmax();
+                #endif
+
+                // Update the hidden states **after** all outputs are computed
+                #if defined(USE_RNN_LAYERS_ONLY)
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                        hiddenStates[i] = outputs[i];
+                #endif 
+            }
+        #endif
+
+
         void NeuralNetwork::Layer::accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
         {
             for (unsigned int i = 0; i < len; i++)
@@ -3322,74 +3396,6 @@ public:
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
             #endif
-        }
-
-
-        void NeuralNetwork::Layer::PROGMEM_accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
-        {
-            for (unsigned int i = 0; i < len; i++)
-                *dest += src1[i] * PGM_READ_IDFLOAT(&src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
-            #endif
-        }
-
-
-        void NeuralNetwork::Layer::PROGMEM_FeedForward(const DFLOAT *inputs) //*
-        {
-            #if defined(REDUCE_RAM_DELETE_OUTPUTS)
-                outputs = new DFLOAT[_numberOfOutputs];
-            #endif
-            
-            //feed forwards
-            for (unsigned int i = 0; i < _numberOfOutputs; i++)
-            {
-                #if defined(NO_BIAS)
-                    outputs[i] = 0;
-                #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                #else
-                    outputs[i] = PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
-                #endif
-
-                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    PROGMEM_accumulatedDotProduct(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); // #12
-                #else
-                    PROGMEM_accumulatedDotProduct(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
-                #endif
-
-                #if defined(USE_RNN_LAYERS_ONLY)
-                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        PROGMEM_accumulatedDotProduct(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
-                    #else
-                        PROGMEM_accumulatedDotProduct(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
-                    #endif
-                #endif
-
-                #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = (IS_THIS(activation_Function_ptrs)[me->ActFunctionPerLayer[me->AtlayerIndex]])(outputs[i]);
-                #elif defined(Softmax)
-                    outputs[i] = exp(outputs[i]);
-                    me->sumOfSoftmax += outputs[i];
-                #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
-                #endif
-            }
-
-            #if (defined(ACTIVATION__PER_LAYER) and defined(Softmax)) or defined(ALL_ACTIVATION_FUNCTIONS)
-                // if current's Activation function == SOFTMAX_POSITION_IN_ARRAY == Softmax then Activate Outputs | costs in computation as much as numberoflayers * 1 or x if softmax
-                if (me->ActFunctionPerLayer[me->AtlayerIndex] == SOFTMAX_POSITION_IN_ARRAY)
-                    Softmax();
-            #elif defined(Softmax)
-                Softmax();
-            #endif
-
-            // Update the hidden states **after** all outputs are computed
-            #if defined(USE_RNN_LAYERS_ONLY)
-                for (unsigned int i = 0; i < _numberOfOutputs; i++)
-                    hiddenStates[i] = outputs[i];
-            #endif 
         }
 
 
@@ -3450,7 +3456,6 @@ public:
 
             // return outputs;
         } 
-
 
 
         // TODO: (for both GRU & LSTM) when their recurrent-activation-function and their activation-function is the same, then remove T activate and replace activate with the macro ACTIVATION_FUNCTION
@@ -3951,147 +3956,151 @@ public:
                 }
 
             #else
-                void NeuralNetwork::Layer::print()
-                { 
-                    #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO("INT_Q "));
-                    #endif
-                    #if defined(USE_RNN_LAYERS_ONLY)
-                        Serial.print(F_MACRO("RNN "));
-                    #endif
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("x"));
-                    Serial.print(_numberOfOutputs);
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    #endif
-                    #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-                    #endif
-                    Serial.println();
-
-                    for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                #if defined(USE_PROGMEM)
+                    void NeuralNetwork::Layer::PROGMEM_print()
                     {
-                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                            Serial.print(F_MACRO("   B:"));
-                            Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #if defined(USE_INT_QUANTIZATION)
+                            Serial.print(F_MACRO("INT_Q PROGMEM "));
+                        #else
+                            Serial.print(F_MACRO("PROGMEM "));
                         #endif
-
-                        Serial.print(i + 1);
-                        Serial.print(F_MACRO(" "));
-                        for (unsigned int j = 0; j < _numberOfInputs; j++)
-                        {
-                            Serial.print(F_MACRO(" W:"));
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
-                                Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                            #else
-                                if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
-                                Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                            #endif
-                            Serial.print(F_MACRO(" "));
-                        }
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            Serial.print(F_MACRO("RNN "));
+                        #endif
+                        Serial.print(_numberOfInputs);
+                        Serial.print(F_MACRO("x"));
+                        Serial.print(_numberOfOutputs);
+                        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                            Serial.print(F_MACRO("| bias:"));
+                            Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+                        #if defined(ACTIVATION__PER_LAYER)
+                            Serial.print(F_MACRO("| F(x):"));
+                            Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                        #endif
                         Serial.println();
 
-                        #if defined(USE_RNN_LAYERS_ONLY)
-                            Serial.print(F_MACRO("  "));
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                for (unsigned int j = 0; j < _numberOfOutputs; j++)
-                                {
-                                    Serial.print(F_MACRO(" U:"));
-                                    if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
-                                    Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                    Serial.print(F_MACRO(" "));
-                                }
-                            #else
-                                for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
-                                {
-                                    Serial.print(F_MACRO(" U:"));
-                                    if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
-                                    Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                    Serial.print(F_MACRO(" "));
-                                }
-                            #endif
-                            Serial.println();
-                        #endif
-                    }
-                    Serial.println(F_MACRO("----------------------"));
-
-                }
-
-                void NeuralNetwork::Layer::PROGMEM_print()
-                {
-                    #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO("INT_Q PROGMEM "));
-                    #else
-                        Serial.print(F_MACRO("PROGMEM "));
-                    #endif
-                    #if defined(USE_RNN_LAYERS_ONLY)
-                        Serial.print(F_MACRO("RNN "));
-                    #endif
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("x"));
-                    Serial.print(_numberOfOutputs);
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(PGM_READ_IDFLOAT(bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                    #endif
-                    #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
-                    #endif
-                    Serial.println();
-
-                    for (unsigned int i = 0; i < _numberOfOutputs; i++)
-                    {
-                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                            Serial.print(F_MACRO("   B:"));
-                            Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                        #endif
-
-                        Serial.print(i + 1);
-                        Serial.print(" ");
-                        for (unsigned int j = 0; j < _numberOfInputs; j++)
+                        for (unsigned int i = 0; i < _numberOfOutputs; i++)
                         {
-                            //weights[i][j] = (DFLOAT)j;
-                            Serial.print(F_MACRO(" W:"));
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                                Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                            #else
-                                if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                                Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                                Serial.print(F_MACRO("   B:"));
+                                Serial.println(PGM_READ_IDFLOAT(&bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                             #endif
-                            Serial.print(F_MACRO(" "));
-                        }
-                        Serial.println();
 
-                        #if defined(USE_RNN_LAYERS_ONLY)
-                            Serial.print(F_MACRO("  "));
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                for (unsigned int j = 0; j < _numberOfOutputs; j++)
-                                {
-                                    Serial.print(F_MACRO(" U:"));
+                            Serial.print(i + 1);
+                            Serial.print(" ");
+                            for (unsigned int j = 0; j < _numberOfInputs; j++)
+                            {
+                                //weights[i][j] = (DFLOAT)j;
+                                Serial.print(F_MACRO(" W:"));
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                     if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
                                     Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                    Serial.print(F_MACRO(" "));
-                                }
-                            #else
-                                for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
-                                {
-                                    Serial.print(F_MACRO(" U:"));
+                                #else
                                     if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
                                     Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                    Serial.print(F_MACRO(" "));
-                                }
-                            #endif
+                                #endif
+                                Serial.print(F_MACRO(" "));
+                            }
                             Serial.println();
-                        #endif
+
+                            #if defined(USE_RNN_LAYERS_ONLY)
+                                Serial.print(F_MACRO("  "));
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                                    {
+                                        Serial.print(F_MACRO(" U:"));
+                                        if (PGM_READ_IDFLOAT(&me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                                        Serial.print(PGM_READ_IDFLOAT(&me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                        Serial.print(F_MACRO(" "));
+                                    }
+                                #else
+                                    for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
+                                    {
+                                        Serial.print(F_MACRO(" U:"));
+                                        if (PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
+                                        Serial.print(PGM_READ_IDFLOAT(&weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                        Serial.print(F_MACRO(" "));
+                                    }
+                                #endif
+                                Serial.println();
+                            #endif
+                        }
+                        Serial.println(F_MACRO("----------------------"));
                     }
-                    Serial.println(F_MACRO("----------------------"));
-                }
+
+                #else
+
+                    void NeuralNetwork::Layer::print()
+                    { 
+                        #if defined(USE_INT_QUANTIZATION)
+                            Serial.print(F_MACRO("INT_Q "));
+                        #endif
+                        #if defined(USE_RNN_LAYERS_ONLY)
+                            Serial.print(F_MACRO("RNN "));
+                        #endif
+                        Serial.print(_numberOfInputs);
+                        Serial.print(F_MACRO("x"));
+                        Serial.print(_numberOfOutputs);
+                        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                            Serial.print(F_MACRO("| bias:"));
+                            Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+                        #if defined(ACTIVATION__PER_LAYER)
+                            Serial.print(F_MACRO("| F(x):"));
+                            Serial.print(me->ActFunctionPerLayer[me->AtlayerIndex]);
+                        #endif
+                        Serial.println();
+
+                        for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                        {
+                            #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                                Serial.print(F_MACRO("   B:"));
+                                Serial.println(bias[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            #endif
+
+                            Serial.print(i + 1);
+                            Serial.print(F_MACRO(" "));
+                            for (unsigned int j = 0; j < _numberOfInputs; j++)
+                            {
+                                Serial.print(F_MACRO(" W:"));
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
+                                    Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                #else
+                                    if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
+                                    Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                #endif
+                                Serial.print(F_MACRO(" "));
+                            }
+                            Serial.println();
+
+                            #if defined(USE_RNN_LAYERS_ONLY)
+                                Serial.print(F_MACRO("  "));
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    for (unsigned int j = 0; j < _numberOfOutputs; j++)
+                                    {
+                                        Serial.print(F_MACRO(" U:"));
+                                        if (me->weights[me->i_j] > 0) Serial.print(F_MACRO(" ")); // dont even bothered to opt. here lol
+                                        Serial.print(me->weights[me->i_j++] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                        Serial.print(F_MACRO(" "));
+                                    }
+                                #else
+                                    for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
+                                    {
+                                        Serial.print(F_MACRO(" U:"));
+                                        if (weights[i][j] > 0) Serial.print(F_MACRO(" "));
+                                        Serial.print(weights[i][j] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                        Serial.print(F_MACRO(" "));
+                                    }
+                                #endif
+                                Serial.println();
+                            #endif
+                        }
+                        Serial.println(F_MACRO("----------------------"));
+
+                    }
+                #endif
             #endif
         #endif
     #endif
