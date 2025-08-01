@@ -22,6 +22,6 @@ float getTemp() {
 
 
 void initTempSensor() {
-  for (unsigned int i = 0; i < 36; ++i) getTemp(); 
+  // for (unsigned int i = 0; i < 36; ++i) getTemp(); 
 }
 
