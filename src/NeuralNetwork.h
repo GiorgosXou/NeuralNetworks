@@ -568,8 +568,6 @@
     #endif
     #if defined(ACTIVATION__PER_LAYER)
         #define SIZEOF_FX sizeof(byte)
-    #else
-        #define SIZEOF_FX 0
     #endif
 #endif
 
