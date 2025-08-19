@@ -1101,6 +1101,72 @@
 #define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG GRU_MSG LSTM_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
+
+#if defined(ACTIVATION__PER_LAYER)
+    enum
+    {
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Sigmoid)
+            Idx_Sigmoid,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Tanh)
+            Idx_Tanh,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ReLU)
+            Idx_ReLU,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(LeakyReLU)
+            Idx_LeakyReLU,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(ELU)
+            Idx_ELU,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SELU)
+            Idx_SELU,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softmax)
+            Idx_SoftmaxSum,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Identity)
+            Idx_Identity,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(BinaryStep)
+            Idx_BinaryStep,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Softplus)
+            Idx_Softplus,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(SiLU)
+            Idx_SiLU,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(GELU)
+            Idx_GELU,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Mish)
+            Idx_Mish,
+        #endif
+        #if defined(ALL_ACTIVATION_FUNCTIONS) or defined(Gaussian)
+            Idx_Gaussian,
+        #endif
+
+        #if defined(CUSTOM_AF1)
+            Idx_CUSTOM_AF1,
+        #endif
+        #if defined(CUSTOM_AF2)
+            Idx_CUSTOM_AF2,
+        #endif
+        #if defined(CUSTOM_AF3)
+            Idx_CUSTOM_AF3,
+        #endif
+        #if defined(CUSTOM_AF4)
+            Idx_CUSTOM_AF4,
+        #endif
+        #if defined(CUSTOM_AF5)
+            Idx_CUSTOM_AF5,
+        #endif
+    };
+#endif
+
+
 // i might change static variables to plain variables and just pass a pointer from outer class?
 class NeuralNetwork
 {

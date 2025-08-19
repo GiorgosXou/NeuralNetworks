@@ -7,9 +7,13 @@
 
 #include <NeuralNetwork.h>
 
-unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3 input neurons (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
-byte Actv_Functions[] = {   1, 1, 0}; // 1 = Tanh and 0 = Sigmoid (just as a proof of consept)
+byte ActivFunctions[] = {
+  Idx_Tanh,   // Byte 1 = Tanh    | Layers : 0 -> 1
+  Idx_Tanh,   // Byte 1 = Tanh    | Layers : 1 -> 2
+  Idx_Sigmoid // Byte 0 = Sigmoid | Layers : 2 -> 3
+};
 
+unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3 input neurons (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
 float *output; // 4th layer's output
 
 //Default Inputs/Training-Data
@@ -29,7 +33,7 @@ const float expectedOutput[8][1] = {{0}, {1}, {1}, {0}, {1}, {0}, {0}, {1}}; // 
 void setup()
 {
   Serial.begin(9600);
-  NeuralNetwork NN(layers, NumberOf(layers), Actv_Functions); // Creating a Neural-Network with default learning-rates
+  NeuralNetwork NN(layers, NumberOf(layers), ActivFunctions); // Creating a Neural-Network with default learning-rates
 
   do{ 
     for (unsigned int j=0; j < NumberOf(inputs); j++) // Epoch
