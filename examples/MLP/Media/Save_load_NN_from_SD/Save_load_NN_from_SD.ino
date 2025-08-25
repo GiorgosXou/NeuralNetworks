@@ -17,7 +17,7 @@
 #include <NeuralNetwork.h>
           NeuralNetwork *NN;
 
-unsigned int layers[] = {3, 7, 1}; // 3 layers: (1st)layer with 3-input-neurons (2nd)layer 7-hidden-neurons and (3rd)layer with 1-output-neuron
+unsigned int layers[] = {3, 7, 1}; // 3 layers: (1st)layer with 3-inputs/features (2nd)layer 7-hidden-neurons and (3rd)layer with 1-output-neuron
 byte Actv_Functions[] = {   1, 0}; // 1 = Tanh and 0 = Sigmoid (just as a proof of consept)
 
 float *output; // 3th layer's output

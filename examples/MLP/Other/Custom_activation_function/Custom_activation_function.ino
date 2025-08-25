@@ -10,7 +10,7 @@ float NeuralNetwork::Layer::my_sigmoidDer(const float &fx){ return fx - fx * fx;
 float NeuralNetwork::Layer::my_sigmoid   (const float &x ){ return 1 / (1 + exp(-x)); }
 
 
-const unsigned int layers[] = {3, 5, 1}; // 3 layers (1st)layer with 3 input neurons (2nd)layer 5 hidden neurons each and (3rd)layer with 1 output neuron
+const unsigned int layers[] = {3, 5, 1}; // 3 layers (1st)layer with 3-inputs/features (2nd)layer 5 hidden neurons each and (3rd)layer with 1 output neuron
 float *output; // 3th layer's output(s)
 
 //Default Inputs/Training-Data

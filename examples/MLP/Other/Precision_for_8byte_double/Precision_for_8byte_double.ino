@@ -9,7 +9,7 @@
 
 #include <NeuralNetwork.h>
 
-const unsigned int layers[] = {3, 5, 1}; // 3 layers (1st)layer with 3 input neurons (2nd)layer 5 hidden neurons each and (3rd)layer with 1 output neuron
+const unsigned int layers[] = {3, 5, 1}; // 3 layers (1st)layer with 3-inputs/features (2nd)layer 5 hidden neurons each and (3rd)layer with 1 output neuron
 double *output; // 3rd layer's output(s)
 
 //Default Inputs/Training-Data

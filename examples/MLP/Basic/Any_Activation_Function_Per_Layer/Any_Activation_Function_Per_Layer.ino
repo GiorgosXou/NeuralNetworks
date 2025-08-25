@@ -13,7 +13,7 @@ byte ActivFunctions[] = {
   Idx_Sigmoid // Byte 0 = Sigmoid | Layers : 2 -> 3
 };
 
-unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3 input neurons (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
+unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3-inputs/features (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
 float *output; // 4th layer's output
 
 //Default Inputs/Training-Data
