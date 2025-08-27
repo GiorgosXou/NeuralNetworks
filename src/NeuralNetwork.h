@@ -444,12 +444,14 @@
     #define RNN_MSG [𝗥𝗡𝗡]
     #define USE_RNN_LAYERS_ONLY
     #define HAS_HIDDEN_STATES
+    #define NUMBER_OF_STATES_GATES 1
     #define NO_BACKPROP
 
 #elif defined(USE_GRU__NB) // (TensorFlow GRU(...reset_after=False)
     #undef GRU_MSG
     #define USE_GRU_LAYERS_ONLY
     #define HAS_HIDDEN_STATES
+    #define NUMBER_OF_STATES_GATES 3
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
     // 2025-04-30 02:19:56 PM  TODO: It might be a good idea to have both "single-bias" but also "single-bias-per-gate" (make sure to iterate biasesFromPoint if per-gate)
@@ -499,6 +501,7 @@
     #undef LSTM_MSG
     #define USE_LSTM_LAYERS_ONLY
     #define HAS_HIDDEN_STATES
+    #define NUMBER_OF_STATES_GATES 4
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
     #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) // 2025-05-03 03:16:53 AM  TODO: support
@@ -1781,21 +1784,15 @@ public:
                     layers[i] = Layer(layer_[i], layer_[i + 1], &default_Weights[weightsFromPoint], &default_Bias[i],this);
                 #endif
 
-                #if defined(USE_LSTM_LAYERS_ONLY) 
-                    weightsFromPoint += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 4; // 4 = Forget Update Output CellState
-                #elif defined(USE_GRU_LAYERS_ONLY)
-                    weightsFromPoint += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 3; // 3 = Reset Hidden Update
-                #elif defined(USE_RNN_LAYERS_ONLY)
-                    weightsFromPoint += layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1]);
+                #if defined(NUMBER_OF_STATES_GATES) 
+                    weightsFromPoint += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * NUMBER_OF_STATES_GATES; // | LSTM // 4 = Forget Update Output CellState | GRU // 3 = Reset Hidden Update | RNN // 1 = Hidden
                 #else
                     weightsFromPoint += layer_[i] * layer_[i + 1];
                 #endif
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
-                #if defined(USE_LSTM_LAYERS_ONLY) 
-                    biasesFromPoint += layer_[i + 1] * 4; // 4 gates * Units\layer_[i] = Forget Update Output CellState
-                #elif defined(USE_GRU_LAYERS_ONLY)
-                    biasesFromPoint += layer_[i + 1] * 3; // 3 gates * Units\layer_[i] | (TensorFlow GRU(...reset_after=False)) if True then this should be: 3 gates * Units * 2 bias_vectors)
+                #if defined(NUMBER_OF_STATES_GATES)
+                    biasesFromPoint += layer_[i + 1] * NUMBER_OF_STATES_GATES; // GRU 3 gates * Units\layer_[i] | (TensorFlow GRU(...reset_after=False)) if True then this should be: 3 gates * Units * 2 bias_vectors) // LSTM 4 gates * Units\layer_[i] = Forget Update Output CellState // RNN 1
                 #else
                     biasesFromPoint += layer_[i + 1];
                 #endif
@@ -1843,12 +1840,8 @@ public:
 
             #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
                 for (unsigned int i = 0; i < numberOflayers; i++)
-                    #if defined(USE_LSTM_LAYERS_ONLY) 
-                        i_j += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 4; // 4 = Forget Update Output CellState
-                    #elif defined(USE_GRU_LAYERS_ONLY)
-                        i_j += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * 3; // 3 = Reset Hidden Update 
-                    #elif defined(USE_RNN_LAYERS_ONLY)
-                        i_j += layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1]);
+                    #if defined(NUMBER_OF_STATES_GATES) 
+                        i_j += (layer_[i] * layer_[i + 1] + (layer_[i + 1] * layer_[i + 1])) * NUMBER_OF_STATES_GATES; // LSTM 4 = Forget Update Output CellState | // GRU 3 = Reset Hidden Update | // RNN 1 = Hidden
                     #else
                         i_j += layer_[i] * layer_[i + 1];
                     #endif
@@ -2886,12 +2879,8 @@ public:
                 #if defined(USE_LSTM_LAYERS_ONLY)
                     cellStates[i] = 0;
                 #endif
-                #if defined(USE_LSTM_LAYERS_ONLY) 
-                    weights[i] = &default_Weights[i * ((_numberOfInputs + _numberOfOutputs) * 4)]; // Passing Default weights to ##1 weights by reference.  
-                #elif defined(USE_GRU_LAYERS_ONLY) 
-                    weights[i] = &default_Weights[i * ((_numberOfInputs + _numberOfOutputs) * 3)]; // Passing Default weights to ##1 weights by reference.  
-                #elif defined(USE_RNN_LAYERS_ONLY)
-                    weights[i] = &default_Weights[i * (_numberOfInputs + _numberOfOutputs)]; // Passing Default weights to ##1 weights by reference.  
+                #if defined(NUMBER_OF_STATES_GATES) 
+                    weights[i] = &default_Weights[i * ((_numberOfInputs + _numberOfOutputs) * NUMBER_OF_STATES_GATES)]; // Passing Default weights to ##1 weights by reference.  
                 #else
                     weights[i] = &default_Weights[i * _numberOfInputs]; // Passing Default weights to ##1 weights by reference.  
                 #endif
@@ -2961,10 +2950,8 @@ public:
                 weights = new IDFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (IDFLOAT) weights.
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                #if defined(USE_LSTM_LAYERS_ONLY)
-                    bias = new IDFLOAT[_numberOfOutputs*4];                 // ##1    New LSTM     Biases
-                #elif defined(USE_GRU_LAYERS_ONLY)
-                    bias = new IDFLOAT[_numberOfOutputs*3];                 // ##1    New GRU      Biases
+                #if defined(NUMBER_OF_STATES_GATES)
+                    bias = new IDFLOAT[_numberOfOutputs*NUMBER_OF_STATES_GATES]; // ##1 (LSTM or GRU or RNN) New Biases
                 #else         
                     bias = new IDFLOAT[_numberOfOutputs];                   // ##1    New          Biases
                 #endif         
@@ -2976,12 +2963,8 @@ public:
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-                    #if defined(USE_LSTM_LAYERS_ONLY)
-                        weights[i] = new IDFLOAT[(_numberOfInputs + _numberOfOutputs) * 4];
-                    #elif defined(USE_GRU_LAYERS_ONLY)
-                        weights[i] = new IDFLOAT[(_numberOfInputs + _numberOfOutputs) * 3];
-                    #elif defined(USE_RNN_LAYERS_ONLY)
-                        weights[i] = new IDFLOAT[_numberOfInputs + _numberOfOutputs];
+                    #if defined(NUMBER_OF_STATES_GATES)
+                        weights[i] = new IDFLOAT[(_numberOfInputs + _numberOfOutputs) * NUMBER_OF_STATES_GATES];
                     #else
                         weights[i] = new IDFLOAT[_numberOfInputs];
                     #endif
@@ -3006,12 +2989,8 @@ public:
                     #endif
                 #endif
                 
-                #if defined(USE_LSTM_LAYERS_ONLY)
-                    for (unsigned int j = 0; j < ((_numberOfInputs + _numberOfOutputs)*4); j++)
-                #elif defined(USE_GRU_LAYERS_ONLY)
-                    for (unsigned int j = 0; j < ((_numberOfInputs + _numberOfOutputs)*3); j++)
-                #elif defined(USE_RNN_LAYERS_ONLY)
-                    for (unsigned int j = 0; j < (_numberOfInputs + _numberOfOutputs); j++)
+                #if defined(NUMBER_OF_STATES_GATES)
+                    for (unsigned int j = 0; j < ((_numberOfInputs + _numberOfOutputs)*NUMBER_OF_STATES_GATES); j++)
                 #else
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
                 #endif
