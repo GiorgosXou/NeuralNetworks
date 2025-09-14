@@ -2325,6 +2325,7 @@ public:
             }
         
 
+            // WARNING: DEPRECATED FUNCTION
             bool NeuralNetwork::save_old(String file)
             {
                 File myFile = SD.open(file.c_str(), SD_NN_WRITE_MODE);
@@ -2507,6 +2508,7 @@ public:
             }
 
 
+            // WARNING: DEPRECATED FUNCTION
             bool NeuralNetwork::load_old(String file)
             {
                 if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
