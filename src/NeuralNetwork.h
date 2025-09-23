@@ -165,6 +165,20 @@
 // Determins the type of memmory on which the NN is running eg. RAM, EEPROM, PROGMEM, FRAM
 #define TYPE_MEMMORY_SUBSTRATE
 
+// Forces (REDUCE_RAM_WEIGHTS_LVL2) when GRU or LSTM layers are used, due to potential-incompatibility-issues
+#if defined(USE_GRU__NB) or defined(USE_LSTM__NB) // #21
+    #undef MSG3
+    #if defined(NO_FORCED_WEIGHTS_LVL2) // the reason I define IGNORE_OB0001_OPT instead of simply using NO_FORCED_WEIGHTS_LVL2 is to prevent other (NN_TYPE_ARCHITECTURE)s besides LSTM/GRU from using NO_FORCED_WEIGHTS_LVL2
+        #define IGNORE_OB0001_OPT
+        #define MSG3 \n- " [1] 0B000X0000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] Disabling (REDUCE_RAM_WEIGHTS_LVL2) for LSTM/GRU, makes save()/load() incompatible."
+    #else
+        #define FORCED_REDUCE_RAM_WEIGHTS_LVL2
+        #define REDUCE_RAM_WEIGHTS_COMMON
+        #define REDUCE_RAM_WEIGHTS_LVL2
+        #define MSG3 \n- " [1] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (FORCED_REDUCE_RAM_WEIGHTS_LVL2) for LSTM/GRU, unless (NO_FORCED_WEIGHTS_LVL2) is defined."
+    #endif
+#endif
+
 #define ATOL atol
 #define LLONG long
 #define DFLOAT float
@@ -192,7 +206,7 @@
         #define MSG2 \n- " [1] 0B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
     #endif  
     
-    #if ((_1_OPTIMIZE bitor 0B11101111) == 0B11111111)
+    #if ((_1_OPTIMIZE bitor 0B11101111) == 0B11111111) && !defined(FORCED_REDUCE_RAM_WEIGHTS_LVL2) && !defined(IGNORE_OB0001_OPT)
         #define REDUCE_RAM_WEIGHTS_COMMON
         #define REDUCE_RAM_WEIGHTS_LVL2
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]

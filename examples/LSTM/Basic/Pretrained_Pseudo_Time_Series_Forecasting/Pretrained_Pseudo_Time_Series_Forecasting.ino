@@ -42,7 +42,7 @@ float biases[] = {
   -0.07524981
 };
 
-// [Pretrained weights] //  NOTE: ORDER CHANGES BASED ON: _1_OPTIMIZE 0B0001 !!
+// [Pretrained weights]
 float weights[] = {
   // LSTM LAYER 0 -> 1
 
