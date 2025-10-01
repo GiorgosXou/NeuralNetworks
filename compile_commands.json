@@ -1,4 +1,9 @@
 [
+ { 
+  "directory": "THIS IS A PSUDO/FAKE FILE FOR NEOVIM LSP (CLANG) AUTOCOMPLETION",
+   "command" : "THIS IS A PSUDO/FAKE FILE FOR NEOVIM LSP (CLANG) AUTOCOMPLETION",
+   "file"    : "THIS IS A PSUDO/FAKE FILE FOR NEOVIM LSP (CLANG) AUTOCOMPLETION" 
+ },
  {
   "directory": "/home/xou/Arduino/libraries/NeuralNetworks/",
   "arguments": [
