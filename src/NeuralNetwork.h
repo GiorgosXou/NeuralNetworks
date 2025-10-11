@@ -1245,7 +1245,7 @@ private:
         #endif
 
         #if defined(HAS_HIDDEN_STATES)
-            DFLOAT *hiddenStates;       // previous timestep's outputs of this layer  [1D Array] pointers.
+            void resetStates();
         #endif
         
         //#if defined(REDUCE_RAM_WEIGHTS_LVL1)
@@ -1424,6 +1424,10 @@ private:
 
 
 public:
+
+    #if defined(HAS_HIDDEN_STATES)
+        void resetStates();
+    #endif
 
     #if defined(ESP_SUPPORTS_SIMD)
         DFLOAT tmp_dest; // TODO: tmp_dest will be removed once I implement the custom-assembly-dotprod function of esp32 and stuff
@@ -2763,6 +2767,15 @@ public:
         #endif
     }
     #endif
+
+
+    #if defined(HAS_HIDDEN_STATES)
+        void NeuralNetwork::resetStates()
+        {
+            for (unsigned int i=0; i<numberOflayers; i++)
+                layers[i].resetStates();
+        }
+    #endif
 #pragma endregion NeuralNetwork.cpp
 
 
@@ -2772,6 +2785,21 @@ public:
 //=======================================================================================================================================================================
 
 #pragma region Layer.cpp
+
+    #if defined(HAS_HIDDEN_STATES)
+        void NeuralNetwork::Layer::resetStates()
+        {
+            for (unsigned int i = 0; i < _numberOfOutputs; i++){ // TODO: test delete[] re-new aproach, to see what effects it has in terms of sketch-size (as an alternative, optimization)
+                #if defined(HAS_HIDDEN_STATES)
+                    hiddenStates[i] = 0;
+                #endif
+                #if defined(USE_LSTM_LAYERS_ONLY)
+                    cellStates[i] = 0;
+                #endif
+            }
+        }
+    #endif
+
 
     // Initialization of the array-of-pointers-to-(activation and derivative) functions without `inline`. see also issue #35
     // Additionally: in case of any future `const` to `constexpr` take a look here https://stackoverflow.com/a/40272829/11465149
