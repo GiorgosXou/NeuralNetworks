@@ -520,10 +520,6 @@ struct LayerProps {
             #define RNN() {1}
             #define DENSE() {0}
         #endif
-        // Error checking
-        #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) // 2025-05-03 03:16:53 AM  TODO: support
-            #error "As of now DENSE+RNN are NOT suported with HillClimb."
-        #endif
         // DENSE+RNN doesn't support FeedForward_Individual-type functions yet, therefore we #undef it | see also #24
         #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
     #endif
@@ -545,9 +541,7 @@ struct LayerProps {
     #define NO_BACKPROP
     // 2025-04-30 02:19:56 PM  TODO: It might be a good idea to have both "single-bias" but also "single-bias-per-gate" (make sure to iterate biasesFromPoint if per-gate)
     // 2025-04-30 02:31:34 PM  NOTE: But make sure to use a selective-OPTIONAL_BIAS type-of macro instead of this #14 | 2025-05-03 03:21:35 AM I guess?
-    #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) // 2025-05-03 03:16:53 AM  TODO: support
-        #error "As of now GRU are NOT suported with HillClimb."
-    #endif
+    //
     #if defined(USE_PROGMEM) // 2025-04-08 10:45:18 AM  TODO: USE_PROGMEM support
         #error "As of now GRU are NOT suported with (USE_PROGMEM)."
     #endif
@@ -593,9 +587,6 @@ struct LayerProps {
     #define SIZEOF_FROM(x, y, z) ((x + y) * NUMBER_OF_STATES_GATES)
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
-    #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) // 2025-05-03 03:16:53 AM  TODO: support
-        #error "As of now LSTM are NOT suported with HillClimb."
-    #endif
     #if defined(USE_PROGMEM) // 2025-04-08 10:45:18 AM  TODO: USE_PROGMEM support
         #error "As of now LSTM are NOT suported with (USE_PROGMEM)."
     #endif
@@ -2387,11 +2378,7 @@ public:
                     #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
                         layers[l].bias[i] += (LearningRateOfBiases * random(-1,2) * direction);
                     #endif
-                    #if defined(USE_RNN_LAYERS_ONLY)
-                        for (unsigned int j = 0; j < (layers[l]._numberOfInputs+layers[l]._numberOfOutputs); j++)
-                    #else
-                        for (unsigned int j = 0; j < layers[l]._numberOfInputs; j++)
-                    #endif
+                        for (unsigned int j = 0; j < SIZEOF_FROM(layers[l]._numberOfInputs, layers[l]._numberOfOutputs, PropsPerLayer[l].arch); j++)
                         {
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                 weights[i_j++] += (LearningRateOfWeights * random(-1,2) * direction);
