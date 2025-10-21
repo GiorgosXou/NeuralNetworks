@@ -2912,6 +2912,7 @@ public:
                 AtlayerIndex = i;
             #endif  
             layers[i].FUNCTION_OF(NN_TYPE_ARCHITECTURE, print)(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(i)); // It's fine for USE_PAIR__DENSE_RNN since we compact both architectures in plain `print()` (for "useless" functions, it seems best to we care more about sketch-size-logic rather than speed)
+            Serial.println(F_MACRO("----------------------"));
         }
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             address = tmp_addr;
@@ -4211,10 +4212,13 @@ public:
                     #else
                         Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                     #endif
-                    Serial.print(F_MACRO("RNN "));
+                    Serial.print(F_MACRO("RNN [("));
                     Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("x"));
+                    Serial.print(F_MACRO("+"));
                     Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO(")*"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("]"));
                     #if defined(ACTIVATION__PER_LAYER)
                         Serial.print(F_MACRO("| F(x):"));
                         Serial.print(me->get_type_memmory_value<byte>(me->address));
@@ -4256,7 +4260,6 @@ public:
                         Serial.println();
 
                     }
-                    Serial.println(F_MACRO("----------------------"));
                 }
             #endif
 
@@ -4270,14 +4273,25 @@ public:
                 #endif
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
                     LayerType props= me->get_type_memmory_value<LayerType>(me->address); // LayerProps in this case
-                    if (props.arch)
-                        Serial.print(F_MACRO("RNN "));
-                    else
-                        Serial.print(F_MACRO("DENSE "));
+                    if (props.arch){
+                        Serial.print(F_MACRO("RNN [("));
+                        Serial.print(_numberOfInputs);
+                        Serial.print(F_MACRO("+"));
+                        Serial.print(_numberOfOutputs);
+                        Serial.print(F_MACRO(")"));
+                     }else{
+                        Serial.print(F_MACRO("DENSE ["));
+                        Serial.print(_numberOfInputs);
+                     }
+                #else
+                    Serial.print(F_MACRO("DENSE "));
+                    Serial.print(_numberOfInputs);
                 #endif
-                Serial.print(_numberOfInputs);
-                Serial.print(F_MACRO("x"));
+                Serial.print(F_MACRO("*"));
                 Serial.print(_numberOfOutputs);
+                #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
+                    Serial.print(F_MACRO("]"));
+                #endif
                 #if defined(ACTIVATION__PER_LAYER)
                     Serial.print(F_MACRO("| F(x):"));
                     #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
@@ -4330,7 +4344,6 @@ public:
                         Serial.println();
                     #endif
                 }
-                Serial.println(F_MACRO("----------------------"));
             }
 
 
@@ -4340,7 +4353,7 @@ public:
                 void NeuralNetwork::Layer::printGateWeights(const IDFLOAT *w, const unsigned int len)
                 {
                     for (unsigned int i = 0; i < len; i++){
-                        Serial.print(F_MACRO(" W:"));
+                        Serial.print(F_MACRO("  W:"));
                         if (w[i] > 0) Serial.print(F_MACRO(" "));
                         Serial.print(w[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     }
@@ -4361,11 +4374,11 @@ public:
                         #endif
 
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            Serial.print(i+1); Serial.print(" "); printGateWeights(&me->weights[me->i_j], _numberOfInputs);
-                            Serial.print(i+1); Serial.print(" "); printGateWeights(&me->weights[me->i_j], _numberOfOutputs); 
+                            Serial.print(i+1); printGateWeights(&me->weights[me->i_j], _numberOfInputs);
+                            Serial.print(i+1); printGateWeights(&me->weights[me->i_j], _numberOfOutputs);
                         #else
-                            Serial.print(i+1); Serial.print(" "); printGateWeights(&weights[i][offset], _numberOfInputs);
-                            Serial.print(i+1); Serial.print(" "); printGateWeights(&weights[i][offset + _numberOfInputs], _numberOfOutputs);
+                            Serial.print(i+1); printGateWeights(&weights[i][offset], _numberOfInputs);
+                            Serial.print(i+1); printGateWeights(&weights[i][offset + _numberOfInputs], _numberOfOutputs);
                         #endif
                     }
                 }
@@ -4378,15 +4391,15 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
-                    Serial.print(F_MACRO("GRU ((("));
+                    Serial.print(F_MACRO("GRU [(("));
                     Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("x"));
+                    Serial.print(F_MACRO("*"));
                     Serial.print(_numberOfOutputs);
                     Serial.print(F_MACRO(")+("));
                     Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("x"));
+                    Serial.print(F_MACRO("*"));
                     Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("))x3) "));
+                    Serial.print(F_MACRO("))*3] "));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("| bias:"));
                         Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
@@ -4400,9 +4413,6 @@ public:
                     Serial.println(F_MACRO("- RESET -" )); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
                     Serial.println(F_MACRO("- HIDDEN -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
                     Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2])); // #14
-
-                    Serial.println();
-                    Serial.println(F_MACRO("----------------------"));
                 }
             #endif
 
@@ -4413,15 +4423,15 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
-                    Serial.print(F_MACRO("LSTM ((("));
+                    Serial.print(F_MACRO("LSTM [(("));
                     Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("x"));
+                    Serial.print(F_MACRO("*"));
                     Serial.print(_numberOfOutputs);
                     Serial.print(F_MACRO(")+("));
                     Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("x"));
+                    Serial.print(F_MACRO("*"));
                     Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("))x4) "));
+                    Serial.print(F_MACRO("))*4] "));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("| bias:"));
                         Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
@@ -4436,9 +4446,6 @@ public:
                     Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
                     Serial.println(F_MACRO("- CELL -"  )); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2]));
                     Serial.println(F_MACRO("- OUTPUT -")); gatePrint((_numberOfInputs+_numberOfOutputs)*3 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*3])); // #14
-
-                    Serial.println();
-                    Serial.println(F_MACRO("----------------------"));
                 }
             #endif
 
@@ -4452,10 +4459,13 @@ public:
                     #if defined(USE_PROGMEM)
                         Serial.print(F_MACRO("PROGMEM "));
                     #endif
-                    Serial.print(F_MACRO("RNN "));
+                    Serial.print(F_MACRO("RNN [("));
                     Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("x"));
+                    Serial.print(F_MACRO("+"));
                     Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO(")*"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("]"));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("| bias:"));
                         Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
@@ -4510,7 +4520,6 @@ public:
                         #endif
                         Serial.println();
                     }
-                    Serial.println(F_MACRO("----------------------"));
                 }
             #endif
 
@@ -4524,14 +4533,25 @@ public:
                     Serial.print(F_MACRO("PROGMEM "));
                 #endif
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                    if (me->PropsPerLayer[me->AtlayerIndex].arch)
-                        Serial.print(F_MACRO("RNN "));
-                    else
-                        Serial.print(F_MACRO("DENSE "));
+                    if (me->PropsPerLayer[me->AtlayerIndex].arch){
+                        Serial.print(F_MACRO("RNN [("));
+                        Serial.print(_numberOfInputs);
+                        Serial.print(F_MACRO("+"));
+                        Serial.print(_numberOfOutputs);
+                        Serial.print(F_MACRO(")"));
+                    }else{
+                        Serial.print(F_MACRO("DENSE ["));
+                        Serial.print(_numberOfInputs);
+                    }
+                #else
+                    Serial.print(F_MACRO("DENSE "));
+                    Serial.print(_numberOfInputs);
                 #endif
-                Serial.print(_numberOfInputs);
-                Serial.print(F_MACRO("x"));
+                Serial.print(F_MACRO("*"));
                 Serial.print(_numberOfOutputs);
+                #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
+                    Serial.print(F_MACRO("]"));
+                #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                     Serial.print(F_MACRO("| bias:"));
                     Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
@@ -4602,7 +4622,6 @@ public:
                         Serial.println(); // meh...
                     #endif
                 }
-                Serial.println(F_MACRO("----------------------"));
             }
         #endif // (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)) [OR NOT]
     #endif // !defined(As__No_Common_Serial_Support)
