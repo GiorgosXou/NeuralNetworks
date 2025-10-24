@@ -536,9 +536,6 @@ struct LayerProps {
     // 2025-04-30 02:19:56 PM  TODO: It might be a good idea to have both "single-bias" but also "single-bias-per-gate" (make sure to iterate biasesFromPoint if per-gate)
     // 2025-04-30 02:31:34 PM  NOTE: But make sure to use a selective-OPTIONAL_BIAS type-of macro instead of this #14 | 2025-05-03 03:21:35 AM I guess?
     //
-    #if defined(USE_PROGMEM) // 2025-04-08 10:45:18 AM  TODO: USE_PROGMEM support
-        #error "As of now GRU are NOT suported with (USE_PROGMEM)."
-    #endif
     #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
         #error "As of now GRU are NOT suported with (USE_INTERNAL_EEPROM)."
     #endif
@@ -581,9 +578,6 @@ struct LayerProps {
     #define SIZEOF_FROM(x, y, z) ((x + y) * NUMBER_OF_STATES_GATES)
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
-    #if defined(USE_PROGMEM) // 2025-04-08 10:45:18 AM  TODO: USE_PROGMEM support
-        #error "As of now LSTM are NOT suported with (USE_PROGMEM)."
-    #endif
     #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
         #error "As of now LSTM are NOT suported with (USE_INTERNAL_EEPROM)."
     #endif
@@ -3879,9 +3873,9 @@ public:
                     #if defined(NO_BIAS)
                         _outputs[i] = 0;
                     #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        _outputs[i] = b[i] MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        _outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(b[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
                     #else
-                        _outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION; // #14 #15 using bias instead of b since it's single per layer // 2025-05-01 04:46:32 PM  TODO: Tensorflow custom training class-implementation
+                        _outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // #14 #15 using bias instead of b since it's single per layer // 2025-05-01 04:46:32 PM  TODO: Tensorflow custom training class-implementation
                     #endif
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -4352,8 +4346,8 @@ public:
                 {
                     for (unsigned int i = 0; i < len; i++){
                         Serial.print(F_MACRO("  W:"));
-                        if (w[i] > 0) Serial.print(F_MACRO(" "));
-                        Serial.print(w[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        if (TYPE_MEMMORY_READ_IDFLOAT(w[i]) > 0) Serial.print(F_MACRO(" "));
+                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(w[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     }
                     Serial.println();
 
@@ -4368,7 +4362,7 @@ public:
                     for (unsigned int i = 0; i < _numberOfOutputs; i++){
                         #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                             Serial.print(F_MACRO("   B:"));
-                            Serial.println(b[i] MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            Serial.println(TYPE_MEMMORY_READ_IDFLOAT(b[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
 
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -4389,6 +4383,9 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
+                    #if defined(USE_PROGMEM)
+                        Serial.print(F_MACRO("PROGMEM "));
+                    #endif
                     Serial.print(F_MACRO("GRU [(("));
                     Serial.print(_numberOfInputs);
                     Serial.print(F_MACRO("*"));
@@ -4400,7 +4397,7 @@ public:
                     Serial.print(F_MACRO("))*3] "));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("| bias:"));
-                        Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER) 
                         Serial.print(F_MACRO("| F(x):"));
@@ -4421,6 +4418,9 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
+                    #if defined(USE_PROGMEM)
+                        Serial.print(F_MACRO("PROGMEM "));
+                    #endif
                     Serial.print(F_MACRO("LSTM [(("));
                     Serial.print(_numberOfInputs);
                     Serial.print(F_MACRO("*"));
@@ -4432,7 +4432,7 @@ public:
                     Serial.print(F_MACRO("))*4] "));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         Serial.print(F_MACRO("| bias:"));
-                        Serial.print(*bias MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER)
                         Serial.print(F_MACRO("| F(x):"));
