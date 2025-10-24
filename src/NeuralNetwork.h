@@ -440,9 +440,7 @@
 
 // Keyword-based NN optimizations
 /// Messages
-#define RNN_MSG
-#define GRU_MSG
-#define LSTM_MSG
+#define NN_ARCH_MSG [𝗗𝗘𝗡𝗦𝗘]
 
 /// Casting/Converting the Function of NN into Type: LSTM GRU ANN RNN etc. when needed (In the case of SimpleRNN it's not necessary since it's merged with ANN's functions-logic)
 /// When Blank it default to either ANN or RNN
@@ -476,7 +474,7 @@ struct LayerProps {
 
 /// USE_RNN_LAYERS_ONLY && NO_BACKPROP
 #if defined(USE_RNN__NB) or defined(USE_DENSE_RNN_PAIR__NB)
-    #undef RNN_MSG
+    #undef NN_ARCH_MSG
     #undef NUMBER_FROM
     #undef INDEX_FROM
     #undef SIZEOF_FROM
@@ -489,7 +487,7 @@ struct LayerProps {
         #define INDEX_FROM(x, y, z, w) (x * (y + z))
         #define SIZEOF_FROM(x, y, z) (x + y)
         #define USE_RNN_LAYERS_ONLY
-        #define RNN_MSG [𝗥𝗡𝗡]
+        #define NN_ARCH_MSG [𝗥𝗡𝗡]
         #undef NN_TYPE_ARCHITECTURE
         #define NN_TYPE_ARCHITECTURE RNN_Only_
     #else
@@ -503,7 +501,7 @@ struct LayerProps {
         #define SIZEOF_FROM(x, y, z) (x + (z * y))
         #define USE_PAIR__DENSE_RNN
         #define USE_DENSE_PAIR
-        #define RNN_MSG [𝗗𝗘𝗡𝗦𝗘+𝗥𝗡𝗡]
+        #define NN_ARCH_MSG [𝗗𝗘𝗡𝗦𝗘+𝗥𝗡𝗡]
         #define LayerType LayerProps
         // (SINGLE_TIMESTEP_THRESHOLD) Defaults to being enabled
         #define ENABLE_SINGLE_TIMESTEP_THRESHOLD
@@ -522,7 +520,7 @@ struct LayerProps {
 
 // TODO: either use  (x * y) * (!(bool)z) + z * ((x * y) + (y * y)); or if else branch
 #elif defined(USE_GRU__NB) // (TensorFlow GRU(...reset_after=False) // #21
-    #undef GRU_MSG
+    #undef NN_ARCH_MSG
     #undef NUMBER_FROM
     #undef INDEX_FROM
     #undef SIZEOF_FROM
@@ -563,14 +561,14 @@ struct LayerProps {
             #error "(GRU_ACT) You are not allowed to use Softmax-activation-function for update-or-reset gate."
         #endif
         #define GRU_ACTIVATION_FUNCTION GRU_ACT
-        #define GRU_MSG [𝗚𝗥𝗨.GRU_ACT]
+        #define NN_ARCH_MSG [𝗚𝗥𝗨.GRU_ACT]
     #else
         #define GRU_ACTIVATION_FUNCTION Sigmoid
-        #define GRU_MSG [𝗚𝗥𝗨]
+        #define NN_ARCH_MSG [𝗚𝗥𝗨]
     #endif
 
 #elif defined(USE_LSTM__NB) // #21
-    #undef LSTM_MSG
+    #undef NN_ARCH_MSG
     #undef NUMBER_FROM
     #undef INDEX_FROM
     #undef SIZEOF_FROM
@@ -608,10 +606,10 @@ struct LayerProps {
             #error "(LSTM_ACT) You are not allowed to use Softmax-activation-function for gates."
         #endif
         #define LSTM_ACTIVATION_FUNCTION LSTM_ACT
-        #define LSTM_MSG [𝗟𝗦𝗧𝗠.LSTM_ACT]
+        #define NN_ARCH_MSG [𝗟𝗦𝗧𝗠.LSTM_ACT]
     #else
         #define LSTM_ACTIVATION_FUNCTION Sigmoid
-        #define LSTM_MSG [𝗟𝗦𝗧𝗠]
+        #define NN_ARCH_MSG [𝗟𝗦𝗧𝗠]
     #endif
 #endif
 
@@ -1203,7 +1201,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 RNN_MSG GRU_MSG LSTM_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 
