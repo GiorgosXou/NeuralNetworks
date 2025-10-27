@@ -168,7 +168,7 @@ To use any of the variables below,  you first need to ```#define```  a loss func
 | Loss variables | Sum variables |
 | ------ | ------ | 
 |NN.MeanSqrdError| NN.sumSquaredError|
-|NN.BinaryCrossEntropy| NN.sumOfBinaryCrossEntropy
+|NN.BinaryCrossEntropy| NN.sumOfBinaryCrossEntropy |
 |NN.CategoricalCrossEntropy| NN.sumOfCategoricalCrossEntropy|
 
 
