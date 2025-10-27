@@ -9,6 +9,7 @@
 
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #define _3_OPTIMIZE 0B01000000 // Enabling a computationally expensive but memmory-efficient Hill-Climbing algorithm
+#define _2_OPTIMIZE 0B00000001 // Disabling Backpropagation (saving 4-bytes of sketch-size [probably related to unoptimized `_inputs`])
 #define _1_OPTIMIZE 0B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #include <NeuralNetwork.h>
 
