@@ -335,7 +335,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B00000000``` | |   Nothing | |
 | ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights and biases</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
 | ```0B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. **Important note:** in case you want to `delete[] NN->layers[NN->numberOflayers - 1].outputs;` make sure afterwards to `...outputs = NULL` *(if you plan to `feedforward` again later in your sketch)*. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|
-| ```0B00100000``` |<sup><sub>❌</sub></sup>| <details><summary>Reduces RAM for Weights, level 1</summary>*(Partially reduce)* Not yet implimented</details>| <sub><sup>`REDUCE_RAM_WEIGHTS_LVL1`</sup></sub>|
+| ```0B00100000``` |<sup><sub>ⓘ</sub></sup>| <details><summary>Disables SIMD support when available</summary>You may disable SIMD-support to ensure the use of any type of input-data</details>| <sub><sup>`DISABLE_SIMD_SUPPORT`</sup></sub>|
 | ```0B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
 | ```0B00001000``` |<sup><sub>🟢</sub></sup>| <details><summary>Deletes previous layer's Gamma</summary>Always enabled **<sub><sup>(not switchable.)</sup></sub>**</details>|<sub><sup>`REDUCE_RAM_..._LAYER_GAMMA`</sup></sub>| 
 | ```0B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should either update `NN.me` manually before using the next one like `NN.me = &NN2` or just use `_2_OPTIMIZE 0B00000010` instead</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
@@ -362,7 +362,6 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 Don't use keywords to define optimizations, it won't work, use _X_OPTIMIZE
 - ⚠️ = Backpropagation is not allowed
 - 🟢 = Always enabled <sub><sup>(not switchable yet.)</sup></sub>
-- ❌ = Not yet implimented
 - 📌 = Recommended
 
 <br>

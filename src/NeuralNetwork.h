@@ -141,6 +141,7 @@
 #define MSG19
 #define MSG20
 #define MSG21
+#define MSG22
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -202,6 +203,12 @@
         #undef MSG2
         #define MSG2 \n- " [1] 0B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
     #endif  
+
+    #if ((_1_OPTIMIZE bitor 0B11011111) == 0B11111111)
+        #undef MSG22
+        #define MSG22 \n- " [1] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_SIMD_SUPPORT)"
+        #define DISABLE_SIMD_SUPPORT
+    #endif
     
     #if ((_1_OPTIMIZE bitor 0B11101111) == 0B11111111) && !defined(FORCED_REDUCE_RAM_WEIGHTS_LVL2) && !defined(IGNORE_OB0001_OPT)
         #define REDUCE_RAM_WEIGHTS_COMMON
@@ -209,11 +216,6 @@
         //#warning [⚠] Backpropagating more than once after a FeedForward [...]
         #undef MSG3
         #define MSG3 \n- " [1] 0B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
-    #elif ((_1_OPTIMIZE bitor 0B11011111) == 0B11111111)
-        #undef MSG3
-        #define MSG3 \n- " [1] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Is not implemented yet."
-        //#define REDUCE_RAM_WEIGHTS_COMMON
-        //#define REDUCE_RAM_WEIGHTS_LVL1
     #endif
 
     // NOTE: 2025-02-25 01:35:49 AM | #10 I just realised that it doesn't really matter,
@@ -661,7 +663,7 @@ struct LayerProps {
 #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
     #if defined(REDUCE_RAM_WEIGHTS_COMMON)
         #undef MSG3
-        #define MSG3 \n- " [_] 0B00110000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+        #define MSG3 \n- " [1] 0B000X0000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
     #endif
     #if defined(ACTIVATION__PER_LAYER)
         #define SIZEOF_FX sizeof(LayerType)
@@ -680,7 +682,7 @@ struct LayerProps {
 #endif
 
 // Disable SIMD parallel processing if double-precision or int-quntization is enabled
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)
+#if (!defined(DISABLE_SIMD_SUPPORT) && (defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)))
     #if defined(USE_64_BIT_DOUBLE)
         #undef MSG7
         #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
@@ -1195,7 +1197,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 
