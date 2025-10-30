@@ -3744,12 +3744,12 @@ public:
     #else // IF NOT (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
         void NeuralNetwork::Layer::accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
         {
-            for (unsigned int i = 0; i < len; i++)
-                *dest += src1[i] * TYPE_MEMMORY_READ_IDFLOAT(src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
-
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
             #endif
+
+            for (unsigned int i = 0; i < len; i++)
+                *dest += src1[i] * TYPE_MEMMORY_READ_IDFLOAT(src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
         }
 
 
