@@ -1371,9 +1371,9 @@ private:
         // NOTE: We keep all `Layer::...FeedForward_Individual` seperate insted of `void FUNCTION_OF(...)` for future implementation of multi-type-memmory NNs (during runtime)
         #if defined(SUPPORTS_INDIVIDUAL_FEEDFORWARD)
             #if defined(USE_RNN_LAYERS_ONLY) // #20 // ##25 we don't need `or defined(USE_PAIR__DENSE_RNN)` because by default we merge them in `FeedForward_Individual`
-                void RNN_Only_FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
+                void RNN_Only_FeedForward_Individual(const DFLOAT &input, const unsigned int j);
             #endif
-            void FeedForward_Individual(const DFLOAT &input, const unsigned int &j);
+            void FeedForward_Individual(const DFLOAT &input, const unsigned int j);
         #endif
 
         // NOTE: src2 is IDFLOAT not just DFLOAT !!! | src2 is meant to be weights
@@ -3287,7 +3287,7 @@ public:
         // TODO: maybe create a static variable which will take a reference to a function. Once when j==0 (for output init) and once when j == _numberOfInputs -1
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             #if defined(USE_RNN_LAYERS_ONLY)
-                void NeuralNetwork::Layer::RNN_Only_FeedForward_Individual(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
+                void NeuralNetwork::Layer::RNN_Only_FeedForward_Individual(const DFLOAT &input, const unsigned int j) // Not my proudest implementation, ngl... but it does the job for now
                 {
                     // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
                     if (j == 0){ // if it is the first input then create output array (for the output layer of this current layer)
@@ -3384,7 +3384,7 @@ public:
             #endif
 
 
-            void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int &j) // Not my proudest implementation, ngl... but it does the job for now
+            void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int j) // Not my proudest implementation, ngl... but it does the job for now
             {
                 // TODO: 2024-03-09 I guess?? Why Don't you just declare `static byte F1` here?  
                 if (j == 0){ // if it is the first input then create output array (for the output layer of this current layer)
@@ -3488,7 +3488,7 @@ public:
 
         #else // IF NOT(defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
             #if defined(USE_RNN_LAYERS_ONLY)
-                void NeuralNetwork::Layer::RNN_Only_FeedForward_Individual(const DFLOAT &input, const unsigned int &j)
+                void NeuralNetwork::Layer::RNN_Only_FeedForward_Individual(const DFLOAT &input, const unsigned int j)
                 {
                     #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
                         if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
@@ -3563,7 +3563,7 @@ public:
             #endif
 
 
-            void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int &j)
+            void NeuralNetwork::Layer::FeedForward_Individual(const DFLOAT &input, const unsigned int j)
             {
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS) 
                     if (j == 0) // if it is the first input then create output array (for the output layer of this current layer)
