@@ -444,7 +444,7 @@
 /// Messages
 #define NN_ARCH_MSG [𝗗𝗘𝗡𝗦𝗘]
 
-/// Casting/Converting the Function of NN into Type: LSTM GRU ANN RNN etc. when needed (In the case of SimpleRNN it's not necessary since it's merged with ANN's functions-logic)
+/// Casting/Converting the Function of NN into Type: LSTM GRU ANN RNN etc.
 /// When Blank it default to either ANN or RNN
 #define NN_TYPE_ARCHITECTURE
 #define EXPAND_MACRO(x, z) x ## z
