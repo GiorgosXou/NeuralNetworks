@@ -3540,7 +3540,9 @@ public:
                                 outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                             #endif
                         }else{
-                            me->i_j += _numberOfOutputs;
+                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                me->i_j += _numberOfOutputs;
+                            #endif
                         }
                     }
 
