@@ -206,7 +206,7 @@
 
     #if ((_1_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #undef MSG22
-        #define MSG22 \n- " [1] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_SIMD_SUPPORT)"
+        #define MSG22 \n- " [1] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_SIMD_SUPPORT), allows any type to be used as input-data."
         #define DISABLE_SIMD_SUPPORT
     #endif
     
@@ -695,9 +695,10 @@ struct LayerProps {
         // TODO: tmp_dest will be removed once I implement the custom-assembly-dotprod function of esp32 and stuff
         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
             // We keep me->i_j+= len; for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
-            #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; me->i_j+=len; } while(0)
+
+            /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; me->i_j+=len; } while(0)
         #else
-            #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
+            /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
         #endif
         #include "esp_dsp.h"
     #endif
@@ -1377,26 +1378,26 @@ private:
 
         // NOTE: src2 is IDFLOAT not just DFLOAT !!! | src2 is meant to be weights
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-            void accumulatedDotProduct(const DFLOAT *src, DFLOAT *dest, unsigned int len); // WithSrc2Address
+            template<typename T> void accumulatedDotProduct(const T *src, DFLOAT *dest, unsigned int len); // WithSrc2Address
         #else
-            void accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
+            template<typename T> void accumulatedDotProduct(const T *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len);
         #endif
 
         #if defined(HAS_GATED_OUTPUTS)
-            template< typename T > void gateActivationOf(const DFLOAT *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T activate, DFLOAT *_outputs, const unsigned int offset=0);
+            template<typename T, typename T2> void gateActivationOf(const T *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T2 activate, DFLOAT *_outputs, const unsigned int offset=0);
         #endif
 
         // NOTE: We keep all `Layer::...FeedForward` seperate insted of `void FUNCTION_OF(...)` for future implementation of multi-architectural NNs (during runtime)
         #if defined(USE_GRU_LAYERS_ONLY)
-            void GRU_Only_FeedForward(const DFLOAT *inputs);
+            template<typename T> void GRU_Only_FeedForward(const T *inputs);
         #endif
         #if defined(USE_LSTM_LAYERS_ONLY)
-            void LSTM_Only_FeedForward(const DFLOAT *inputs);
+            template<typename T> void LSTM_Only_FeedForward(const T *inputs);
         #endif
         #if defined(USE_RNN_LAYERS_ONLY) or defined(USE_PAIR__DENSE_RNN)
-            void RNN_Only_FeedForward(const DFLOAT *inputs);
+            template<typename T> void RNN_Only_FeedForward(const T *inputs);
         #endif
-        void FeedForward(const DFLOAT *inputs); // Calculates the outputs() of layer.
+        template<typename T> void FeedForward(const T *inputs); // Calculates the outputs() of layer.
 
 
         #if !defined (NO_BACKPROP)
@@ -1407,7 +1408,7 @@ private:
         #endif
 
         // (I guess) No need for encapsulation of this function into macro when all error-funtions (eg. MSE, ...) are disabled, since (it will be blank) the compiler will optimize it anyways for any user that uses it.
-        void ComputeSummedErrors(const DFLOAT *_expected_);
+        template<typename T> void ComputeSummedErrors(const T *_expected_);
 
 
         // "Extra Math"
@@ -1594,7 +1595,7 @@ public:
     #if defined(USE_DENSE_PAIR)
         void paired_FeedForward(const DFLOAT *inputs, const unsigned int i);
     #endif
-    DFLOAT *FeedForward(const DFLOAT *inputs); // Moves Calculated outputs as inputs to next layer.
+    template<typename T> DFLOAT *FeedForward(const T *inputs); // Moves Calculated outputs as inputs to next layer.
     
     //LOSS FUNCTIONS +common
     DFLOAT getMeanSqrdError           (unsigned int inputsPerEpoch); 
@@ -1615,7 +1616,7 @@ public:
         void climb(int8_t direction);
         bool HillClimb(DFLOAT error, DFLOAT tolerance);
     #endif
-    void ComputeSummedErrors(const DFLOAT *_expected_);
+    template<typename T> void ComputeSummedErrors(const T *_expected_);
 
     #if !defined(NO_BACKPROP)
         void BackProp(const DFLOAT *expected);    // BackPropopagation - (error, delta-weights, etc.).
@@ -2160,10 +2161,14 @@ public:
     #endif
 
 
-    DFLOAT *NeuralNetwork::FeedForward(const DFLOAT *inputs)
+    template<typename T> DFLOAT *NeuralNetwork::FeedForward(const T *inputs)
     {
-        #if !defined(NO_BACKPROP) // no need for (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
-            _inputs = inputs;
+        #if !defined(NO_BACKPROP) // No need for (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) | [The bellow line, is just an error note]
+            #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+                _inputs = inputs; /* 💥 𝗡𝗢𝗧𝗘: Try `#define _2_OPTIMIZE 0B00000001`, most probably you left backpropagation enabled. If purposefully then, please use (DFLOAT) `float` | (`template<typename T>` is not yet supported with backpropagation). */
+            #else
+                _inputs = inputs; /* 💥 𝗡𝗢𝗧𝗘: Most likely you are using Backpropagation with the wrong type of inputs/training-data, please use (DFLOAT) `float` | `(template<typename T>` is not yet supported with backpropagation). */
+            #endif
         #endif
 
         #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
@@ -2243,7 +2248,8 @@ public:
     }
 
 
-    void NeuralNetwork::Layer::ComputeSummedErrors(const DFLOAT *_expected_)
+    template<typename T>
+    void NeuralNetwork::Layer::ComputeSummedErrors(const T *_expected_)
     {
         DFLOAT gamma;
         // NOTE: summed errors exist at BackPropOutput too
@@ -2292,7 +2298,8 @@ public:
     }
 
 
-    void NeuralNetwork::ComputeSummedErrors(const DFLOAT *_expected_)
+    template<typename T>
+    void NeuralNetwork::ComputeSummedErrors(const T *_expected_)
     {
         /* i dont find any reason of having this if Backprop or ComputeSummedErrors will never be used more than once imidiatly after once [...] but just in case ... commented .... The same goes for i_j too | Meaning: NN.Backprop(..); \n NN.Backprop(..); without a feedforward in between
         #if defined(ACTIVATION__PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
@@ -3267,7 +3274,8 @@ public:
         }
 
 
-        void NeuralNetwork::Layer::accumulatedDotProduct(const DFLOAT *src1, DFLOAT *dest, unsigned int len) // WithSrc2Address
+        template<typename T>
+        void NeuralNetwork::Layer::accumulatedDotProduct(const T *src1, DFLOAT *dest, unsigned int len) // WithSrc2Address
         {
             for (unsigned int i = 0; i < len; i++)
                 *dest += src1[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
@@ -3635,7 +3643,8 @@ public:
 
     #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
         #if defined(USE_RNN_LAYERS_ONLY) or defined(USE_PAIR__DENSE_RNN) // #20 && !
-            void NeuralNetwork::Layer::RNN_Only_FeedForward(const DFLOAT *inputs)
+            template<typename T>
+            void NeuralNetwork::Layer::RNN_Only_FeedForward(const T *inputs)
             {
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
@@ -3685,7 +3694,8 @@ public:
         #endif
 
 
-        void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs)
+        template<typename T>
+        void NeuralNetwork::Layer::FeedForward(const T *inputs)
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];
@@ -3742,7 +3752,8 @@ public:
 
 
     #else // IF NOT (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
-        void NeuralNetwork::Layer::accumulatedDotProduct(const DFLOAT *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
+        template<typename T>
+        void NeuralNetwork::Layer::accumulatedDotProduct(const T *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
         {
             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                 me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
@@ -3753,7 +3764,8 @@ public:
         }
 
 
-        void NeuralNetwork::Layer::FeedForward(const DFLOAT *inputs) //*
+        template<typename T>
+        void NeuralNetwork::Layer::FeedForward(const T *inputs) //*
         {
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];
@@ -3770,10 +3782,12 @@ public:
                     outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
                 #endif
 
+                // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                // #12 [see also a03b1609fe7ec40fdc9b10d62c93134adc098b12] for a plain MLP/ANN an inlined code with me->i_j++, would redure the sketch about a few bytes for UNO. Instead of this, that's now | I may TODO: a macro for this case too 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    ACCUMULATED_DOT_PRODUCT_OF(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); // #12 [see also a03b1609fe7ec40fdc9b10d62c93134adc098b12] for a plain MLP/ANN an inlined code with me->i_j++, would redure the sketch about a few bytes for UNO. Instead of this, that's now | I may TODO: a macro for this case too 
+                    ACCUMULATED_DOT_PRODUCT_OF(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs);
                 #else
-                    ACCUMULATED_DOT_PRODUCT_OF(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
+                    ACCUMULATED_DOT_PRODUCT_OF(inputs, weights[i], &outputs[i], _numberOfInputs);
                 #endif
 
                 // #if defined(USE_RNN_LAYERS_ONLY) // #20
@@ -3813,7 +3827,8 @@ public:
 
 
         #if defined(USE_RNN_LAYERS_ONLY) or defined(USE_PAIR__DENSE_RNN) // #20 && !
-            void NeuralNetwork::Layer::RNN_Only_FeedForward(const DFLOAT *inputs) //*
+            template<typename T>
+            void NeuralNetwork::Layer::RNN_Only_FeedForward(const T *inputs) //*
             {
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
@@ -3868,8 +3883,8 @@ public:
         #if defined(HAS_GATED_OUTPUTS)
             // gateAccumulatedDotProductWithActivationAndBiases 
             //  NOTE: Don't worry about offset=0, as far as I tested, it gets optimised for REDUCE_RAM_WEIGHTS_LVL2 via the compilation since it never gets used
-            template< typename T >
-            void NeuralNetwork::Layer::gateActivationOf(const DFLOAT *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T activate, DFLOAT *_outputs, const unsigned int offset)
+            template<typename T, typename T2>
+            void NeuralNetwork::Layer::gateActivationOf(const T *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T2 activate, DFLOAT *_outputs, const unsigned int offset)
             {
                 for (unsigned int i = 0; i < _numberOfOutputs; i++){
                     #if defined(NO_BIAS)
@@ -3895,7 +3910,8 @@ public:
 
 
         #if defined(USE_GRU_LAYERS_ONLY)
-            void NeuralNetwork::Layer::GRU_Only_FeedForward(const DFLOAT *inputs)
+            template<typename T>
+            void NeuralNetwork::Layer::GRU_Only_FeedForward(const T *inputs)
             {
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
@@ -3931,7 +3947,8 @@ public:
 
 
         #if defined(USE_LSTM_LAYERS_ONLY)
-            void NeuralNetwork::Layer::LSTM_Only_FeedForward(const DFLOAT *inputs)
+            template<typename T>
+            void NeuralNetwork::Layer::LSTM_Only_FeedForward(const T *inputs)
             {
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
