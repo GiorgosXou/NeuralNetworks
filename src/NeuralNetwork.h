@@ -1168,7 +1168,7 @@ struct LayerProps {
 #endif
 
 
-// Check if there's NO_TRAINING_METHOD and if so, define IS_CONST to const
+// Check if there's NO_TRAINING_METHOD
 #if defined(NO_BACKPROP) && !defined(AS_TYPE_OF_HILL_CLIMB)
     #define NO_TRAINING_METHOD
     #if !defined(SUPPORTS_FS_FUNCTIONALITY) && !defined(SUPPORTS_SD_FUNCTIONALITY)
