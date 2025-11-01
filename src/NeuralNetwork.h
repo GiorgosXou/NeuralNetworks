@@ -79,16 +79,6 @@
     #endif
 #endif
 
-#define FS_LIB_NAME "FS.h"
-#if defined(FS_H) || defined(__FS_H__) || defined(FS_h)
-    #define SUPPORTS_FS_FUNCTIONALITY
-#elif defined __has_include
-    #if __has_include(FS_LIB_NAME)
-        #include FS_LIB_NAME
-        #define SUPPORTS_FS_FUNCTIONALITY
-    #endif
-#endif
-
 #define EEPROM_LIB_NAME <EEPROM.h>
 #if defined(EEPROM_h) || defined(__EEPROM_H__) 
     #define INCLUDES_EEPROM_H
@@ -142,6 +132,7 @@
 #define MSG20
 #define MSG21
 #define MSG22
+#define MSG23
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
 
 #define F_MACRO  
@@ -185,7 +176,7 @@
 #define IS_CONST
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
-        #if defined(ESP32)
+        #if defined(ESP32) or defined(PICO_BOARD) or defined(PICO_PLATFORM) or defined(CORE_TEENSY)
             #error "💥 [1] 0B10000000 PROGMEM is an AVR specific thing. Simply use `const` instead."
         #endif
         #undef TYPE_MEMMORY_READ_IDFLOAT
@@ -434,6 +425,12 @@
         #undef MSG21
         #define MSG21 \n- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is used."
         #define DISABLE_STATIC_FOR_ACTS
+    #endif
+
+    #if ((_3_OPTIMIZE bitor 0B11111101) == 0B11111111) // Using an optimization bit instead of __has_include due to the fact that "FS.h" is inside most of the cores and therefore it gets compiled
+        #undef MSG23
+        #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (SUPPORTS_FS_FUNCTIONALITY) enabled."
+        #define SUPPORTS_FS_FUNCTIONALITY
     #endif
 #endif
 
@@ -1216,7 +1213,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 \n\n 𝗨𝗦𝗜𝗡𝗚 NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 \n\n 𝗨𝗦𝗜𝗡𝗚 NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 

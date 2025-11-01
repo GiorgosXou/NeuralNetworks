@@ -108,7 +108,7 @@ Understanding the Basics of a Neural Network:
 <br>
 
 # ⚙️ Functions, Variables  ...
-**NOTE:** `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless there is `NO_TRAINING_METHOD` *(or SD/FS)* available, then it means `const`.
+**NOTE:** `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless there is `NO_TRAINING_METHOD` *(or !SD/!FS)* available, then it means `const`.
 
 | (NN) Neural-Network's Constructors |
 | ------ | 
