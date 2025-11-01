@@ -10,7 +10,7 @@
 #define NumberOf(arg) ((unsigned int)(sizeof(arg) / sizeof(arg[0])))
 
 // Macros for optimization flags
-#define _1_OPTIMIZE 0B01000110 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B01001110 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define _2_OPTIMIZE 0B10000000 // Enable the use of Internal EEPROM
 #define FROM_EEPROM_ADDRESS 0  // The position at which the NN will be saved in the internal EEPROM
 

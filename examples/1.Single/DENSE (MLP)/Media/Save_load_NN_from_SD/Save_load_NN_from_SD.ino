@@ -9,7 +9,7 @@
 #include <SD.h>                // https://www.arduino.cc/reference/en/libraries/sd/
 #define CS_SDPIN   4           // !!! MAKE SURE to change CS-pin to the one you use eg. for Arduino UNO is ...begin(4)
 #define FILENAME   "/WEIGHTS"  // * make sure the name is SMALL, simple and starts with /
-#define _1_OPTIMIZE 0B00010000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B00011000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define ACTIVATION__PER_LAYER  // DEFAULT KEYWORD for allowing the use of any Activation-Function per "Layer-to-Layer".
         #define Sigmoid // 0     Says to the compiler to compile the Sigmoid Activation-Function 
         #define Tanh    // 1     Says to the compiler to compile the Tanh    Activation-Function 

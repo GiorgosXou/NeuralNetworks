@@ -1,6 +1,6 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 //#define DISABLE_SINGLE_TIMESTEP_THRESHOLD // You may completely disable the single-threshold-logic to reduce sketch-size (if unnecessary)
-#define _1_OPTIMIZE 0B01010010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B01011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define _2_OPTIMIZE 0B00100000 // Enables MULTIPLE_BIASES_PER_LAYER
 #define USE_DENSE_RNN_PAIR__NB // Defines both RNN & DENSE architectures for your NeuralNetwork. (NB = NO_BACKPROP support)
 #define THRESHOLD 3            // Timestep threshold for ...

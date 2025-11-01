@@ -1,5 +1,5 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-#define _1_OPTIMIZE 0B11010010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B11011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define _2_OPTIMIZE 0B00100100 // MULTIPLE_BIASES_PER_LAYER + int8_t quantization
 #include <NeuralNetwork.h>
 

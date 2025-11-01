@@ -218,12 +218,13 @@
         #define MSG3 \n- " [1] 0B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
     #endif
 
-    // NOTE: 2025-02-25 01:35:49 AM | #10 I just realised that it doesn't really matter,
-    // since it has to zero the preLgamma-arrays prior to BackPropopagation [...]
+    // NOTE: 2025-10-31 09:17:45 AM | (the line bellow is related to an [old] always-enabled optimization called `REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA`, that was replaced in favor of `REDUCED_SKETCH_SIZE_DOT_PROD`)
+    // ^^^^^ 2025-02-25 01:35:49 AM | #10 I just realised that it doesn't really matter, since it has to zero the preLgamma-arrays prior to BackPropopagation [...]
+
     #if ((_1_OPTIMIZE bitor 0B11110111) == 0B11111111)
-        #define REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA
+        #define REDUCED_SKETCH_SIZE_DOT_PROD
         #undef MSG4
-        #define MSG4 \n- " [1] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Always Enbaled not switchable."
+        #define MSG4 \n- " [1] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCED_SKETCH_SIZE_DOT_PROD)."
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111011) == 0B11111111)
@@ -493,6 +494,7 @@ struct LayerProps {
         #undef NN_TYPE_ARCHITECTURE
         #define NN_TYPE_ARCHITECTURE RNN_Only_
     #else
+        // WARN: ##26 Reminder to either add 0-check or disable REDUCED_SKETCH_SIZE_DOT_PROD when I'll add the merged RNN+DENSE optimization (SLOW_PAIR_RNN_SKETCH_REDUCE)
         #undef LayerType
         #define A_TYPE_OF_RNN_ARCHITECTURE RNN_Only_
         #undef OPTIONAL_LAYER_TYPE_ARCHITECTURE
@@ -699,6 +701,10 @@ struct LayerProps {
             /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; me->i_j+=len; } while(0)
         #else
             /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
+        #endif
+        #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
+            #undef MSG4
+            #define MSG4 \n- " [1] 0B0000X000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCED_SKETCH_SIZE_DOT_PROD) not used since (ESP_SUPPORTS_SIMD)."
         #endif
         #include "esp_dsp.h"
     #endif
@@ -3277,8 +3283,14 @@ public:
         template<typename T>
         void NeuralNetwork::Layer::accumulatedDotProduct(const T *src1, DFLOAT *dest, unsigned int len) // WithSrc2Address
         {
-            for (unsigned int i = 0; i < len; i++)
-                *dest += src1[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+            #if defined(REDUCED_SKETCH_SIZE_DOT_PROD) // WARN: #26
+                do {
+                    *dest += (*src1++) * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                } while (--len);
+            #else
+                for (unsigned int i = 0; i < len; i++)
+                    *dest += src1[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+            #endif
         }
     #endif
 
@@ -3377,8 +3389,15 @@ public:
                         #endif
 
                         // Update the hidden states **after** all outputs are computed
-                        for (unsigned int k = 0; k < _numberOfOutputs; k++)
-                            hiddenStates[k] = outputs[k];
+                        #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
+                            j = 0;
+                            do {
+                                hiddenStates[j] = outputs[j];
+                            } while (++j != _numberOfOutputs);
+                        #else
+                            for (j = 0; j < _numberOfOutputs; j++)
+                                hiddenStates[j] = outputs[j];
+                        #endif
                     }
                 }
             #endif
@@ -3556,8 +3575,15 @@ public:
                         #endif
 
                         // Update the hidden states **after** all outputs are computed
-                        for (unsigned int k = 0; k < _numberOfOutputs; k++)
-                            hiddenStates[k] = outputs[k];
+                        #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
+                            j = 0;
+                            do {
+                                hiddenStates[j] = outputs[j];
+                            } while (++j != _numberOfOutputs);
+                        #else
+                            for (j = 0; j < _numberOfOutputs; j++)
+                                hiddenStates[j] = outputs[j];
+                        #endif
                     }
                 }
             #endif
@@ -3690,8 +3716,15 @@ public:
                 #endif
 
                 // Update the hidden states **after** all outputs are computed
-                for (unsigned int i = 0; i < _numberOfOutputs; i++)
-                    hiddenStates[i] = outputs[i];
+                #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
+                    unsigned int i = 0;
+                    do {
+                        hiddenStates[i] = outputs[i];
+                    } while (++i != _numberOfOutputs);
+                #else
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++)
+                        hiddenStates[i] = outputs[i];
+                #endif
             }
         #endif
 
@@ -3723,8 +3756,15 @@ public:
                 //     accumulatedDotProduct(inputs, &outputs[i], _numberOfInputs); // WithSrc2Address
                 //     accumulatedDotProduct(hiddenStates, &outputs[i], _numberOfOutputs); // WithSrc2Address
                 // #else // if simple ANN-MLP
-                    for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
-                        outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #if defined(REDUCED_SKETCH_SIZE_DOT_PROD) // WARN: #26
+                        unsigned int j = 0;
+                        do {
+                            outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        } while (++j != _numberOfInputs);
+                    #else
+                        for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
+                            outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #endif
                 // #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
@@ -3761,8 +3801,14 @@ public:
                 me->i_j+= len; // We keep this for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
             #endif
 
-            for (unsigned int i = 0; i < len; i++)
-                *dest += src1[i] * TYPE_MEMMORY_READ_IDFLOAT(src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+            #if defined(REDUCED_SKETCH_SIZE_DOT_PROD) // WARN: #26
+                do {
+                    *dest += (*src1++) * TYPE_MEMMORY_READ_IDFLOAT(*src2++) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                } while (--len);
+            #else
+                for (unsigned int i = 0; i < len; i++)
+                    *dest += src1[i] * TYPE_MEMMORY_READ_IDFLOAT(src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+            #endif
         }
 
 
@@ -3874,8 +3920,15 @@ public:
                 #endif
 
                 // Update the hidden states **after** all outputs are computed
-                for (unsigned int i = 0; i < _numberOfOutputs; i++) // TODO: SLOW_PAIR_RNN_SKETCH_REDUCE for dense+vanilla-RNN not with if-confition but a simmple _numberOfOutputs * arch
-                    hiddenStates[i] = outputs[i];
+                #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
+                    unsigned int i = 0;
+                    do {
+                        hiddenStates[i] = outputs[i];
+                    } while (++i != _numberOfOutputs);
+                #else
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++) // TODO: SLOW_PAIR_RNN_SKETCH_REDUCE for dense+vanilla-RNN not with if-confition but a simmple _numberOfOutputs * arch
+                        hiddenStates[i] = outputs[i];
+                #endif
             }
         #endif
         

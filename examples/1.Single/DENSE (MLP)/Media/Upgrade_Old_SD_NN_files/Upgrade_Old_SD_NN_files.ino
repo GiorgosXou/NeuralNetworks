@@ -10,7 +10,7 @@
 #define CS_SDPIN 4             // !!! MAKE SURE to change CS-pin to the one you use eg. for Arduino UNO is ...begin(4)
 #define OLD_NN "/OLD"          // * The old filename where the NN is stored/exists
 #define NEW_NN "/NEW"          // * The new filename .... make sure the name is SMALL, simple and starts with /
-#define _1_OPTIMIZE 0B01010000 // (0B01 doesn't effect anything) Make sure to enable the same optimizations your original/old NN was trained with
+#define _1_OPTIMIZE 0B01011000 // (0B01 doesn't effect anything) Make sure to enable the same optimizations your original/old NN was trained with
 #define ACTIVATION__PER_LAYER  // Make sure you defined the same Activation-Functions you defined during training of the old-NN
         #define Sigmoid // 0      Says to the compiler to compile the Sigmoid Activation-Function
         #define Tanh    // 1      Says to the compiler to compile the Tanh    Activation-Function

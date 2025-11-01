@@ -1,6 +1,6 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #define NO_FORCED_WEIGHTS_LVL2 // DISABLES (default 0B0001)-FORCED_REDUCE_RAM_WEIGHTS_LVL2 for LSTMs (results into incompatibilities when save()/load() funtions are used [...]) 
-#define _1_OPTIMIZE 0B01000010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B01001010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define _2_OPTIMIZE 0B00100000 // ENABLES MULTIPLE_BIASES_PER_LAYER
 #define USE_LSTM__NB           // Makes LSTM the core-architecture of your NeuralNetwork. (NB = NO_BACKPROP support)
 #define SELU                   // Defines core activation-function of your NeuralNetwork. 
