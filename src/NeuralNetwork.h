@@ -186,7 +186,7 @@
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #if defined(ESP32)
-            #error "💥 [1] 0B10000000 USE_PROGMEM on ESP32 is emulated, therefore it's not really supported."
+            #error "💥 [1] 0B10000000 PROGMEM is an AVR specific thing. Simply use `const` instead."
         #endif
         #undef TYPE_MEMMORY_READ_IDFLOAT
         #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_float(&x)
@@ -401,6 +401,7 @@
         #undef MSG18
         #define MSG18 \n- " [3] 0B01000000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (RAM_EFFICIENT_HILL_CLIMB)."
         #define RAM_EFFICIENT_HILL_CLIMB
+        #define AS_TYPE_OF_HILL_CLIMB
     #endif
 
     #if ((_3_OPTIMIZE bitor 0B11011111) == 0B11111111)
@@ -420,6 +421,7 @@
         #undef MSG19
         #define MSG19 \n- " [3] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled support for (HILL_CLIMB_DYNAMIC_LEARNING_RATES)."
         #define HILL_CLIMB_DYNAMIC_LEARNING_RATES
+        #define AS_TYPE_OF_HILL_CLIMB
     #endif
 
     #if ((_3_OPTIMIZE bitor 0B11110111) == 0B11111111)
@@ -1165,6 +1167,16 @@ struct LayerProps {
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
         #define AN_1 |> Sigmoid 
+    #endif
+#endif
+
+
+// Check if there's NO_TRAINING_METHOD and if so, define IS_CONST to const
+#if defined(NO_BACKPROP) && !defined(AS_TYPE_OF_HILL_CLIMB)
+    #define NO_TRAINING_METHOD
+    #if !defined(SUPPORTS_FS_FUNCTIONALITY) && !defined(SUPPORTS_SD_FUNCTIONALITY)
+        #undef IS_CONST
+        #define IS_CONST const
     #endif
 #endif
 
@@ -3164,7 +3176,8 @@ public:
         #endif
     }
 
-    #if !defined(USE_PROGMEM) && !defined(USE_INTERNAL_EEPROM) && !defined(USE_EXTERNAL_FRAM)
+    // NOTE: I added an `OR` because I'm planning to implement HILL_CLIMB for other types of memmory too
+    #if !defined(NO_BACKPROP) || !defined(NO_TRAINING_METHOD)
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN) // TODO: IDFLOAT support 
         {
@@ -3246,8 +3259,10 @@ public:
             }
 
         }
-    // Yes, it needs the "elif" else it doesn't find any decleration of the function\method bellow
-    #elif defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+    #endif
+
+
+    #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
         NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
