@@ -37,7 +37,7 @@
 
     #if defined(__AVR_ATtiny85__)
         #undef MSG0
-        #define MSG0 \n- "////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
+        #define MSG0 \n- "////////////// [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
     #endif
 #endif
 
@@ -168,12 +168,12 @@
     #undef MSG3
     #if defined(NO_FORCED_WEIGHTS_LVL2) // the reason I define IGNORE_OB0001_OPT instead of simply using NO_FORCED_WEIGHTS_LVL2 is to prevent other (NN_TYPE_ARCHITECTURE)s besides LSTM/GRU from using NO_FORCED_WEIGHTS_LVL2
         #define IGNORE_OB0001_OPT
-        #define MSG3 \n- " [1] 0B000X0000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] Disabling (REDUCE_RAM_WEIGHTS_LVL2) for LSTM/GRU, makes save()/load() incompatible."
+        #define MSG3 \n- " [1] 0B000X0000 [Χ] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] Disabling (REDUCE_RAM_WEIGHTS_LVL2) for LSTM/GRU, makes save()/load() incompatible."
     #else
         #define FORCED_REDUCE_RAM_WEIGHTS_LVL2
         #define REDUCE_RAM_WEIGHTS_COMMON
         #define REDUCE_RAM_WEIGHTS_LVL2
-        #define MSG3 \n- " [1] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (FORCED_REDUCE_RAM_WEIGHTS_LVL2) for LSTM/GRU, unless (NO_FORCED_WEIGHTS_LVL2) is defined."
+        #define MSG3 \n- " [1] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (FORCED_REDUCE_RAM_WEIGHTS_LVL2) for LSTM/GRU, unless (NO_FORCED_WEIGHTS_LVL2) is defined."
     #endif
 #endif
 
@@ -195,27 +195,27 @@
         #undef IS_CONST
         #define IS_CONST const
         #undef MSG1
-        #define MSG1 \n- " [1] 0B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
+        #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
     #endif
     #if ((_1_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
         #define NO_BACKPROP
         #undef MSG2
-        #define MSG2 \n- " [1] 0B01000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
+        #define MSG2 \n- " [1] 0B01000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (REDUCE_RAM_DELETE_OUTPUTS)."
     #endif  
 
     #if ((_1_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #undef MSG22
-        #define MSG22 \n- " [1] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_SIMD_SUPPORT), allows any type to be used as input-data."
+        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_SIMD_SUPPORT), allows any type to be used as input-data."
         #define DISABLE_SIMD_SUPPORT
     #endif
     
     #if ((_1_OPTIMIZE bitor 0B11101111) == 0B11111111) && !defined(FORCED_REDUCE_RAM_WEIGHTS_LVL2) && !defined(IGNORE_OB0001_OPT)
         #define REDUCE_RAM_WEIGHTS_COMMON
         #define REDUCE_RAM_WEIGHTS_LVL2
-        //#warning [⚠] Backpropagating more than once after a FeedForward [...]
+        //#warning [Δ] Backpropagating more than once after a FeedForward [...]
         #undef MSG3
-        #define MSG3 \n- " [1] 0B00010000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
+        #define MSG3 \n- " [1] 0B00010000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCE_RAM_WEIGHTS_LVL2)."
     #endif
 
     // NOTE: 2025-10-31 09:17:45 AM | (the line bellow is related to an [old] always-enabled optimization called `REDUCE_RAM_DELETE_PREVIOUS_LAYER_GAMMA`, that was replaced in favor of `REDUCED_SKETCH_SIZE_DOT_PROD`)
@@ -224,19 +224,19 @@
     #if ((_1_OPTIMIZE bitor 0B11110111) == 0B11111111)
         #define REDUCED_SKETCH_SIZE_DOT_PROD
         #undef MSG4
-        #define MSG4 \n- " [1] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCED_SKETCH_SIZE_DOT_PROD)."
+        #define MSG4 \n- " [1] 0B00001000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (REDUCED_SKETCH_SIZE_DOT_PROD)."
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111011) == 0B11111111)
         #define REDUCE_RAM_STATIC_REFERENCE
         #undef MSG5
-        #define MSG5 \n- " [1] 0B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If multiple NN objects, see: _2_OPTIMIZE 0B00000010!"
+        #define MSG5 \n- " [1] 0B00000100 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If multiple NN objects, see: _2_OPTIMIZE 0B00000010!"
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111101) == 0B11111111)
         #define DISABLE_MSE
         #undef MSG6
-        #define MSG6 \n- " [1] 0B00000010 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
+        #define MSG6 \n- " [1] 0B00000010 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] MSE is disabled (DISABLE_MSE) (DEFAULT_LOSS)"
     #endif
 
     #if ((_1_OPTIMIZE bitor 0B11111110) == 0B11111111)
@@ -263,7 +263,7 @@
         }
 
         #undef MSG7
-        #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using 64bit\8byte double-precision (USE_64_BIT_DOUBLE)."
+        #define MSG7 \n- " [1] 0B00000001 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using 64bit\8byte double-precision (USE_64_BIT_DOUBLE)."
     #endif
     //if i'll make most of the things static/global, i can significantly reduce rom but with the "limitation" of "one" NN per skeatch
 #endif
@@ -279,10 +279,10 @@
         #define USE_INTERNAL_EEPROM
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
-            #define MSG9 \n- " [2] 0B10000000 [⚠] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
+            #define MSG9 \n- " [2] 0B10000000 [Δ] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
         #endif
         #undef MSG8
-        #define MSG8 \n- " [2] 0B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
+        #define MSG8 \n- " [2] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
         #if !defined(EEPROM_h) || !defined(__EEPROM_H__) 
             // for some reason it says 'EEPROM' was not declared in this scope even though i #include it below. So it needs it at the sketch i guess too
             #include <EEPROM.h>
@@ -294,7 +294,7 @@
         #undef MSG11
         #undef OPTIONAL_BIAS
         #define OPTIONAL_BIAS(x)
-        #define MSG11 \n- " [2] 0B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
+        #define MSG11 \n- " [2] 0B01000000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Biases are disabled (NO_BIAS)."
         #define HAS_NO_BIAS true
         #define NO_BIAS
     #endif
@@ -304,7 +304,7 @@
             #error "You can't have both NO_BIAS and MULTIPLE_BIASES_PER_LAYER."
         #endif
         #undef MSG12
-        #define MSG12 \n- " [2] 0B00100000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
+        #define MSG12 \n- " [2] 0B00100000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
         #define MULTIPLE_BIASES_PER_LAYER
         #undef OPTIONAL_MULTI_BIAS
         #define OPTIONAL_MULTI_BIAS(x) , x
@@ -315,7 +315,7 @@
             #error "[2] 0B00010000 PROGMEM on ESP32 is emulated, therefore F() macro is not really supported."
         #endif
         #undef MSG13
-        #define MSG13 \n- " [2] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
+        #define MSG13 \n- " [2] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
         #undef F_MACRO
         #define F_MACRO F
     #endif
@@ -333,12 +333,12 @@
         #undef MULTIPLY_BY_INT_IF_QUANTIZATION
         #undef CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION
         #if (_2_OPTIMIZE bitor 0B11110111) == 0B11111111
-            #define MSG14 \n- " [2] 0B00001000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using int16_t quantization (NO_BACKPROP yet)."
+            #define MSG14 \n- " [2] 0B00001000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using int16_t quantization (NO_BACKPROP yet)."
             #define IDFLOAT int16_t
             #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_int16_t(&x)
             #define TYPE_MEMMORY_READ_IDFLOAT_NAME pgm_read_int16_t
         #else
-            #define MSG14 \n- " [2] 0B00000100 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using int8_t quantization (NO_BACKPROP yet)."
+            #define MSG14 \n- " [2] 0B00000100 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using int8_t quantization (NO_BACKPROP yet)."
             #define IDFLOAT int8_t
             #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_int8_t(&x)
             #define TYPE_MEMMORY_READ_IDFLOAT_NAME pgm_read_int8_t
@@ -375,7 +375,7 @@
         #if defined(REDUCE_RAM_STATIC_REFERENCE)
             #error "You don't have to define both _1_ 0B00000100 (REDUCE_RAM_STATIC_REFERENCE) and _2_ 0B00000010 (REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)."
         #endif
-        #define MSG15 \n- " [2] 0B00000010 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If single NN object, use: _1_OPTIMIZE 0B00000100 instead."
+        #define MSG15 \n- " [2] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If single NN object, use: _1_OPTIMIZE 0B00000100 instead."
         #define REDUCE_RAM_STATIC_REFERENCE
         #define REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS
     #endif
@@ -388,7 +388,7 @@
             #error "You can't yet USE_INTERNAL_EEPROM and USE_EXTERNAL_FRAM together."
         #endif
         #undef MSG17
-        #define MSG17 \n- " [3] 0B10000000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not allowed with (USE_EXTERNAL_FRAM)."
+        #define MSG17 \n- " [3] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not allowed with (USE_EXTERNAL_FRAM)."
         #define USE_EXTERNAL_FRAM
         #define NO_BACKPROP
         // #if !defined(FRAM_h) || !defined(__FRAM_H__) 
@@ -399,7 +399,7 @@
 
     #if ((_3_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #undef MSG18
-        #define MSG18 \n- " [3] 0B01000000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (RAM_EFFICIENT_HILL_CLIMB)."
+        #define MSG18 \n- " [3] 0B01000000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (RAM_EFFICIENT_HILL_CLIMB)."
         #define RAM_EFFICIENT_HILL_CLIMB
     #endif
 
@@ -408,7 +408,7 @@
             #error "You can't use both (RAM_EFFICIENT_HILL_CLIMB) and (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
         #endif
         #undef MSG18
-        #define MSG18 \n- " [3] 0B00100000 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Only pre-established NNs allowed with (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
+        #define MSG18 \n- " [3] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Only pre-established NNs allowed with (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
         #define RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW
         #define NO_BACKPROP
     #endif
@@ -418,19 +418,19 @@
             #error "You can't use (HILL_CLIMB_DYNAMIC_LEARNING_RATES) without enabling either (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)"
         #endif
         #undef MSG19
-        #define MSG19 \n- " [3] 0B00010000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled support for (HILL_CLIMB_DYNAMIC_LEARNING_RATES)."
+        #define MSG19 \n- " [3] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled support for (HILL_CLIMB_DYNAMIC_LEARNING_RATES)."
         #define HILL_CLIMB_DYNAMIC_LEARNING_RATES
     #endif
 
     #if ((_3_OPTIMIZE bitor 0B11110111) == 0B11111111)
         #undef MSG20
-        #define MSG20 \n- " [3] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (SUPPORT_NO_HIDDEN_BACKPROP)."
+        #define MSG20 \n- " [3] 0B00001000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled (SUPPORT_NO_HIDDEN_BACKPROP)."
         #define SUPPORT_NO_HIDDEN_BACKPROP
     #endif
 
     #if ((_3_OPTIMIZE bitor 0B11111011) == 0B11111111) // see #13
         #undef MSG21
-        #define MSG21 \n- " [3] 0B00000100 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is used."
+        #define MSG21 \n- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is used."
         #define DISABLE_STATIC_FOR_ACTS
     #endif
 #endif
@@ -665,7 +665,7 @@ struct LayerProps {
 #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
     #if defined(REDUCE_RAM_WEIGHTS_COMMON)
         #undef MSG3
-        #define MSG3 \n- " [1] 0B000X0000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
+        #define MSG3 \n- " [1] 0B000X0000 [Χ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There is no need for (REDUCE_RAM_WEIGHTS_LVLX)"
     #endif
     #if defined(ACTIVATION__PER_LAYER)
         #define SIZEOF_FX sizeof(LayerType)
@@ -676,9 +676,9 @@ struct LayerProps {
 #if defined(_2_OPTIMIZE) and ((_2_OPTIMIZE bitor 0B11111110) == 0B11111111)
     #undef MSG16
     #if defined(NO_BACKPROP)
-        #define MSG16 \n- " [2] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] NO_BACKPROP is already set!"
+        #define MSG16 \n- " [2] 0B00000001 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] NO_BACKPROP is already set!"
     #else
-        #define MSG16 \n- " [2] 0B00000001 [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Disabled Backpropagation."
+        #define MSG16 \n- " [2] 0B00000001 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Disabled Backpropagation."
         #define NO_BACKPROP
     #endif
 #endif
@@ -687,10 +687,10 @@ struct LayerProps {
 #if (!defined(DISABLE_SIMD_SUPPORT) && (defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)))
     #if defined(USE_64_BIT_DOUBLE)
         #undef MSG7
-        #define MSG7 \n- " [1] 0B00000001 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+        #define MSG7 \n- " [1] 0B00000001 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
     #elif defined(USE_INT_QUANTIZATION)
         #undef MSG7
-        #define MSG7 \n- " [2] 0B00001000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
+        #define MSG7 \n- " [2] 0B00001000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
     #else
         #define ESP_SUPPORTS_SIMD
         #undef ACCUMULATED_DOT_PRODUCT_OF
@@ -704,7 +704,7 @@ struct LayerProps {
         #endif
         #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
             #undef MSG4
-            #define MSG4 \n- " [1] 0B0000X000 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCED_SKETCH_SIZE_DOT_PROD) not used since (ESP_SUPPORTS_SIMD)."
+            #define MSG4 \n- " [1] 0B0000X000 [Χ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCED_SKETCH_SIZE_DOT_PROD) not used since (ESP_SUPPORTS_SIMD)."
         #endif
         #include "esp_dsp.h"
     #endif
@@ -1145,7 +1145,7 @@ struct LayerProps {
         #if !defined(DISABLE_STATIC_FOR_ACTS)
             #undef MSG21
             #define DISABLE_STATIC_FOR_ACTS 
-            #define MSG21 \n- " [3] 0B00000100 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to (ALL_ACTIVATION_FUNCTIONS), specifically due to Softmax."
+            #define MSG21 \n- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to (ALL_ACTIVATION_FUNCTIONS), specifically due to Softmax."
         #endif
         #define NO_BACKPROP
         #define ALL_ACTIVATION_FUNCTIONS
@@ -1154,7 +1154,7 @@ struct LayerProps {
         #undef NUM_OF_USED_ACTIVATION_FUNCTIONS
         #define NUM_OF_USED_ACTIVATION_FUNCTIONS (14 + CACT1 + CACT2 + CACT3 + CACT4 + CACT5)
         #undef MSG10
-        #define MSG10 \n- "////////////// [⚠] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
+        #define MSG10 \n- "////////////// [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed With (ALL_ACTIVATION_FUNCTIONS)."
     #else
         //ENABLE DEFAULT ACTIVATION FUNCTION
         // i will also create a mechanism to show #error if more than one is defined with B opperations?
@@ -1190,7 +1190,7 @@ struct LayerProps {
             #define DISABLE_STATIC_FOR_ACTS
         #endif
         #undef MSG21
-        #define MSG21 \n- " [3] 0B00000100 [ⓘ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax."
+        #define MSG21 \n- " [3] 0B00000100 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (DISABLE_STATIC_FOR_ACTS) is auto-enabled due to Softmax."
     #endif
     #undef IS_STATIC
     #undef IS_IN_LAYER_SCOPE
