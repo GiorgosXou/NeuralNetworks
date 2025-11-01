@@ -186,7 +186,7 @@
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #if defined(ESP32)
-            #error "[1] 0B10000000 USE_PROGMEM on ESP32 is emulated, therefore it's not really supported."
+            #error "💥 [1] 0B10000000 USE_PROGMEM on ESP32 is emulated, therefore it's not really supported."
         #endif
         #undef TYPE_MEMMORY_READ_IDFLOAT
         #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_float(&x)
@@ -242,7 +242,7 @@
     #if ((_1_OPTIMIZE bitor 0B11111110) == 0B11111111)
         #include <float.h>
         #if (DBL_MANT_DIG == FLT_MANT_DIG) // https://stackoverflow.com/questions/8751109
-            #error "Your MCU doesn't support 64bit/8byte double-precision !!! | (DBL_MANT_DIG == FLT_MANT_DIG)"
+            #error "💥 Your MCU doesn't support 64bit/8byte double-precision !!! | (DBL_MANT_DIG == FLT_MANT_DIG)"
         #endif
         #undef ATOL 
         #undef LLONG 
@@ -301,7 +301,7 @@
 
     #if ((_2_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #if defined(NO_BIAS)
-            #error "You can't have both NO_BIAS and MULTIPLE_BIASES_PER_LAYER."
+            #error "💥 You can't have both NO_BIAS and MULTIPLE_BIASES_PER_LAYER."
         #endif
         #undef MSG12
         #define MSG12 \n- " [2] 0B00100000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using (MULTIPLE_BIASES_PER_LAYER)."
@@ -312,7 +312,7 @@
 
     #if ((_2_OPTIMIZE bitor 0B11101111) == 0B11111111)
         #if defined(ESP32)
-            #error "[2] 0B00010000 PROGMEM on ESP32 is emulated, therefore F() macro is not really supported."
+            #error "💥 [2] 0B00010000 PROGMEM on ESP32 is emulated, therefore F() macro is not really supported."
         #endif
         #undef MSG13
         #define MSG13 \n- " [2] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
@@ -322,10 +322,10 @@
 
     #if (((_2_OPTIMIZE bitor 0B11110111) == 0B11111111) or ((_2_OPTIMIZE bitor 0B11111011) == 0B11111111)) 
         #if (((_2_OPTIMIZE bitor 0B11110111) == 0B11111111) and ((_2_OPTIMIZE bitor 0B11111011) == 0B11111111)) 
-            #error "You can't use both int16_t and int8_t! use either 16 or 8."
+            #error "💥 You can't use both int16_t and int8_t! use either 16 or 8."
         #endif
         #if defined(USE_64_BIT_DOUBLE)
-            #error "You can't USE_64_BIT_DOUBLE precision with USE_INT_QUANTIZATION."
+            #error "💥 You can't USE_64_BIT_DOUBLE precision with USE_INT_QUANTIZATION."
         #endif
         #undef MSG14
         #undef IDFLOAT
@@ -373,7 +373,7 @@
     #if ((_2_OPTIMIZE bitor 0B11111101) == 0B11111111)
         #undef MSG15
         #if defined(REDUCE_RAM_STATIC_REFERENCE)
-            #error "You don't have to define both _1_ 0B00000100 (REDUCE_RAM_STATIC_REFERENCE) and _2_ 0B00000010 (REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)."
+            #error "💥 You don't have to define both _1_ 0B00000100 (REDUCE_RAM_STATIC_REFERENCE) and _2_ 0B00000010 (REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)."
         #endif
         #define MSG15 \n- " [2] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] If single NN object, use: _1_OPTIMIZE 0B00000100 instead."
         #define REDUCE_RAM_STATIC_REFERENCE
@@ -385,7 +385,7 @@
 #if defined(_3_OPTIMIZE)
     #if ((_3_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #if defined(USE_INTERNAL_EEPROM)
-            #error "You can't yet USE_INTERNAL_EEPROM and USE_EXTERNAL_FRAM together."
+            #error "💥 You can't yet USE_INTERNAL_EEPROM and USE_EXTERNAL_FRAM together."
         #endif
         #undef MSG17
         #define MSG17 \n- " [3] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not allowed with (USE_EXTERNAL_FRAM)."
@@ -405,7 +405,7 @@
 
     #if ((_3_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #if defined(RAM_EFFICIENT_HILL_CLIMB)
-            #error "You can't use both (RAM_EFFICIENT_HILL_CLIMB) and (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
+            #error "💥 You can't use both (RAM_EFFICIENT_HILL_CLIMB) and (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
         #endif
         #undef MSG18
         #define MSG18 \n- " [3] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Only pre-established NNs allowed with (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
@@ -415,7 +415,7 @@
 
     #if ((_3_OPTIMIZE bitor 0B11101111) == 0B11111111)
         #if !defined(RAM_EFFICIENT_HILL_CLIMB) and !defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
-            #error "You can't use (HILL_CLIMB_DYNAMIC_LEARNING_RATES) without enabling either (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)"
+            #error "💥 You can't use (HILL_CLIMB_DYNAMIC_LEARNING_RATES) without enabling either (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)"
         #endif
         #undef MSG19
         #define MSG19 \n- " [3] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled support for (HILL_CLIMB_DYNAMIC_LEARNING_RATES)."
@@ -541,13 +541,13 @@ struct LayerProps {
     // 2025-04-30 02:31:34 PM  NOTE: But make sure to use a selective-OPTIONAL_BIAS type-of macro instead of this #14 | 2025-05-03 03:21:35 AM I guess?
     //
     #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
-        #error "As of now GRU are NOT suported with (USE_INTERNAL_EEPROM)."
+        #error "💥 As of now GRU are NOT suported with (USE_INTERNAL_EEPROM)."
     #endif
     #if defined(USE_EXTERNAL_FRAM) // 2025-04-08 10:45:18 AM  TODO: USE_EXTERNAL_FRAM support
-        #error "As of now GRU are NOT suported with (USE_EXTERNAL_FRAM)."
+        #error "💥 As of now GRU are NOT suported with (USE_EXTERNAL_FRAM)."
     #endif
     #if defined(Softmax) // #16
-        #error "There is no Softmax support when you (USE_GRU_LAYERS_ONLY)"
+        #error "💥 There is no Softmax support when you (USE_GRU_LAYERS_ONLY)"
     #endif
     // GRU doesn't support FeedForward_Individual-type functions yet, therefore we #undef it | see also #24
     #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
@@ -559,7 +559,7 @@ struct LayerProps {
         #define MAP_HELPER(x) ID_ ## x
         #define INDEX_NN(x) MAP_HELPER(x)
         #if INDEX_NN(GRU_ACT) == ID_Softmax // https://stackoverflow.com/a/79556797/11465149
-            #error "(GRU_ACT) You are not allowed to use Softmax-activation-function for update-or-reset gate."
+            #error "💥 (GRU_ACT) You are not allowed to use Softmax-activation-function for update-or-reset gate."
         #endif
         #define GRU_ACTIVATION_FUNCTION GRU_ACT
         #define NN_ARCH_MSG [𝗚𝗥𝗨.GRU_ACT]
@@ -583,13 +583,13 @@ struct LayerProps {
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
     #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
-        #error "As of now LSTM are NOT suported with (USE_INTERNAL_EEPROM)."
+        #error "💥 As of now LSTM are NOT suported with (USE_INTERNAL_EEPROM)."
     #endif
     #if defined(USE_EXTERNAL_FRAM) // 2025-04-08 10:45:18 AM  TODO: USE_EXTERNAL_FRAM support
-        #error "As of now LSTM are NOT suported with (USE_EXTERNAL_FRAM)."
+        #error "💥 As of now LSTM are NOT suported with (USE_EXTERNAL_FRAM)."
     #endif
     #if defined(Softmax) // #16
-        #error "There is no Softmax support when you (USE_LSTM_LAYERS_ONLY)"
+        #error "💥 There is no Softmax support when you (USE_LSTM_LAYERS_ONLY)"
     #endif
     // LSTM doesn't support FeedForward_Individual-type functions yet, therefore we #undef it | see also #24
     #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
@@ -601,7 +601,7 @@ struct LayerProps {
         #define MAP_HELPER(x) ID_ ## x
         #define INDEX_NN(x) MAP_HELPER(x)
         #if INDEX_NN(LSTM_ACT) == ID_Softmax // https://stackoverflow.com/a/79556797/11465149
-            #error "(LSTM_ACT) You are not allowed to use Softmax-activation-function for gates."
+            #error "💥 (LSTM_ACT) You are not allowed to use Softmax-activation-function for gates."
         #endif
         #define LSTM_ACTIVATION_FUNCTION LSTM_ACT
         #define NN_ARCH_MSG [𝗟𝗦𝗧𝗠.LSTM_ACT]
@@ -649,16 +649,16 @@ struct LayerProps {
 // Because there is no initialization nor destrcuction proccess of dynamic parameters during FRAM usage
 #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
     #if defined(USE_INTERNAL_EEPROM)
-        #error "You can't USE_INTERNAL_EEPROM with HillClimb yet."
+        #error "💥 You can't USE_INTERNAL_EEPROM with HillClimb yet."
     #endif
     #if defined(USE_EXTERNAL_FRAM)
-        #error "You can't USE_EXTERNAL_FRAM with HillClimb yet."
+        #error "💥 You can't USE_EXTERNAL_FRAM with HillClimb yet."
     #endif
     #if defined(USE_INT_QUANTIZATION)
-        #error "You can't USE_INT_QUANTIZATION with HillClimb yet."
+        #error "💥 You can't USE_INT_QUANTIZATION with HillClimb yet."
     #endif
     #if defined(USE_PROGMEM)
-        #error "You can't USE_PROGMEM with HillClimb"
+        #error "💥 You can't USE_PROGMEM with HillClimb"
     #endif
 #endif
 
@@ -784,7 +784,7 @@ struct LayerProps {
 
 
 #if defined(LeakyELU)
-    #error "Replace LeakyELU with LeakyReLU. That was a stupid typo of mine."
+    #error "💥 Replace LeakyELU with LeakyReLU. That was a stupid typo of mine."
 #endif
 
 #if defined(Sigmoid) && (defined(ACTIVATION__PER_LAYER) || !defined(ACTIVATION))
@@ -1140,7 +1140,7 @@ struct LayerProps {
     #if defined(ACTIVATION__PER_LAYER)
         // ACTIVATE ALL FUNCTIONS
         #if defined(USE_GRU_LAYERS_ONLY) or defined(USE_LSTM_LAYERS_ONLY)// #16
-            #error "There's no support for (ALL_ACTIVATION_FUNCTIONS) with GRU or LSTM, since Softmax is not supported. Please explicitly #define any activation-function you want."
+            #error "💥 There's no support for (ALL_ACTIVATION_FUNCTIONS) with GRU or LSTM, since Softmax is not supported. Please explicitly #define any activation-function you want."
         #endif
         #if !defined(DISABLE_STATIC_FOR_ACTS)
             #undef MSG21
