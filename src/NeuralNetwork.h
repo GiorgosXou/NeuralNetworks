@@ -176,17 +176,20 @@
 #define IS_CONST
 #if defined(_1_OPTIMIZE)
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
-        #if defined(ESP32) or defined(PICO_BOARD) or defined(PICO_PLATFORM) or defined(CORE_TEENSY)
-            #error "💥 [1] 0B10000000 PROGMEM is an AVR specific thing. Simply use `const` instead."
-        #endif
-        #undef TYPE_MEMMORY_READ_IDFLOAT
-        #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_float(&x)
-        #define USE_PROGMEM
-        #define NO_BACKPROP
-        #undef IS_CONST
-        #define IS_CONST const
         #undef MSG1
-        #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
+        #undef IS_CONST
+        #if defined(__AVR__)
+            #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
+            #undef TYPE_MEMMORY_READ_IDFLOAT
+            #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_float(&x)
+            #define AVR_PROGMEM_LOGIC
+        #else
+            #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (non-AVR), (CONST_MODERN_PROGMEM_LOGIC)." 
+            #define CONST_MODERN_PROGMEM_LOGIC
+        #endif
+        #define IS_CONST const
+        #define NO_BACKPROP
+        #define USE_PROGMEM
     #endif
     #if ((_1_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
@@ -1171,10 +1174,6 @@ struct LayerProps {
 // Check if there's NO_TRAINING_METHOD
 #if defined(NO_BACKPROP) && !defined(AS_TYPE_OF_HILL_CLIMB)
     #define NO_TRAINING_METHOD
-    #if !defined(SUPPORTS_FS_FUNCTIONALITY) && !defined(SUPPORTS_SD_FUNCTIONALITY)
-        #undef IS_CONST
-        #define IS_CONST const
-    #endif
 #endif
 
 
@@ -1369,7 +1368,7 @@ private:
         //      #0 Constructor                                                         .
         //      #1 Constructor With default/("probably") preptained, weights and biases.
         Layer() {};
-        #if !defined(USE_PROGMEM) 
+        #if !defined(USE_PROGMEM)
             // ^^^^^ I keep this USE_PROGMEM instead of NO_BACKPROP because that way if I add a NeuralNetwork::feedforward_PROGMEM, with -fpermisive someone will be able to use both RAM-NN and PROGMEM-NN at the same time
             Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #0  | defined(NO_BIAS) is there 2024-03-02
         #endif
@@ -4469,7 +4468,10 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
-                    #if defined(USE_PROGMEM)
+                    #if defined(CONST_MODERN_PROGMEM_LOGIC)
+                        Serial.print(F_MACRO("CONST* "));
+                    #endif
+                    #if defined(AVR_PROGMEM_LOGIC)
                         Serial.print(F_MACRO("PROGMEM "));
                     #endif
                     Serial.print(F_MACRO("GRU [(("));
@@ -4504,7 +4506,10 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
-                    #if defined(USE_PROGMEM)
+                    #if defined(CONST_MODERN_PROGMEM_LOGIC)
+                        Serial.print(F_MACRO("CONST* "));
+                    #endif
+                    #if defined(AVR_PROGMEM_LOGIC)
                         Serial.print(F_MACRO("PROGMEM "));
                     #endif
                     Serial.print(F_MACRO("LSTM [(("));
@@ -4540,7 +4545,10 @@ public:
                     #if defined(USE_INT_QUANTIZATION)
                         Serial.print(F_MACRO("INT_Q "));
                     #endif
-                    #if defined(USE_PROGMEM)
+                    #if defined(CONST_MODERN_PROGMEM_LOGIC)
+                        Serial.print(F_MACRO("CONST* "));
+                    #endif
+                    #if defined(AVR_PROGMEM_LOGIC)
                         Serial.print(F_MACRO("PROGMEM "));
                     #endif
                     Serial.print(F_MACRO("RNN [("));
@@ -4613,7 +4621,10 @@ public:
                 #if defined(USE_INT_QUANTIZATION)
                     Serial.print(F_MACRO("INT_Q "));
                 #endif
-                #if defined(USE_PROGMEM)
+                #if defined(CONST_MODERN_PROGMEM_LOGIC)
+                    Serial.print(F_MACRO("CONST* "));
+                #endif
+                #if defined(AVR_PROGMEM_LOGIC)
                     Serial.print(F_MACRO("PROGMEM "));
                 #endif
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)

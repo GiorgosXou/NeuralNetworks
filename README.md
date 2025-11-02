@@ -108,7 +108,7 @@ Understanding the Basics of a Neural Network:
 <br>
 
 # ⚙️ Functions, Variables  ...
-**NOTE:** `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless there is `NO_TRAINING_METHOD` *(or !SD/!FS)* available, then it means `const`.
+**NOTE:** `DFLOAT` means `float`, unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties), then it means `double`. `IDFLOAT` equals `DFLOAT` unless you [`USE_INT_QUANTIZATION`](#define-macro-properties), then it either means `int16_t` or `int8_t`. `IS_CONST` means nothing, unless you [`USE_PROGMEM`](#define-macro-properties), then it means `const`.
 
 | (NN) Neural-Network's Constructors |
 | ------ | 
@@ -333,7 +333,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 |  _1_OPTIMIZE | | Action |  Keyword |
 | :------: | :------: | ------ | ------ | 
 | ```0B00000000``` | |   Nothing | |
-| ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights and biases</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
+| ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights & biases. For non AVR-mcus, the same effect is achieved automatically without the old legacy-progmem-api, therefore you don't need to worry about compatibility etc.</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
 | ```0B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. **Important note:** in case you want to `delete[] NN->layers[NN->numberOflayers - 1].outputs;` make sure afterwards to `...outputs = NULL` *(if you plan to `feedforward` again later in your sketch)*. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|
 | ```0B00100000``` |<sup><sub>ⓘ</sub></sup>| <details><summary>Disables SIMD support when available</summary>You may disable SIMD-support to ensure the use of any type of input-data</details>| <sub><sup>`DISABLE_SIMD_SUPPORT`</sup></sub>|
 | ```0B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
