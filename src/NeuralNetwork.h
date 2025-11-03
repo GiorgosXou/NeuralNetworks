@@ -1,32 +1,13 @@
 
-// https://learn.sparkfun.com/tutorials/efficient-arduino-programming-with-arduino-cli-and-visual-studio-code/all
-// https://www.arduino.cc/en/Hacking/libraryTutorial
-
 /*
-  NeuralNetwork.h - Library for MLP Neural Networks.
+  NeuralNetwork.h - Library for Neural Networks.
   Created by George Chousos, April 11, 2019. *0
   Released into the public domain.
 
-  *0: Mainly Based On https://www.youtube.com/watch?v=L_PByyJ9g-I
+  *0: Mainly Based on: https://www.youtube.com/watch?v=L_PByyJ9g-I
+  https://www.arduino.cc/en/Hacking/libraryTutorial
 */
 
-/*
-[double on some Arduino boards like UNO for example is equal to float]
-
-- https://www.arduino.cc/reference/en/language/variables/data-types/double/
-- https://forum.arduino.cc/index.php?topic=613873.0
-*/
-
-/*
-[Error #777]
-    
- NeuralNetwork(const unsigned int *layer_, const float *default_Weights, const float *default_Bias, const unsigned int &NumberOflayers , bool isProgmem)   
- 
- Because someone, might want to have default or pretrained weights and biases and not in the PROGMEM but in the SRAM.
-
-- https://stackoverflow.com/questions/56024569/arduino-compiler-takes-into-account-const-progmem-type-as-equal-to-const-type
-- https://forum.arduino.cc/index.php?topic=614438.0
-*/
 
 // STR(MSGX) | pragma message
 #define MSG0
@@ -1600,7 +1581,6 @@ public:
         NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), const DFLOAT &LRw OPTIONAL_BIAS(const DFLOAT &LRb), LayerType *_PropsPerLayer = NULL);          // #0
     #endif
     NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias), const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), LayerType *_PropsPerLayer = NULL); // #1
-    // NeuralNetwork(const unsigned int *layer_, const PROGMEM DFLOAT *default_Weights OPTIONAL_BIAS(const PROGMEM DFLOAT *default_Bias), const unsigned int &NumberOflayers , bool isProgmem); // isProgmem (because of the Error #777) ? i get it in a way but ..
     
     #if defined(SUPPORTS_INDIVIDUAL_FEEDFORWARD)
         void  reset_Individual_Input_Counter();
