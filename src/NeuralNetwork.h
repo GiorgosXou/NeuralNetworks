@@ -3730,8 +3730,7 @@ public:
                 byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
             #endif
 
-            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                IDFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
             #endif
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
