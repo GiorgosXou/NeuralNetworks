@@ -134,6 +134,8 @@
 #define OPTIONAL_BIAS(x) , x
 // Optional Bias Macro, inlines/appends x if multiple biases are enabled (MULTIPLE_BIASES_PER_LAYER)
 #define OPTIONAL_MULTI_BIAS(x)
+// Optional Bias Macro, inlines/appends x if single biases are enabled
+#define OPTIONAL_SINGLE_BIAS(x)
 
 // Forces (REDUCE_RAM_WEIGHTS_LVL2) when GRU or LSTM layers are used, due to potential-incompatibility-issues
 #if defined(USE_GRU__NB) or defined(USE_LSTM__NB) // #21
@@ -425,6 +427,12 @@
 
 
 // Keyword-based NN optimizations
+//
+#if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER)
+    #undef OPTIONAL_SINGLE_BIAS
+    #define OPTIONAL_SINGLE_BIAS(x) , x
+#endif
+
 /// Messages
 #define NN_ARCH_MSG [𝗗𝗘𝗡𝗦𝗘]
 
@@ -565,12 +573,6 @@ struct LayerProps {
     #define SIZEOF_FROM(x, y, z) ((x + y) * NUMBER_OF_STATES_GATES)
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
-    #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
-        #error "💥 As of now LSTM are NOT suported with (USE_INTERNAL_EEPROM)."
-    #endif
-    #if defined(USE_EXTERNAL_FRAM) // 2025-04-08 10:45:18 AM  TODO: USE_EXTERNAL_FRAM support
-        #error "💥 As of now LSTM are NOT suported with (USE_EXTERNAL_FRAM)."
-    #endif
     #if defined(Softmax) // #16
         #error "💥 There is no Softmax support when you (USE_LSTM_LAYERS_ONLY)"
     #endif
@@ -1379,7 +1381,11 @@ private:
         #endif
 
         #if defined(HAS_GATED_OUTPUTS)
-            template<typename T, typename T2> void gateActivationOf(const T *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b), T2 activate, DFLOAT *_outputs, const unsigned int offset=0);
+            #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+                template<typename T, typename T2> void gateActivationOf(const T *inputs, const DFLOAT *inputs2 OPTIONAL_SINGLE_BIAS(const DFLOAT tmp_single_bias), T2 activate, DFLOAT *_outputs);
+            #else
+                template<typename T, typename T2> void gateActivationOf(const T *inputs, const DFLOAT *inputs2 OPTIONAL_MULTI_BIAS(const IDFLOAT *b)             , T2 activate, DFLOAT *_outputs, const unsigned int offset=0);
+            #endif
         #endif
 
         // NOTE: We keep all `Layer::...FeedForward` seperate insted of `void FUNCTION_OF(...)` for future implementation of multi-architectural NNs (during runtime)
@@ -1459,8 +1465,13 @@ private:
 
         // Print related functions
         #if defined(USE_GRU_LAYERS_ONLY) or defined(USE_LSTM_LAYERS_ONLY)
-            void printGateWeights(const IDFLOAT *w, const unsigned int len);
-            void gatePrint(const unsigned int offset OPTIONAL_MULTI_BIAS(const IDFLOAT *b));
+            #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
+                void printGateWeights(const unsigned int len);
+                void gatePrint();
+            #else
+                void printGateWeights(const IDFLOAT *w, const unsigned int len);
+                void gatePrint(const unsigned int offset OPTIONAL_MULTI_BIAS(const IDFLOAT *b));
+            #endif
         #endif
         #if defined(USE_GRU_LAYERS_ONLY)
             void GRU_Only_print();
@@ -3783,6 +3794,80 @@ public:
         }
 
 
+        #if defined(HAS_GATED_OUTPUTS)
+            // gateAccumulatedDotProductWithActivationAndBiases 
+            template<typename T, typename T2>
+            void NeuralNetwork::Layer::gateActivationOf(const T *inputs, const DFLOAT *inputs2 OPTIONAL_SINGLE_BIAS(const DFLOAT tmp_single_bias), T2 activate, DFLOAT *_outputs)
+            {
+                for (unsigned int i = 0; i < _numberOfOutputs; i++){
+                    #if defined(NO_BIAS)
+                        _outputs[i] = 0;
+                    #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
+                        _outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    #else 
+                        // MULTIPLY_BY_INT_IF_QUANTIZATION is done, don't worry
+                        _outputs[i] = tmp_single_bias; // #14 #15 using bias instead of b since it's single per layer // 2025-05-01 04:46:32 PM  TODO: Tensorflow custom training class-implementation
+                    #endif
+
+                    ACCUMULATED_DOT_PRODUCT_OF(inputs , &_outputs[i], _numberOfInputs);
+                    ACCUMULATED_DOT_PRODUCT_OF(inputs2, &_outputs[i], _numberOfOutputs); 
+
+                    _outputs[i] = activate(_outputs[i]);
+                }
+            }
+        #endif
+
+
+        #if defined(USE_LSTM_LAYERS_ONLY)
+            template<typename T>
+            void NeuralNetwork::Layer::LSTM_Only_FeedForward(const T *inputs)
+            {
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    outputs = new DFLOAT[_numberOfOutputs];
+                #endif
+                #if defined(ACTIVATION__PER_LAYER) // TODO: ##27 move this logic to NeuralNetwork::FeedForward since it's kinda shared across architectures
+                    byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
+                #endif
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: #28 DFLOAT not IDFLOAT
+                #endif
+
+                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs]; ...
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
+
+                for (unsigned int i=0; i < _numberOfOutputs; i++) // c_t = f_t * c_t-1 ... | Could be SIMD?
+                    cellStates[i] *= gatedOutputs[i];
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // u_t (Update-Gate at time t) #14
+
+                // CellState-Gate
+                #if defined(ACTIVATION__PER_LAYER)
+                    gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), fx, outputs); // #14
+                #else
+                    gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), ACTIVATION_FUNCTION, outputs); // #14
+                #endif
+
+                for (unsigned int i=0; i < _numberOfOutputs; i++) // ... + u_t * CellStateGate_t
+                    cellStates[i] += gatedOutputs[i] * outputs[i];
+
+
+                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS | Since we don't need it anymore
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, outputs); // o_t (Output-Gate at time t) #14
+
+                for (unsigned int i=0; i < _numberOfOutputs; i++){
+                    #if defined(ACTIVATION__PER_LAYER)
+                        outputs[i] *= fx(cellStates[i]);
+                    #else
+                        outputs[i] *= ACTIVATION_FUNCTION(cellStates[i]);
+                    #endif
+                    hiddenStates[i] = outputs[i];
+                }
+            }
+        #endif
+
+
     #else // IF NOT (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
         template<typename T>
         void NeuralNetwork::Layer::accumulatedDotProduct(const T *src1, const IDFLOAT *src2, DFLOAT *dest, unsigned int len)
@@ -4401,6 +4486,79 @@ public:
                     #endif
                 }
             }
+
+
+            #if defined(USE_GRU_LAYERS_ONLY) || defined(USE_LSTM_LAYERS_ONLY)
+
+                void NeuralNetwork::Layer::printGateWeights(const unsigned int len)
+                {
+                    DFLOAT w; // DFLOAT because we MULTIPLY_BY_INT_IF_QUANTIZATION
+                    for (unsigned int i = 0; i < len; i++){
+                        w = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        Serial.print(F_MACRO("  W:"));
+                        if (w > 0) Serial.print(F_MACRO(" "));
+                        Serial.print(w, DFLOAT_LEN);
+                    }
+                    Serial.println();
+
+                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                        me->i_j += len;
+                    #endif
+                }
+
+
+                void NeuralNetwork::Layer::gatePrint()
+                {
+                    for (unsigned int i = 0; i < _numberOfOutputs; i++){
+                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
+                            Serial.print(F_MACRO("   B:"));
+                            Serial.println(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        #endif
+                        Serial.print(i+1); printGateWeights(_numberOfInputs);
+                        Serial.print(i+1); printGateWeights(_numberOfOutputs);
+                    }
+                }
+            #endif
+
+
+            #if defined(USE_LSTM_LAYERS_ONLY)
+                void NeuralNetwork::Layer::LSTM_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
+                { 
+                    #if defined(USE_INT_QUANTIZATION)
+                        Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
+                    #else
+                        Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
+                    #endif
+                    Serial.print(F_MACRO("LSTM [(("));
+                    Serial.print(_numberOfInputs);
+                    Serial.print(F_MACRO("*"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO(")+("));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("*"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("))*4] "));
+                    #if defined(ACTIVATION__PER_LAYER)
+                        Serial.print(F_MACRO("| F(x):"));
+                        Serial.print(me->get_type_memmory_value<byte>(me->address));
+                    #endif
+                    #if defined(SINGLE_TIMESTEP_THRESHOLD)
+                        if (_AtlayerIndex == me->atIndex){
+                            Serial.print(F_MACRO("| Threshold:"));
+                            Serial.print(me->threshold);
+                        }
+                    #endif
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        Serial.print(F_MACRO("| bias:"));
+                        Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    Serial.println();
+                    Serial.println(F_MACRO("- FORGET -")); gatePrint();
+                    Serial.println(F_MACRO("- UPDATE -")); gatePrint(); 
+                    Serial.println(F_MACRO("- CELL -"  )); gatePrint();
+                    Serial.println(F_MACRO("- OUTPUT -")); gatePrint(); // #14
+                }
+            #endif
 
 
         #else // IF NOT (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM))
