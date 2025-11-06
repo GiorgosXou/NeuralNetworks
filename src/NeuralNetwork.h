@@ -3684,7 +3684,7 @@ public:
                 #endif
 
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    IDFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
                 #endif
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
@@ -3741,7 +3741,7 @@ public:
                 byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
             #endif
 
-                DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
             #endif
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
@@ -3829,7 +3829,7 @@ public:
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
-                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: #28 DFLOAT not IDFLOAT
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
                 #endif
 
                 // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs]; ...
