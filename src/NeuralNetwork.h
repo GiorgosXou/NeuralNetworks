@@ -466,6 +466,9 @@ struct LayerProps {
     byte      : 1;  // Skipping 1   |  TODO: (bias\no-bias)-selection ?
 };
 
+/// Number of States, Gates, or Outputs
+#define NUMBER_OF_PATHS 1
+
 /// USE_RNN_LAYERS_ONLY && NO_BACKPROP
 #if defined(USE_RNN__NB) or defined(USE_DENSE_RNN_PAIR__NB)
     #undef NN_ARCH_MSG
@@ -474,7 +477,6 @@ struct LayerProps {
     #undef SIZEOF_FROM
     #define WITH_RNN_USE
     #define HAS_HIDDEN_STATES
-    #define NUMBER_OF_STATES_GATES 1
     #define NO_BACKPROP
     #if !defined(USE_DENSE_RNN_PAIR__NB) // in other words if defined(USE_RNN__NB)
         #define NUMBER_FROM(x, y, z) ((x * y) + (y * y)) 
@@ -513,19 +515,21 @@ struct LayerProps {
         #undef SUPPORTS_INDIVIDUAL_FEEDFORWARD
     #endif
 
-// TODO: either use  (x * y) * (!(bool)z) + z * ((x * y) + (y * y)); or if else branch
+// TODO: either use  (x * y) * (!(bool)z) + z * ((x * y) + (y * y)); or if else branch | As of 2025-11-05 11:09:37 AM this might not be needed alsmost at all since SIZEOF_FROM logic changed but good to have this as a note here
+// NUMBER_OF_PATHS for dense pairs might need to become NUMBER_OF_PATHS(z) where z will be an arch and all together be defined as something like NUMBER_OF_PATHS(z) (((bool)z) * z) ?
 #elif defined(USE_GRU__NB) // (TensorFlow GRU(...reset_after=False) // #21
     #undef NN_ARCH_MSG
     #undef NUMBER_FROM
     #undef INDEX_FROM
     #undef SIZEOF_FROM
+    #undef NUMBER_OF_PATHS
     #define WITH_RNN_USE
     #define USE_GRU_LAYERS_ONLY
     #define HAS_HIDDEN_STATES
-    #define NUMBER_OF_STATES_GATES 3
-    #define NUMBER_FROM(x, y, z) ((x * y) + (y * y)) * NUMBER_OF_STATES_GATES
-    #define INDEX_FROM(x, y, z, w) (x * ((y + z) * NUMBER_OF_STATES_GATES))
-    #define SIZEOF_FROM(x, y, z) ((x + y) * NUMBER_OF_STATES_GATES)
+    #define NUMBER_OF_PATHS 3
+    #define NUMBER_FROM(x, y, z) ((x * y) + (y * y)) * NUMBER_OF_PATHS
+    #define INDEX_FROM(x, y, z, w) (x * ((y + z) * NUMBER_OF_PATHS))
+    #define SIZEOF_FROM(x, y, z) (x + y)
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
     // 2025-04-30 02:19:56 PM  TODO: It might be a good idea to have both "single-bias" but also "single-bias-per-gate" (make sure to iterate biasesFromPoint if per-gate)
@@ -564,13 +568,14 @@ struct LayerProps {
     #undef NUMBER_FROM
     #undef INDEX_FROM
     #undef SIZEOF_FROM
+    #undef NUMBER_OF_PATHS
     #define WITH_RNN_USE
     #define USE_LSTM_LAYERS_ONLY
     #define HAS_HIDDEN_STATES
-    #define NUMBER_OF_STATES_GATES 4
-    #define NUMBER_FROM(x, y, z) ((x * y) + (y * y)) * NUMBER_OF_STATES_GATES
-    #define INDEX_FROM(x, y, z, w) (x * ((y + z) * NUMBER_OF_STATES_GATES))
-    #define SIZEOF_FROM(x, y, z) ((x + y) * NUMBER_OF_STATES_GATES)
+    #define NUMBER_OF_PATHS 4
+    #define NUMBER_FROM(x, y, z) ((x * y) + (y * y)) * NUMBER_OF_PATHS
+    #define INDEX_FROM(x, y, z, w) (x * ((y + z) * NUMBER_OF_PATHS))
+    #define SIZEOF_FROM(x, y, z) (x + y)
     #define HAS_GATED_OUTPUTS // NOTE: It enables gateActivationOf too
     #define NO_BACKPROP
     #if defined(Softmax) // #16
@@ -1901,12 +1906,10 @@ public:
                 weightsFromPoint += NUMBER_FROM(layer_[i], layer_[i + 1], PropsPerLayer[i].arch); 
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
-                #if defined(USE_PAIR__DENSE_RNN)
-                    biasesFromPoint += layer_[i + 1];
-                #elif defined(NUMBER_OF_STATES_GATES)
-                    biasesFromPoint += layer_[i + 1] * NUMBER_OF_STATES_GATES; // GRU 3 gates * Units\layer_[i] | (TensorFlow GRU(...reset_after=False)) if True then this should be: 3 gates * Units * 2 bias_vectors) // LSTM 4 gates * Units\layer_[i] = Forget Update Output CellState // RNN 1
+                #if defined(HAS_GATED_OUTPUTS)
+                    biasesFromPoint += layer_[i + 1] * NUMBER_OF_PATHS; // GRU 3 gates * Units\layer_[i] | (TensorFlow GRU(...reset_after=False)) if True then this should be: 3 gates * Units * 2 bias_vectors) // LSTM 4 gates * Units\layer_[i] = Forget Update Output CellState // RNN 1
                 #else
-                    biasesFromPoint += layer_[i + 1];
+                    biasesFromPoint += layer_[i + 1]; // even for USE_RNN_LAYERS_ONLY or USE_PAIR__DENSE_RNN is ok
                 #endif
             #endif
         }
@@ -2341,18 +2344,21 @@ public:
                 #if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
                     *layers[l].bias += (LearningRateOfBiases * random(-1,2) * direction);
                 #endif
-                for (unsigned int i = 0; i < layers[l]._numberOfOutputs; i++){
-                    #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
-                        layers[l].bias[i] += (LearningRateOfBiases * random(-1,2) * direction);
-                    #endif
+                for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                    for (unsigned int i = 0; i < layers[l]._numberOfOutputs; i++){
+                        #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                            layers[l].bias[i + (p * layers[l]._numberOfOutputs)] += (LearningRateOfBiases * random(-1,2) * direction);
+                        #endif
                         for (unsigned int j = 0; j < SIZEOF_FROM(layers[l]._numberOfInputs, layers[l]._numberOfOutputs, PropsPerLayer[l].arch); j++)
                         {
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                                 weights[i_j++] += (LearningRateOfWeights * random(-1,2) * direction);
                             #else
-                                layers[l].weights[i][j] += (LearningRateOfWeights * random(-1,2) * direction);
+                                // eew! but whatever for now... at least for NUMBER_OF_PATHS == 1 it gets optimised
+                                layers[l].weights[i][j + (p * SIZEOF_FROM(layers[l]._numberOfInputs, layers[l]._numberOfOutputs, PropsPerLayer[l].arch))] += (LearningRateOfWeights * random(-1,2) * direction);
                             #endif
                         }
+                    }
                 }
             }
         }
@@ -2476,18 +2482,20 @@ public:
                         myFile.write(reinterpret_cast<byte*>(layers[n].bias), sizeof(*NeuralNetwork::Layer::bias));
                     #endif
                     // TODO: make an i_j loop for REDUCE_RAM_WEIGHTS_LVL2 instead
-                    for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
-                        #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            myFile.write(reinterpret_cast<byte*>(&layers[n].bias[i]), sizeof(*NeuralNetwork::Layer::bias));
-                        #endif
-                        //WARN: ##21 File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, specifically for GRU and LSTM layers.
-                        for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
-                        {
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                myFile.write(reinterpret_cast<byte*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
-                            #else
-                                myFile.write(reinterpret_cast<byte*>(&layers[n].weights[i][j]), sizeof(**NeuralNetwork::Layer::weights));
+                    for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                        for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
+                            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                myFile.write(reinterpret_cast<byte*>(&layers[n].bias[i + (p * layers[n]._numberOfOutputs)]), sizeof(*NeuralNetwork::Layer::bias));
                             #endif
+                            //WARN: ##21 File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, specifically for GRU and LSTM layers.
+                            for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
+                            {
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    myFile.write(reinterpret_cast<byte*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
+                                #else
+                                    myFile.write(reinterpret_cast<byte*>(&layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))]), sizeof(**NeuralNetwork::Layer::weights));
+                                #endif
+                            }
                         }
                     }
                 }
@@ -2532,19 +2540,22 @@ public:
                         #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                             myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(*layers[n].bias)); 
                         #endif
-                        for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
-                            #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i])); 
-                            #endif
 
-                            for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
-                            {
-                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                    myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
-                                #else
-                                    myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j])); 
+                        for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                            for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
+                                #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                    myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].bias[i + (p * layers[n]._numberOfOutputs)])); 
                                 #endif
-                                totalNumOfWeights++;
+
+                                for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
+                                {
+                                    #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                        myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(weights[totalNumOfWeights])); // I would had used i_j but I have totalNumOfWeights so... :)
+                                    #else
+                                        myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))])); 
+                                    #endif
+                                    totalNumOfWeights++;
+                                }
                             }
                         }
                     }
@@ -2610,7 +2621,7 @@ public:
                             tmp_bias  = new IDFLOAT;
                             myFile.read(reinterpret_cast<byte*>(tmp_bias), sizeof(*tmp_bias));
                         #else
-                            tmp_bias  = new IDFLOAT[tmp_layerOutputs]; // reminder: this is fine for NOT-REDUCE_RAM_WEIGHTS_LVL2 too
+                            tmp_bias = new IDFLOAT[tmp_layerOutputs * NUMBER_OF_PATHS]; // reminder: this is fine for NOT-REDUCE_RAM_WEIGHTS_LVL2 too
                         #endif
                     #endif
 
@@ -2622,29 +2633,34 @@ public:
                         #endif
                         layers[i].weights = new IDFLOAT *[tmp_layerOutputs];
 
-                        for(unsigned int j=0; j<tmp_layerOutputs; j++){
-                            #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                myFile.read(reinterpret_cast<byte*>(&layers[i].bias[j]), sizeof(*NeuralNetwork::Layer::bias));
-                            #endif
-                            layers[i].weights[j] = new IDFLOAT[SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch)]; // #21
-                            for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++){
-                                myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k]), sizeof(**NeuralNetwork::Layer::weights));
+                        for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                            for(unsigned int j=0; j<tmp_layerOutputs; j++){
+                                #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                    myFile.read(reinterpret_cast<byte*>(&layers[i].bias[j + (tmp_layerOutputs * p)]), sizeof(*NeuralNetwork::Layer::bias));
+                                #endif
+                                if (!p)
+                                    layers[i].weights[j] = new IDFLOAT[SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch) * NUMBER_OF_PATHS]; // #21
+                                for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++){
+                                    myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k + (p * SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch))]), sizeof(**NeuralNetwork::Layer::weights));
+                                }
                             }
                         }
                     #else // I won't elif here cause I want to have a clear image of the "division" below
                         #if defined(MULTIPLE_BIASES_PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                            for(unsigned int j=0; j<tmp_layerOutputs; j++){
+                            for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                                for(unsigned int j=0; j<tmp_layerOutputs; j++){
 
-                                #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                    myFile.read(reinterpret_cast<byte*>(&tmp_bias[j]), sizeof(*tmp_bias));
-                                #endif
+                                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                        myFile.read(reinterpret_cast<byte*>(&tmp_bias[j + (p * tmp_layerOutputs)]), sizeof(*tmp_bias));
+                                    #endif
 
-                                for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++){ // #21
-                                    myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                    for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++){ // #21
+                                        myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                    }
                                 }
                             }
                         #else
-                            for(unsigned int j=0; j<(SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs,) * tmp_layerOutputs); j++){ // #21
+                            for(unsigned int j=0; j<(SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs,) * NUMBER_OF_PATHS * tmp_layerOutputs); j++){ // #21
                                 myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
                             }
                         #endif
@@ -2755,50 +2771,55 @@ public:
                         #endif
 
                         #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-                            for(unsigned int j=0; j<tmp_layerOutputs; j++){
-                                #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                    #if !defined(USE_INT_QUANTIZATION)
-                                        tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                        layers[i].bias[j] = *((DFLOAT*)(&tmp));
-                                    #else
-                                        layers[i].bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                    #endif
-                                #endif
-                                layers[i].weights[j] = new IDFLOAT[SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch)]; // #22 
-                                for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++) // #22 
-                                {
-                                    #if !defined(USE_INT_QUANTIZATION)
-                                        tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                        layers[i].weights[j][k] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
-                                    #else
-                                        layers[i].weights[j][k] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                    #endif
-                                }
-                            }
-                        #else // I won't elif here cause I want to have a clear image of the "division" below
-                            #if defined(MULTIPLE_BIASES_PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES) // #22
+                            for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
                                 for(unsigned int j=0; j<tmp_layerOutputs; j++){
                                     #if defined(MULTIPLE_BIASES_PER_LAYER)
                                         #if !defined(USE_INT_QUANTIZATION)
                                             tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                            tmp_bias[j] = *((DFLOAT*)(&tmp));
+                                            layers[i].bias[j + (p * tmp_layerOutputs)] = *((DFLOAT*)(&tmp));
                                         #else
-                                            tmp_bias[j] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                            layers[i].bias[j + (p * tmp_layerOutputs)] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
                                         #endif
                                     #endif
-
-                                    for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++) // #22
+                                    if (!p)
+                                        layers[i].weights[j] = new IDFLOAT[SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch) * NUMBER_OF_PATHS]; // #22 
+                                    for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++) // #22 
                                     {
                                         #if !defined(USE_INT_QUANTIZATION)
                                             tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                            weights[count_ij++] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                            layers[i].weights[j][k + (p * SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch))] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
                                         #else
-                                            weights[count_ij++] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                            layers[i].weights[j][k + (p * SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch))] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
                                         #endif
                                     }
                                 }
+                            }
+                        #else // I won't elif here cause I want to have a clear image of the "division" below
+                            #if defined(MULTIPLE_BIASES_PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES) // #22
+                                for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                                    for(unsigned int j=0; j<tmp_layerOutputs; j++){
+                                        #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                            #if !defined(USE_INT_QUANTIZATION)
+                                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                                tmp_bias[j + (p * tmp_layerOutputs)] = *((DFLOAT*)(&tmp));
+                                            #else
+                                                tmp_bias[j + (p * tmp_layerOutputs)] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                            #endif
+                                        #endif
+
+                                        for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++) // #22
+                                        {
+                                            #if !defined(USE_INT_QUANTIZATION)
+                                                tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                                weights[count_ij++] = *((DFLOAT*)(&tmp)); // toFloat() which is atof() is not accurate (at least on Arduino UNO)
+                                            #else
+                                                weights[count_ij++] = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
+                                            #endif
+                                        }
+                                    }
+                                }
                             #else
-                                for(unsigned int j=0; j<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch) * tmp_layerOutputs; j++) // #22
+                                for(unsigned int j=0; j<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch) * NUMBER_OF_PATHS * tmp_layerOutputs; j++) // #22
                                 {
                                     #if !defined(USE_INT_QUANTIZATION)
                                         tmp = ATOL((char*)myFile.readStringUntil('\n').c_str());
@@ -2874,22 +2895,24 @@ public:
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, *layers[n].bias);
                     #endif
-                    for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
-                        #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].bias[i]);
-                        #endif
-
-                        //WARN: ##21 File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, SPECIFICALLY for GRU and LSTM layers.
-                        // Additionally in the SPECIFIC case of GRU or LSTM using either FRAM or EEPROM without REDUCE_RAM_WEIGHTS_LVL2 the file won't be loadable after saving. You may ask why I don't make it loadable... 
-                        // because the momment I make it loadable it will brake an upcomming feature I want to implement that has to do with off-loading to RAM therefore it's best to keep REDUCE_RAM_WEIGHTS_LVL2-
-                        // logic by default (since it is common with the current sate of EEPROM and FRAM in term of how the weights are organized) [...]
-                        for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
-                        {
-                            #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, weights[i_j++]);
-                            #else
-                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].weights[i][j]);
+                    for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
+                        for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
+                            #if defined(MULTIPLE_BIASES_PER_LAYER)
+                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].bias[i + (layers[n]._numberOfOutputs * p)]);
                             #endif
+
+                            //WARN: ##21 File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, SPECIFICALLY for GRU and LSTM layers.
+                            // Additionally in the SPECIFIC case of GRU or LSTM using either FRAM or EEPROM without REDUCE_RAM_WEIGHTS_LVL2 the file won't be loadable after saving. You may ask why I don't make it loadable... 
+                            // because the momment I make it loadable it will brake an upcomming feature I want to implement that has to do with off-loading to RAM therefore it's best to keep REDUCE_RAM_WEIGHTS_LVL2-
+                            // logic by default (since it is common with the current sate of EEPROM and FRAM in term of how the weights are organized) [...]
+                            for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
+                            {
+                                #if defined(REDUCE_RAM_WEIGHTS_LVL2)
+                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, weights[i_j++]);
+                                #else
+                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))]);
+                                #endif
+                            }
                         }
                     }
                 }
@@ -3196,12 +3219,10 @@ public:
                 weights = new IDFLOAT *[_numberOfOutputs];                  // ##1    New Array of Pointers to (IDFLOAT) weights.
             #endif
             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                #if defined(USE_PAIR__DENSE_RNN)  // NOTE: not USE_DENSE_PAIR (also TODO)
-                    bias = new IDFLOAT[_numberOfOutputs];                   // ##1    New          Biases
-                #elif defined(NUMBER_OF_STATES_GATES)
-                    bias = new IDFLOAT[_numberOfOutputs*NUMBER_OF_STATES_GATES]; // ##1 (LSTM or GRU or RNN) New Biases
-                #else         
-                    bias = new IDFLOAT[_numberOfOutputs];                   // ##1    New          Biases
+                #if defined(HAS_GATED_OUTPUTS)
+                    bias = new IDFLOAT[_numberOfOutputs*NUMBER_OF_PATHS]; // ##1 (LSTM or GRU) New Biases
+                #else          
+                    bias = new IDFLOAT[_numberOfOutputs];                   // ##1    New          Biases  // even for USE_RNN_LAYERS_ONLY or USE_PAIR__DENSE_RNN is ok
                 #endif         
             #elif !defined(NO_BIAS) // TODO: Investigate if with GRU or LSTM anything changes
                 bias = new IDFLOAT;                                         // ##1    New          Bias   .
@@ -3211,7 +3232,7 @@ public:
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if !defined(REDUCE_RAM_WEIGHTS_COMMON)
-                    weights[i] = new IDFLOAT[SIZEOF_FROM(_numberOfInputs, _numberOfOutputs, layerArchitecture)];
+                    weights[i] = new IDFLOAT[SIZEOF_FROM(_numberOfInputs, _numberOfOutputs, layerArchitecture) * NUMBER_OF_PATHS];
                 #endif
 
                 #if defined(HAS_HIDDEN_STATES) and !defined(USE_DENSE_PAIR)
@@ -3235,7 +3256,7 @@ public:
                     #endif
                 #endif
                 
-                for (unsigned int j = 0; j < SIZEOF_FROM(_numberOfInputs, _numberOfOutputs, layerArchitecture); j++)
+                for (unsigned int j = 0; j < SIZEOF_FROM(_numberOfInputs, _numberOfOutputs, layerArchitecture) * NUMBER_OF_PATHS; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
                         me->weights[me->i_j++] = (IDFLOAT)random(-90000, 90000) / 100000;
@@ -3737,10 +3758,10 @@ public:
             #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];
             #endif
-            #if defined(ACTIVATION__PER_LAYER)
+            #if defined(ACTIVATION__PER_LAYER) // #27
                 byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
             #endif
-
+            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27
                 DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
             #endif
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
