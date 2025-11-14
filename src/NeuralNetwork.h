@@ -4893,10 +4893,12 @@ public:
 In Arduino log() = ln = natural logarithm = logarithm with base e 
 
 
- TODO: DOCUMENTING OF
+ TODO: DOCUMENTING OF:
  - USE_RNN__NB
  - USE_GRU__NB
  - DISABLE_STATIC_FOR_ACTS
+ TODO: FEATURES:
+ - Statistically based training methond idea (instead of gradient based)
 
 
 // TODO: make add inline macro opt
