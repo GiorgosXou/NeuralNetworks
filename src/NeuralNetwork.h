@@ -535,12 +535,6 @@ struct LayerProps {
     // 2025-04-30 02:19:56 PM  TODO: It might be a good idea to have both "single-bias" but also "single-bias-per-gate" (make sure to iterate biasesFromPoint if per-gate)
     // 2025-04-30 02:31:34 PM  NOTE: But make sure to use a selective-OPTIONAL_BIAS type-of macro instead of this #14 | 2025-05-03 03:21:35 AM I guess?
     //
-    #if defined(USE_INTERNAL_EEPROM) // 2025-04-08 10:45:18 AM  TODO: USE_INTERNAL_EEPROM support
-        #error "💥 As of now GRU are NOT suported with (USE_INTERNAL_EEPROM)."
-    #endif
-    #if defined(USE_EXTERNAL_FRAM) // 2025-04-08 10:45:18 AM  TODO: USE_EXTERNAL_FRAM support
-        #error "💥 As of now GRU are NOT suported with (USE_EXTERNAL_FRAM)."
-    #endif
     #if defined(Softmax) // #16
         #error "💥 There is no Softmax support when you (USE_GRU_LAYERS_ONLY)"
     #endif
@@ -3838,6 +3832,47 @@ public:
         #endif
 
 
+        #if defined(USE_GRU_LAYERS_ONLY)
+            template<typename T>
+            void NeuralNetwork::Layer::GRU_Only_FeedForward(const T *inputs)
+            {
+                #if defined(REDUCE_RAM_DELETE_OUTPUTS)
+                    outputs = new DFLOAT[_numberOfOutputs];
+                #endif
+                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs];
+
+                #if defined(ACTIVATION__PER_LAYER) // TODO: ##27 move this logic to NeuralNetwork::FeedForward since it's kinda shared across architectures
+                    byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
+                #endif
+                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
+                #endif
+
+                // Since they are MCUs we care a bit more about sketch size vs speed (not that it can be way faster but anyways)
+                gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), GRU_ACTIVATION_FUNCTION, gatedOutputs); // r_t #14
+
+                for(unsigned int i =0; i < _numberOfOutputs; i++)
+                    gatedOutputs[i] *= hiddenStates[i]; // r_t = r_t * h_(t-1)
+
+                #if defined(ACTIVATION__PER_LAYER)
+                    gateActivationOf(inputs,gatedOutputs OPTIONAL_SINGLE_BIAS(tmp_bias), fx, outputs); // Candidate Hidden-State/Output #14
+                #else
+                    gateActivationOf(inputs,gatedOutputs OPTIONAL_SINGLE_BIAS(tmp_bias), ACTIVATION_FUNCTION, outputs); // Candidate Hidden-State/Output #14
+                #endif
+
+                gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), GRU_ACTIVATION_FUNCTION, gatedOutputs); // Update State #14 
+
+                // Update the hidden states **after** all outputs are computed
+                for (unsigned int i = 0; i < _numberOfOutputs; i++){
+                    outputs[i] = gatedOutputs[i] * (hiddenStates[i] - outputs[i]) + outputs[i]; // h = z * (h_old - hnew) + hnew <=> h = z * h_old + (1 - z) * hnew --> https://stats.stackexchange.com/a/613773/466641 
+                    hiddenStates[i] = outputs[i];
+                }
+
+                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS
+            }
+        #endif
+
+
         #if defined(USE_LSTM_LAYERS_ONLY)
             template<typename T>
             void NeuralNetwork::Layer::LSTM_Only_FeedForward(const T *inputs)
@@ -4537,6 +4572,45 @@ public:
                         Serial.print(i+1); printGateWeights(_numberOfInputs);
                         Serial.print(i+1); printGateWeights(_numberOfOutputs);
                     }
+                }
+            #endif
+
+
+            #if defined(USE_GRU_LAYERS_ONLY)
+                void NeuralNetwork::Layer::GRU_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
+                {
+                    #if defined(USE_INT_QUANTIZATION)
+                        Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
+                    #else
+                        Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
+                    #endif
+                    Serial.print(F_MACRO("GRU [(("));
+                    Serial.print(_numberOfInputs);
+                    Serial.print(F_MACRO("*"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO(")+("));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("*"));
+                    Serial.print(_numberOfOutputs);
+                    Serial.print(F_MACRO("))*3] "));
+                    #if defined(ACTIVATION__PER_LAYER)
+                        Serial.print(F_MACRO("| F(x):"));
+                        Serial.print(me->get_type_memmory_value<byte>(me->address));
+                    #endif
+                    #if defined(SINGLE_TIMESTEP_THRESHOLD)
+                        if (_AtlayerIndex == me->atIndex){
+                            Serial.print(F_MACRO("| Threshold:"));
+                            Serial.print(me->threshold);
+                        }
+                    #endif
+                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        Serial.print(F_MACRO("| bias:"));
+                        Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    #endif
+                    Serial.println();
+                    Serial.println(F_MACRO("- RESET -" )); gatePrint();
+                    Serial.println(F_MACRO("- HIDDEN -")); gatePrint();
+                    Serial.println(F_MACRO("- UPDATE -")); gatePrint(); // #14
                 }
             #endif
 
