@@ -1675,7 +1675,7 @@ public:
 //=======================================================================================================================================================================
 //NeuralNetwork.cpp
 //=======================================================================================================================================================================
-#pragma region NeuralNetwork.cpp
+// #pragma region NeuralNetwork.cpp
     NeuralNetwork::NeuralNetwork() {
         #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
             isAllocdWithNew = false;
@@ -2957,7 +2957,7 @@ public:
                 layers[i].resetStates();
         }
     #endif
-#pragma endregion NeuralNetwork.cpp
+// #pragma endregion NeuralNetwork.cpp
 
 
 
@@ -2965,8 +2965,7 @@ public:
 // Layer.cpp
 //=======================================================================================================================================================================
 
-#pragma region Layer.cpp
-
+// #pragma region Layer.cpp
     #if defined(HAS_HIDDEN_STATES)
         void NeuralNetwork::Layer::resetStates()
         {
@@ -4878,8 +4877,7 @@ public:
             }
         #endif // (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)) [OR NOT]
     #endif // !defined(As__No_Common_Serial_Support)
-
-#pragma endregion Layer.cpp
+// #pragma endregion Layer.cpp
 #endif
 
 
