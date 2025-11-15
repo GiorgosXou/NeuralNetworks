@@ -3406,12 +3406,12 @@ public:
 
                         // Update the hidden states **after** all outputs are computed
                         #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
-                            j = 0;
+                            unsigned int i = 0;
                             do {
-                                hiddenStates[j] = outputs[j];
-                            } while (++j != _numberOfOutputs);
+                                hiddenStates[i] = outputs[i];
+                            } while (++i != _numberOfOutputs);
                         #else
-                            for (j = 0; j < _numberOfOutputs; j++)
+                            for (unsigned int i = 0; i < _numberOfOutputs; i++)
                                 hiddenStates[j] = outputs[j];
                         #endif
                     }
@@ -3592,13 +3592,13 @@ public:
 
                         // Update the hidden states **after** all outputs are computed
                         #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
-                            j = 0;
+                            i = 0;
                             do {
-                                hiddenStates[j] = outputs[j];
-                            } while (++j != _numberOfOutputs);
+                                hiddenStates[i] = outputs[i];
+                            } while (++i != _numberOfOutputs);
                         #else
-                            for (j = 0; j < _numberOfOutputs; j++)
-                                hiddenStates[j] = outputs[j];
+                            for (i = 0; i < _numberOfOutputs; i++)
+                                hiddenStates[i] = outputs[i];
                         #endif
                     }
                 }
