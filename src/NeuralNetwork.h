@@ -4971,6 +4971,7 @@ In Arduino log() = ln = natural logarithm = logarithm with base e
  - DISABLE_STATIC_FOR_ACTS
  TODO: FEATURES:
  - Statistically based training methond idea (instead of gradient based)
+ - Maybe a completly int based NN that doesn't use floats?
 
 
 // TODO: make add inline macro opt
