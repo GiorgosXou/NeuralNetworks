@@ -4989,6 +4989,7 @@ In Arduino log() = ln = natural logarithm = logarithm with base e
  TODO: FEATURES:
  - Statistically based training methond idea (instead of gradient based)
  - Maybe a completly int based NN that doesn't use floats?
+ - Replace `unsigned int`s with other types via optimization or macro eg. to byte
 
 
 // TODO: make add inline macro opt
