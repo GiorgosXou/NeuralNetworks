@@ -115,6 +115,9 @@
 #define MSG22
 #define MSG23
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
+                     
+// Memmory substrate message PROGMEM EEPROM etc.
+#define MEM_SUBSTRATE_MSG
 
 #define F_MACRO  
 
@@ -161,6 +164,7 @@
     #if ((_1_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #undef MSG1
         #undef IS_CONST
+        #undef MEM_SUBSTRATE_MSG
         #if defined(__AVR__)
             #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
             #undef TYPE_MEMMORY_READ_IDFLOAT
@@ -173,6 +177,7 @@
         #define IS_CONST const
         #define NO_BACKPROP
         #define USE_PROGMEM
+        #define MEM_SUBSTRATE_MSG [𝗣𝗥𝗢𝗚𝗠𝗘𝗠]
     #endif
     #if ((_1_OPTIMIZE bitor 0B10111111) == 0B11111111)
         #define REDUCE_RAM_DELETE_OUTPUTS
@@ -257,9 +262,13 @@
         #if defined(USE_PROGMEM)
             #error "💥 You can't USE_INTERNAL_EEPROM and USE_PROGMEM together. Either disable `_2_OPTIMIZE 0B1` or `_1_OPTIMIZE 0B1` accordingly."
         #endif
+        #undef MEM_SUBSTRATE_MSG
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
             #define MSG9 \n- " [2] 0B10000000 [Δ] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
+            #define MEM_SUBSTRATE_MSG [𝗦𝗢𝗙𝗧𝗪𝗔𝗥𝗘━𝗘𝗠𝗨𝗟𝗔𝗧𝗘𝗗━𝗘𝗘𝗣𝗥𝗢𝗠]
+        #else
+            #define MEM_SUBSTRATE_MSG [𝗘𝗘𝗣𝗥𝗢𝗠]
         #endif
         #undef MSG8
         #define MSG8 \n- " [2] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_INTERNAL_EEPROM)."
@@ -370,8 +379,10 @@
         #if defined(USE_PROGMEM)
             #error "💥 You can't USE_EXTERNAL_FRAM and USE_PROGMEM together. Either disable `_3_OPTIMIZE 0B1` or `_1_OPTIMIZE 0B1` accordingly."
         #endif
+        #undef MEM_SUBSTRATE_MSG
         #undef MSG17
         #define MSG17 \n- " [3] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not allowed with (USE_EXTERNAL_FRAM)."
+        #define MEM_SUBSTRATE_MSG [𝗙𝗥𝗔𝗠]
         #define USE_EXTERNAL_FRAM
         #define NO_BACKPROP
         // #if !defined(FRAM_h) || !defined(__FRAM_H__) 
@@ -1200,7 +1211,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 \n\n 𝗨𝗦𝗜𝗡𝗚 NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 
