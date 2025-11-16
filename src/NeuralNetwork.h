@@ -254,6 +254,9 @@
     #if ((_2_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #define NO_BACKPROP
         #define USE_INTERNAL_EEPROM
+        #if defined(USE_PROGMEM)
+            #error "💥 You can't USE_INTERNAL_EEPROM and USE_PROGMEM together. Either disable `_2_OPTIMIZE 0B1` or `_1_OPTIMIZE 0B1` accordingly."
+        #endif
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
             #define MSG9 \n- " [2] 0B10000000 [Δ] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
@@ -363,6 +366,9 @@
     #if ((_3_OPTIMIZE bitor 0B01111111) == 0B11111111)
         #if defined(USE_INTERNAL_EEPROM)
             #error "💥 You can't yet USE_INTERNAL_EEPROM and USE_EXTERNAL_FRAM together."
+        #endif
+        #if defined(USE_PROGMEM)
+            #error "💥 You can't USE_EXTERNAL_FRAM and USE_PROGMEM together. Either disable `_3_OPTIMIZE 0B1` or `_1_OPTIMIZE 0B1` accordingly."
         #endif
         #undef MSG17
         #define MSG17 \n- " [3] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not allowed with (USE_EXTERNAL_FRAM)."
