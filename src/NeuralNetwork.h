@@ -1358,15 +1358,15 @@ private:
         Layer() {};
         #if !defined(USE_PROGMEM)
             // ^^^^^ I keep this USE_PROGMEM instead of NO_BACKPROP because that way if I add a NeuralNetwork::feedforward_PROGMEM, with -fpermisive someone will be able to use both RAM-NN and PROGMEM-NN at the same time
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #0  | defined(NO_BIAS) is there 2024-03-02
+            Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #0  | defined(NO_BIAS) is there 2024-03-02
         #endif
 
         #if defined(NO_BIAS)
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, bool has_no_bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // has_no_bias is something the compiler 99% will optimize\remove | This is just a trick for distinguishing the constructors from the one who auto-generates the weights
+            Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, IS_CONST IDFLOAT *default_Weights OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
+            Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, bool has_no_bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // has_no_bias is something the compiler 99% will optimize\remove | This is just a trick for distinguishing the constructors from the one who auto-generates the weights
         #else
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); //                                       #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
-            Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
+            Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, IS_CONST IDFLOAT *default_Bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); //                                       #(used if     #REDUCE_RAM_WEIGHTS_LVL2 defined)
+            Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, IS_CONST IDFLOAT *default_Weights, IS_CONST IDFLOAT *default_Bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture = 0), NeuralNetwork * const NN = NULL ); // #1  #(used if NOT #REDUCE_RAM_WEIGHTS_LVL2 defined)
         #endif
 
 
@@ -3098,7 +3098,7 @@ public:
 
 
     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias) OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
+        NeuralNetwork::Layer::Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias) OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
@@ -3147,9 +3147,9 @@ public:
 
 
     #if defined(NO_BIAS)
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, bool has_no_bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN ) // has_no_bias is something the compiler i'm 99% sure it will optimize\remove
+        NeuralNetwork::Layer::Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, bool has_no_bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN ) // has_no_bias is something the compiler i'm 99% sure it will optimize\remove
     #else
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs, IS_CONST IDFLOAT *default_Bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
+        NeuralNetwork::Layer::Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs, IS_CONST IDFLOAT *default_Bias OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
     #endif
     {
         _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
@@ -3188,7 +3188,7 @@ public:
     // NOTE: I added an `OR` because I'm planning to implement HILL_CLIMB for other types of memmory too
     #if !defined(NO_BACKPROP) || !defined(NO_TRAINING_METHOD)
         //- [ numberOfInputs in into this layer , NumberOfOutputs of this layer ]
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN) // TODO: IDFLOAT support 
+        NeuralNetwork::Layer::Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN) // TODO: IDFLOAT support 
         {
             _numberOfInputs = NumberOfInputs;                             // ##1       Number of Inputs .
             _numberOfOutputs = NumberOfOutputs;                           // ##1       Number of Outputs.
@@ -3270,7 +3270,7 @@ public:
 
 
     #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
-        NeuralNetwork::Layer::Layer(const unsigned int &NumberOfInputs, const unsigned int &NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
+        NeuralNetwork::Layer::Layer(const unsigned int NumberOfInputs, const unsigned int NumberOfOutputs OPTIONAL_LAYER_TYPE_ARCHITECTURE(byte layerArchitecture), NeuralNetwork * const NN )
         {
             _numberOfInputs = NumberOfInputs;   //  (this) layer's  Number of Inputs .
             _numberOfOutputs = NumberOfOutputs; //           ##1    Number of Outputs.
