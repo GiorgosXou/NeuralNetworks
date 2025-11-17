@@ -266,7 +266,7 @@
         #if defined(AS_SOFTWARE_EMULATED_EEPROM)
             #undef MSG9
             #define MSG9 \n- " [2] 0B10000000 [Δ] [𝗪𝗔𝗥𝗡𝗜𝗡𝗚] ESP32 MCUs are defined (AS_SOFTWARE_EMULATED_EEPROM)."
-            #define MEM_SUBSTRATE_MSG [𝗦𝗢𝗙𝗧𝗪𝗔𝗥𝗘━𝗘𝗠𝗨𝗟𝗔𝗧𝗘𝗗━𝗘𝗘𝗣𝗥𝗢𝗠]
+            #define MEM_SUBSTRATE_MSG [𝗦𝗢𝗙𝗧𝗪𝗔𝗥𝗘 𝗘𝗠𝗨𝗟𝗔𝗧𝗘𝗗 𝗘𝗘𝗣𝗥𝗢𝗠]
         #else
             #define MEM_SUBSTRATE_MSG [𝗘𝗘𝗣𝗥𝗢𝗠]
         #endif
