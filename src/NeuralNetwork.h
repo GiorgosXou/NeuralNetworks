@@ -1262,19 +1262,19 @@ struct LayerProps {
         #endif
 
         #if defined(CUSTOM_AF1)
-            Idx_CUSTOM_AF1,
+            Idx_ ## CUSTOM_AF1,
         #endif
         #if defined(CUSTOM_AF2)
-            Idx_CUSTOM_AF2,
+            Idx_ ## CUSTOM_AF2,
         #endif
         #if defined(CUSTOM_AF3)
-            Idx_CUSTOM_AF3,
+            Idx_ ## CUSTOM_AF3,
         #endif
         #if defined(CUSTOM_AF4)
-            Idx_CUSTOM_AF4,
+            Idx_ ## CUSTOM_AF4,
         #endif
         #if defined(CUSTOM_AF5)
-            Idx_CUSTOM_AF5,
+            Idx_ ## CUSTOM_AF5,
         #endif
     };
 #endif
