@@ -486,6 +486,13 @@ struct LayerProps {
 /// Number of States, Gates, or Outputs
 #define NUMBER_OF_PATHS 1
 
+#if defined(USE_DENSE_GRU_PAIR__NB)
+    #error "💥 There is no DENSE + GRU support yet. (USE_DENSE_GRU_PAIR__NB)"
+#endif
+#if defined(USE_DENSE_LSTM_PAIR__NB)
+    #error "💥 There is no DENSE + LSTM support yet. (USE_DENSE_LSTM_PAIR__NB)"
+#endif
+
 /// USE_RNN_LAYERS_ONLY && NO_BACKPROP
 #if defined(USE_RNN__NB) or defined(USE_DENSE_RNN_PAIR__NB)
     #undef NN_ARCH_MSG
