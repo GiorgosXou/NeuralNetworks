@@ -116,7 +116,7 @@ Understanding the Basics of a Neural Network:
 |<details><summary>`NeuralNetwork(String file)`</summary>Available if `#include <SD.h>`, lets you load NN from SD. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
 |<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_3_OPTIMIZE 0B10000000`-*(`USE_EXTERNAL_FRAM`)* or<br>Available if defined `_1_OPTIMIZE 0B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
-|<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, &LRw, &LRb, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
+|<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, LRw, LRb, *_PropsPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, *default_Weights, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if [`NO_BIAS`](#define-macro-properties) enabled</details>|
 |<details><summary>`NeuralNetwork(*layer_, *default_Weights, *default_Bias, &NumberOflayers, *_ActFunctionPerLayer)`</summary>(:</details>|
 
@@ -126,8 +126,8 @@ Understanding the Basics of a Neural Network:
  byte *_ActFunctionPerLayer = NULL
  const unsigned int *layer_
  const unsigned int &NumberOflayers
- const DFLOAT &LRw
- const DFLOAT &LRb
+ const DFLOAT LRw
+ const DFLOAT LRb
 ```
 
 <br>

@@ -1605,7 +1605,7 @@ public:
     // Here we only check for RAM_EFFICIENT_HILL_CLIMB because the whole purpose of RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW is to reduce sketch size by removing initialization and deconstructor logic
     #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
         NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), LayerType *_PropsPerLayer = NULL);                                              // #0
-        NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), const DFLOAT &LRw OPTIONAL_BIAS(const DFLOAT &LRb), LayerType *_PropsPerLayer = NULL);          // #0
+        NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), const DFLOAT LRw OPTIONAL_BIAS(const DFLOAT LRb), LayerType *_PropsPerLayer = NULL);          // #0
     #endif
     NeuralNetwork(const unsigned int *layer_, IS_CONST IDFLOAT *default_Weights OPTIONAL_BIAS(IS_CONST IDFLOAT *default_Bias), const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), LayerType *_PropsPerLayer = NULL); // #1
     
@@ -1931,7 +1931,7 @@ public:
     }
 
     #if !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB)
-        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), const DFLOAT &LRw OPTIONAL_BIAS(const DFLOAT &LRb),  LayerType *_PropsPerLayer )
+        NeuralNetwork::NeuralNetwork(const unsigned int *layer_, const unsigned int &NumberOflayers OPTIONAL_TIME(const byte _threshold, const byte _atIndex), const DFLOAT LRw OPTIONAL_BIAS(const DFLOAT LRb),  LayerType *_PropsPerLayer )
         : NeuralNetwork(layer_, NumberOflayers OPTIONAL_TIME(_threshold, _atIndex), _PropsPerLayer)  // Delegate to the second constructor | this is better, even though it uses a few extra bytes (the compiler doesn't optimize directly the values of learning rates)
         {
             // no need for this since there's ... && old_error != -1
