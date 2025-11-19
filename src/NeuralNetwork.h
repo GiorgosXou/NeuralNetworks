@@ -106,6 +106,7 @@
 #define MSG21
 #define MSG22
 #define MSG23
+#define MSG24
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
                      
 // Memmory substrate message PROGMEM EEPROM etc.
@@ -427,6 +428,15 @@
         #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (SUPPORTS_FS_FUNCTIONALITY) enabled."
         #define SUPPORTS_FS_FUNCTIONALITY
     #endif
+
+    #if ((_3_OPTIMIZE bitor 0B11111110) == 0B11111111)
+        #if (!defined(USE_GRU__NB) and !defined(USE_LSTM__NB)) // REMINDER: ##30
+            #error "💥 (REDUCE_RAM_DELETE__GATED_OUTPUTS) is only available for GRU & LSTM."
+        #endif
+        #undef MSG24
+        #define MSG24 \n- " [3] 0B00000001 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCE_RAM_DELETE__GATED_OUTPUTS) enabled."
+        #define REDUCE_RAM_DELETE__GATED_OUTPUTS
+    #endif
 #endif
 
 
@@ -533,7 +543,7 @@ struct LayerProps {
 
 // TODO: either use  (x * y) * (!(bool)z) + z * ((x * y) + (y * y)); or if else branch | As of 2025-11-05 11:09:37 AM this might not be needed alsmost at all since SIZEOF_FROM logic changed but good to have this as a note here
 // NUMBER_OF_PATHS for dense pairs might need to become NUMBER_OF_PATHS(z) where z will be an arch and all together be defined as something like NUMBER_OF_PATHS(z) (((bool)z) * z) ?
-#elif defined(USE_GRU__NB) // (TensorFlow GRU(...reset_after=False) // #21
+#elif defined(USE_GRU__NB) // (TensorFlow GRU(...reset_after=False) // #21 #30
     #undef NN_ARCH_MSG
     #undef NUMBER_FROM
     #undef INDEX_FROM
@@ -573,7 +583,7 @@ struct LayerProps {
         #define NN_ARCH_MSG [𝗚𝗥𝗨]
     #endif
 
-#elif defined(USE_LSTM__NB) // #21
+#elif defined(USE_LSTM__NB) // #21 #30
     #undef NN_ARCH_MSG
     #undef NUMBER_FROM
     #undef INDEX_FROM
@@ -1203,7 +1213,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 MSG24 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 
@@ -1332,7 +1342,7 @@ private:
 
         // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS | I need to also make an optimization for static fixed size gatedOutputs amongs NNs and layers (a bit more manual labor for end-user though). Could be done for outputs too, although it might be a bit more complex
         // inside NeuralNetwork class? definatelly something like: DFLOAT gatedOutputs[CONST_GATED_SIZE];
-        #if defined(HAS_GATED_OUTPUTS)
+        #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS) // I used &&! because it seems better to keep it locally in stack see #29
             DFLOAT *gatedOutputs; // GRU: (z_t) The Outputs of update-gate at time t & (r_t) The Outputs of reset-gate at time t || LSTM: Gates [...]
         #endif
 
@@ -1756,8 +1766,8 @@ public:
                         delete[] layers[i].cellStates;
                     #endif
 
-                    #if defined(HAS_GATED_OUTPUTS) // NOTE: SEE SPECIAL CASE
-                        delete[] layers[i].gatedOutputs; // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                    #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS) // NOTE: SEE SPECIAL CASE
+                        delete[] layers[i].gatedOutputs;
                     #endif
 
                     #if defined(HAS_HIDDEN_STATES) // NOTE: SEE SPECIAL CASE
@@ -1781,8 +1791,8 @@ public:
                         #if defined(USE_LSTM_LAYERS_ONLY)
                             delete[] layers[i].cellStates;
                         #endif
-                        #if defined(HAS_GATED_OUTPUTS)
-                            delete[] layers[i].gatedOutputs; // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                        #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                            delete[] layers[i].gatedOutputs;
                         #endif
                         #if defined(HAS_HIDDEN_STATES)
                             delete[] layers[i].hiddenStates;
@@ -1796,7 +1806,7 @@ public:
                         #if defined(USE_LSTM_LAYERS_ONLY)
                             delete[] layers[i].cellStates;
                         #endif
-                        #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                        #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                             delete[] layers[i].gatedOutputs;
                         #endif
                         delete[] layers[i].hiddenStates;
@@ -1809,7 +1819,7 @@ public:
                 #if defined(USE_LSTM_LAYERS_ONLY)
                     delete[] layers[i].cellStates;
                 #endif
-                #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     delete[] layers[i].gatedOutputs;
                 #endif
                 #if defined(HAS_HIDDEN_STATES)
@@ -1825,7 +1835,7 @@ public:
                 #if defined(USE_LSTM_LAYERS_ONLY)
                     delete[] layers[i].cellStates;
                 #endif
-                #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     delete[] layers[i].gatedOutputs;
                 #endif
                 delete[] layers[i].hiddenStates;
@@ -1844,7 +1854,7 @@ public:
                 #if defined(USE_LSTM_LAYERS_ONLY)
                     delete[] layers[numberOflayers -1].cellStates;
                 #endif
-                #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+                #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                     delete[] layers[numberOflayers -1].gatedOutputs;
                 #endif
                 delete[] layers[numberOflayers -1].hiddenStates;
@@ -3114,7 +3124,7 @@ public:
                 outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
             #endif
 
-            #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                 gatedOutputs = new DFLOAT[_numberOfOutputs];
             #endif
 
@@ -3166,7 +3176,7 @@ public:
             outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
         #endif
 
-        #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+        #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
             gatedOutputs = new DFLOAT[_numberOfOutputs];
         #endif
 
@@ -3203,7 +3213,7 @@ public:
             #if !defined(REDUCE_RAM_DELETE_OUTPUTS)
                 outputs = new DFLOAT[_numberOfOutputs];                     // ##1    New Array of Outputs.
             #endif 
-            #if defined(HAS_GATED_OUTPUTS)  // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                 gatedOutputs = new DFLOAT[_numberOfOutputs];
             #endif
             #if defined(HAS_HIDDEN_STATES)
@@ -3286,7 +3296,7 @@ public:
                 outputs = new DFLOAT[_numberOfOutputs]; //    ##1    New Array of Outputs.
             #endif
 
-            #if defined(HAS_GATED_OUTPUTS) // TODO: && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
+            #if defined(HAS_GATED_OUTPUTS) && !defined(REDUCE_RAM_DELETE__GATED_OUTPUTS)
                 gatedOutputs = new DFLOAT[_numberOfOutputs];
             #endif
 
@@ -3845,10 +3855,12 @@ public:
             template<typename T>
             void NeuralNetwork::Layer::GRU_Only_FeedForward(const T *inputs)
             {
+                #if defined(REDUCE_RAM_DELETE__GATED_OUTPUTS) // NOTE: in stack #29
+                    DFLOAT gatedOutputs[_numberOfOutputs];
+                #endif
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
                 #endif
-                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs];
 
                 #if defined(ACTIVATION__PER_LAYER) // TODO: ##27 move this logic to NeuralNetwork::FeedForward since it's kinda shared across architectures
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
@@ -3876,8 +3888,6 @@ public:
                     outputs[i] = gatedOutputs[i] * (hiddenStates[i] - outputs[i]) + outputs[i]; // h = z * (h_old - hnew) + hnew <=> h = z * h_old + (1 - z) * hnew --> https://stats.stackexchange.com/a/613773/466641 
                     hiddenStates[i] = outputs[i];
                 }
-
-                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS
             }
         #endif
 
@@ -3886,17 +3896,19 @@ public:
             template<typename T>
             void NeuralNetwork::Layer::LSTM_Only_FeedForward(const T *inputs)
             {
+                #if defined(REDUCE_RAM_DELETE__GATED_OUTPUTS) // NOTE: in stack #29
+                    DFLOAT gatedOutputs[_numberOfOutputs];
+                #endif
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
                 #endif
+
                 #if defined(ACTIVATION__PER_LAYER) // TODO: ##27 move this logic to NeuralNetwork::FeedForward since it's kinda shared across architectures
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
                     DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
                 #endif
-
-                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs]; ...
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
 
@@ -3914,9 +3926,6 @@ public:
 
                 for (unsigned int i=0; i < _numberOfOutputs; i++) // ... + u_t * CellStateGate_t
                     cellStates[i] += gatedOutputs[i] * outputs[i];
-
-
-                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS | Since we don't need it anymore
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, outputs); // o_t (Output-Gate at time t) #14
 
@@ -4110,10 +4119,12 @@ public:
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
                 #endif
-                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs];
-                // 2025-05-17 08:25:02 AM | Actually instead of new/creating & deleting, I should make one common amongs all layers, via: me->gatedOutputs (at the size of the largest layer) and delete it at the end of NeuralNetwork::feedforward (or not deleting at all [for extra speed])
+                // TODO: 2025-05-17 08:25:02 AM | Actually instead of new/creating & deleting gatedOutputs, I should make one common amongs all layers, via: me->gatedOutputs (at the size of the largest layer) and delete it at the end of NeuralNetwork::feedforward (or not deleting at all [for extra speed])
                 // or something along those lines... might split it into multiple optimization macro-parameters.
                 // And don't forget to #define NO_BACKPROP | (no issue with redefinition since it's value is nothing)
+                #if defined(REDUCE_RAM_DELETE__GATED_OUTPUTS) // NOTE: in stack #29 | this above "trick", doesn't seem to be the same case here :P
+                    DFLOAT gatedOutputs[_numberOfOutputs];
+                #endif
 
                 // Since they are MCUs we care a bit more about sketch size vs speed (not that it can be way faster but anyways)
                 gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(bias), GRU_ACTIVATION_FUNCTION, gatedOutputs); // r_t #14
@@ -4134,8 +4145,6 @@ public:
                     outputs[i] = gatedOutputs[i] * (hiddenStates[i] - outputs[i]) + outputs[i]; // h = z * (h_old - hnew) + hnew <=> h = z * h_old + (1 - z) * hnew --> https://stats.stackexchange.com/a/613773/466641 
                     hiddenStates[i] = outputs[i];
                 }
-
-                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS
             }
         #endif
 
@@ -4144,10 +4153,12 @@ public:
             template<typename T>
             void NeuralNetwork::Layer::LSTM_Only_FeedForward(const T *inputs)
             {
+                #if defined(REDUCE_RAM_DELETE__GATED_OUTPUTS) // NOTE: in stack #29 | btw keep it above the new statement it uses less sketch size
+                    DFLOAT gatedOutputs[_numberOfOutputs];
+                #endif
                 #if defined(REDUCE_RAM_DELETE_OUTPUTS)
                     outputs = new DFLOAT[_numberOfOutputs];
                 #endif
-                // TODO: REDUCE_RAM_DELETE__GATED_OUTPUTS gatedOutputs = new DFLOAT[_numberOfOutputs]; ...
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
 
@@ -4165,9 +4176,6 @@ public:
 
                 for (unsigned int i=0; i < _numberOfOutputs; i++) // ... + u_t * CellStateGate_t
                     cellStates[i] += gatedOutputs[i] * outputs[i];
-
-
-                // TODO: delete[] gatedOutputs #if REDUCE_RAM_DELETE__GATED_OUTPUTS | Since we don't need it anymore
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*3]), LSTM_ACTIVATION_FUNCTION, outputs, (_numberOfInputs+_numberOfOutputs)*3); // o_t (Output-Gate at time t) #14
 

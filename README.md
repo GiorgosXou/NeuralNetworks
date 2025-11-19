@@ -370,7 +370,7 @@ Don't use keywords to define optimizations, it won't work, use _X_OPTIMIZE
 To train a neural-network, you can use Tensorflow to do so. Here's a basic python example:
 
 ```python
-# pip install tensorflow
+| ```0B00000001``` | <sup><sub></sub></sup> | <details><summary>Reduce RAM usage for GRU & LSTM</summary>reduces ram usage drasticly *(when using more that 2 layers)* by defining *(per layer)*-`gatedOutputs` locally&temporarily inside `Layer::LSTM_Only_FeedForward(...)`, in stack</details> |<sub><sup>`REDUCE_RAM...GATED_OUTPUTS`</sup></sub>|
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow as tf
