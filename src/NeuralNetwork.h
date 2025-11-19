@@ -82,14 +82,6 @@
 #endif
 
 
-// Message for those who used SD with [V.2.X.X] and now want to use [V.3.X.X]
-#define SD_MIGRATE_MSG
-#if defined(SUPPORTS_SD_FUNCTIONALITY)
-    #undef SD_MIGRATE_MSG
-    #define SD_MIGRATE_MSG \n "𝗪𝗔𝗥𝗡𝗜𝗡𝗚: (IN CASE YOU MIGRATING FROM [V.2.X.X] TO [V.3.X.X] SEE Upgrade_Old_SD_NN_files.ino OR JUST REPLACE 'load()' WITH 'load_old()' AND 'save()' WITH 'save_old()'"\n
-#endif
-
-
 // STR(MSGX) | pragma message
 #define MSG1
 #define MSG2
@@ -617,13 +609,6 @@ struct LayerProps {
         #define LSTM_ACTIVATION_FUNCTION Sigmoid
         #define NN_ARCH_MSG [𝗟𝗦𝗧𝗠]
     #endif
-#endif
-
-
-// If defined with an RNN architecture, simply redefine SD_MIGRATE_MSG to nothing
-#if defined(WITH_RNN_USE)
-    #undef SD_MIGRATE_MSG
-    #define SD_MIGRATE_MSG
 #endif
 
 
@@ -1218,7 +1203,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION SD_MIGRATE_MSG LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 
