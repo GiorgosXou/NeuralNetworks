@@ -2911,12 +2911,12 @@ public:
                         put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, PropsPerLayer[n]);
                     #endif
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, *layers[n].bias);
+                        put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, TYPE_MEMMORY_READ_IDFLOAT(*layers[n].bias));
                     #endif
                     for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
                         for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].bias[i + (layers[n]._numberOfOutputs * p)]);
+                                put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, TYPE_MEMMORY_READ_IDFLOAT(layers[n].bias[i + (layers[n]._numberOfOutputs * p)]));
                             #endif
 
                             //WARN: ##21 File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, SPECIFICALLY for GRU and LSTM layers.
@@ -2926,9 +2926,9 @@ public:
                             for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
                             {
                                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, weights[i_j++]);
+                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, TYPE_MEMMORY_READ_IDFLOAT(weights[i_j++]));
                                 #else
-                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))]);
+                                    put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, TYPE_MEMMORY_READ_IDFLOAT(layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))]));
                                 #endif
                             }
                         }
