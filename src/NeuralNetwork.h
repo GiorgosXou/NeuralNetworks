@@ -18,7 +18,7 @@
 
     #if defined(__AVR_ATtiny85__)
         #undef MSG0
-        #define MSG0 \n- "////////////// [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
+        #define MSG0 \n- " [X] ////////// [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] `NN.print()` function is disabled for ATtiny85 [...]"
     #endif
 #endif
 
