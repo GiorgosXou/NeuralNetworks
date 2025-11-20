@@ -1,28 +1,32 @@
+/*
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+- CAUTION SAVING AND LOADING IS OPTIMIZED TO WORK BASED ON WHAT ACTIVATION-FUNCTIONS OR BIAS-MODE YOU HAVE DEFINED (OR NOT DEFINED AT ALL)
+*/
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #define _3_OPTIMIZE 0B00000001 // ENABLES REDUCE_RAM_DELETE__GATED_OUTPUTS (Comment\Disable it to increase CPU performance)
 #define _2_OPTIMIZE 0B00100000 // ENABLES MULTIPLE_BIASES_PER_LAYER
 #define _1_OPTIMIZE 0B01001010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define IN_EEPROM_ADDRESS 0    // The position at which the NN will be saved at the internal EEPROM
 #define USE_LSTM__NB           // Makes LSTM the core-architecture of your NeuralNetwork. (NB = NO_BACKPROP support)
 #define SELU                   // Defines core activation-function of your NeuralNetwork. 
 #define LSTM_ACT Sigmoid       // Defines the core recurrent-activation-function of your NeuralNetwork. (Sigmoid is the default, not necessary to define)
-#include "PseudoSensors.h"     // A fake/pseudo temperature-sensor on which the NN was trained on. (OVER-trained, for the sake of Visualization in plotter)
+#include <EEPROM.h>
 #include <NeuralNetwork.h>
 
 
 const unsigned int layers[] = {1, 6, 1}; // 1 input-neuron/feature > 6 hidden-neurons > 1 output
 float *output; // 3rd layer's output(s)
 
-// Input data, gathered from our pseudo-temperature-sensor | 3 temperature-points for each timestep
-float input[3]; 
 
 // Thanks to #define _2_OPTIMIZE B00100000 you have:
 // [Pretrained Biases] 1 for each neuron of layer-to-layer
 float biases[] = {
   // LSTM Layer 0 -> 1
-   1.00026536e+00,  1.00000000e+00, 1.00250888e+00, 1.00000000e+00,  1.00000000e+00,  1.00000000e+00, // Forget gate
-   2.20722690e-01,  1.30023473e-05, 0.00000000e+00, 1.64558411e-01,  0.00000000e+00,  1.36244589e-05, // Input/update gate
-   0.00000000e+00, -1.02434615e-11, 1.70869172e-01, 1.76502556e-01, -1.66924641e-01, -2.71643700e-07, // Cell state
-   1.20677855e-02,  0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -1.84525296e-01 , 0.00000000e+00, // Output gate
+   1.00026536e+00,  1.00000000e+00, 1.00250888e+00, 1.00000000e+00,  1.00000000e+00,  1.00000000e+00, // forget gate
+   2.20722690e-01,  1.30023473e-05, 0.00000000e+00, 1.64558411e-01,  0.00000000e+00,  1.36244589e-05, // input/update gate
+   0.00000000e+00, -1.02434615e-11, 1.70869172e-01, 1.76502556e-01, -1.66924641e-01, -2.71643700e-07, // cell state
+   1.20677855e-02,  0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -1.84525296e-01 , 0.00000000e+00, // output gate
 
   // LSTM Layer 1 -> 2
    1.0829587 , // forget gate
@@ -30,6 +34,7 @@ float biases[] = {
    0.19277474, // cell state
   -0.10411564, // output gate
 };
+
 
 // [Pretrained weights]
 float weights[] = {
@@ -110,43 +115,14 @@ float weights[] = {
    0.18503276f
 };
 
-// Creating NeuralNetwork with pretrained Weights and Biases;
-NeuralNetwork NN(layers, weights, biases, NumberOf(layers));
 
-
-void setupTempSensor() {
-  initTempSensor();                   // Initialization of fake/pseudo-temperature-sensor 
-  for (int i = 0; i < 3; i++) {
-    input[i] = getTemp(); delay(250); // gets the 3 initial (timestep-0) temperatures + wait for each next one
-  }
-}
-
-
-void setup(){
-  Serial.begin(9600); // Initialization/begining of Serial at 9600 baud-rate
+void setup()
+{
+  Serial.begin(9600);
   while (!Serial){ }; // Wait for the Serial connection to be established 
-  setupTempSensor();  // Initialization + population of timestep-0 with temperatures
-  NN.print();         // Prints the weights & biases of each layer
+  NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with pretrained Weights and Biases
+  unsigned int endAddress = NN.save(IN_EEPROM_ADDRESS); // Saves the NN IN_EEPROM_ADDRESS and (optionally)returns where it ended
+  Serial.println("Saved neural-network of " + String(endAddress - IN_EEPROM_ADDRESS) + "-Bytes into the internal EEPROM of the MCU");
 }
-
-
-void loop(){
-  for (unsigned int i = 0; i < 3; i++)    // Each timestep consist of 3 temperature-samples
-      output = NN.FeedForward(&input[i]); // FeedForward each temperature-value & return the (next)-predicted (output)
-
-  // Slide/shift/"memmove()" array temperature-values/samples to the left by one.
-  input[0] = input[1];
-  input[1] = input[2];
-
-  // Gets the next/new temperature.
-  input[2] = getTemp(); delay(250);
-
-  // Prints the Predicted (next)-temperature (7 digits after the comma).
-  Serial.print("Predicted:");
-  Serial.println(*output, 7);
-
-  // Prints the next-new temperature that was predicted.
-  Serial.print("Temperature:");
-  Serial.println(input[2], 7);       
-}
+void loop(){}
 

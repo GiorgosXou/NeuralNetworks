@@ -22,7 +22,7 @@ const float inputs[8][3] = {
 // Thanks to #define _2_OPTIMIZE B00100000 you can have:
 // [Pretrained Biases ] 1 for each neuron of layer-to-layer
 float biases[] = {
-  -5.39513, 11.9918585, -4.4244404, 5.0895796,
+  -5.39513 , 11.9918585, -4.4244404, 5.0895796,
   -11.46223,
 };
 
@@ -30,7 +30,7 @@ float biases[] = {
 float weights[] = {
   10.161275, 11.1635275, -10.984715,
   -8.504105, -7.931017 , -8.43375  ,
-  -9.152142, 9.405975  , 8.16624   ,
+  -9.152142, 9.405975  ,  8.16624  ,
   -9.437108, 9.365779  , -9.652881 ,
 
   12.006584, 12.459393 , 12.126074 , -12.9152155,
@@ -40,7 +40,10 @@ float weights[] = {
 void setup()
 {
   Serial.begin(9600);
-  NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with pretrained Weights and Biases
+  while (!Serial){ }; 
+
+  // Creating a NeuralNetwork with pretrained Weights and Biases
+  NeuralNetwork NN(layers, weights, biases, NumberOf(layers));
 
   //Goes through all the input arrays
   for (unsigned int i = 0; i < NumberOf(inputs); i++)

@@ -1,10 +1,9 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-
 #define SELU 
 #include <NeuralNetwork.h>
           NeuralNetwork *NN;
 
-const unsigned int layers[] = {2,3,1}; //3 layers (1st)layer with 2-inputs/features (2nd)layer with 3 hidden neurons and (3rd)layer with 1 output neuron
+const unsigned int layers[] = {2, 3, 1}; //3 layers (1st)layer with 2-inputs/features (2nd)layer with 3 hidden neurons and (3rd)layer with 1 output neuron
 float *output; // 3rd layer's output(s)
 
 //Default Inputs [for Training only]
@@ -20,9 +19,11 @@ const float expectedOutput[4][1] = {{0},{1},{1},{0}}; // Values that we are expe
 void setup()
 {   
   Serial.begin(9600);
+  while (!Serial){ }; 
   randomSeed(millis());
   
-  NN = new NeuralNetwork(layers,NumberOf(layers)); //Initialization of NeuralNetwork object
+  //Initialization of NeuralNetwork object
+  NN = new NeuralNetwork(layers,NumberOf(layers));
  
   do{
     for (unsigned int j = 0; j < NumberOf(inputs); j++) // Epoch

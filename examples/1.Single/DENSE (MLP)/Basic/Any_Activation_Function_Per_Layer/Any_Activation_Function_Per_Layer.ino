@@ -1,5 +1,4 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) //calculates the number of layers (in this case 4)
-
 #define _1_OPTIMIZE 0B00011000 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define ACTIVATION__PER_LAYER  // DEFAULT KEYWORD for allowing the use of any Activation-Function per "Layer-to-Layer".
         #define Sigmoid // 0     Says to the compiler to compile the Sigmoid Activation-Function 
@@ -8,9 +7,9 @@
 #include <NeuralNetwork.h>
 
 byte ActivFunctions[] = {
-  Idx_Tanh,   // Byte 1 = Tanh    | Layers : 0 -> 1
-  Idx_Tanh,   // Byte 1 = Tanh    | Layers : 1 -> 2
-  Idx_Sigmoid // Byte 0 = Sigmoid | Layers : 2 -> 3
+  Idx_Tanh,   // Index 1 = Tanh    | Layers : 0 -> 1
+  Idx_Tanh,   // Index 1 = Tanh    | Layers : 1 -> 2
+  Idx_Sigmoid // Index 0 = Sigmoid | Layers : 2 -> 3
 };
 
 unsigned int layers[] = {3, 9, 9, 1}; // 4 layers (1st)layer with 3-inputs/features (2nd & 3rd)layer 9 hidden neurons each and (4th)layer with 1 output neuron
@@ -33,7 +32,10 @@ const float expectedOutput[8][1] = {{0}, {1}, {1}, {0}, {1}, {0}, {0}, {1}}; // 
 void setup()
 {
   Serial.begin(9600);
-  NeuralNetwork NN(layers, NumberOf(layers), ActivFunctions); // Creating a Neural-Network with default learning-rates
+  while (!Serial){ }; 
+
+  // Creating a Neural-Network with multiple Activation-Functions & default learning-rates
+  NeuralNetwork NN(layers, NumberOf(layers), ActivFunctions);
 
   do{ 
     for (unsigned int j=0; j < NumberOf(inputs); j++) // Epoch
@@ -50,7 +52,7 @@ void setup()
   }while(NN.getMeanSqrdError(NumberOf(inputs)) > 0.003);
 
 
-  Serial.println("\n =-[OUTPUTS]-=");
+  Serial.println("\n=-[OUTPUTS]-=");
 
 
   for (unsigned int i=0; i < NumberOf(inputs); i++) //Goes through all input-arrays/Training-Data

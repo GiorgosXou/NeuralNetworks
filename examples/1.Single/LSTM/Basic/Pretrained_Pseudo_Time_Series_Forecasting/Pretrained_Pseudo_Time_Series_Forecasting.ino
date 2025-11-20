@@ -1,6 +1,7 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-#define _1_OPTIMIZE 0B01011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _3_OPTIMIZE 0B00000001 // ENABLES REDUCE_RAM_DELETE__GATED_OUTPUTS (Comment\Disable it to increase CPU performance)
 #define _2_OPTIMIZE 0B00100000 // ENABLES MULTIPLE_BIASES_PER_LAYER
+#define _1_OPTIMIZE 0B01011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define USE_LSTM__NB           // Makes LSTM the core-architecture of your NeuralNetwork. (NB = NO_BACKPROP support)
 #define ReLU                   // Defines core activation-function of your NeuralNetwork. 
 #define LSTM_ACT Sigmoid       // Defines the core recurrent-activation-function of your NeuralNetwork. (Sigmoid is the default, not necessary to define)
@@ -156,6 +157,7 @@ void setupTempSensor() {
 
 void setup(){
   Serial.begin(9600);
+  while (!Serial){ }; // Wait for the Serial connection to be established 
   setupTempSensor();
   NN.print(); // Prints the weights & biases of each layer
 }

@@ -1,5 +1,5 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 4)
-#define _1_OPTIMIZE 0B01011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B11011010 // 0B1000000 For PROGMEM see also https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 
 #include <NeuralNetwork.h>
 
@@ -19,10 +19,10 @@ const float inputs[8][3] = {
 };
 
 // 1 for each layer-layer [Pretrained Biases ]
-float biases[] = {1, 1, 0.99308};
+const PROGMEM float biases[] = {1, 1, 0.99308};
 
 // It is 3*9 + 9*9 + 9*1  [Pretrained weights]
-float weights[] = {
+const PROGMEM float weights[] = {
   -0.676266,  3.154561, -1.76689 ,
    1.589422, -2.340522,  1.447924,
    0.291685, -1.222407,  0.669717,
@@ -43,7 +43,7 @@ float weights[] = {
   -1.344488,  2.618552,  0.642735, -0.947158, -0.286999,  3.797427, -2.443925, -0.833397, -1.654542,
   -0.138234, -0.931373, -0.183022, -0.493784, -0.784119, -0.275703, -2.113665,  0.761188, -0.810006,
 
-  -0.049101, -6.781154,  0.14872 , -2.332737, -4.983434, -1.396086, 10.86302 , -5.551509, -1.648114
+  -0.049101, -6.781154,  0.14872 , -2.332737, -4.983434, -1.396086,  10.86302, -5.551509, -1.648114
 };
 
 
@@ -51,7 +51,7 @@ void setup()
 {
   Serial.begin(9600);
   while (!Serial){ }; 
-  
+
   // Creating a NeuralNetwork with pretrained Weights and Biases
   NeuralNetwork NN(layers, weights, biases, NumberOf(layers));
 

@@ -33,7 +33,10 @@ const float expectedOutput[8][1] = {{0}, {1}, {1}, {0}, {1}, {0}, {0}, {1}}; // 
 void setup()
 {
   Serial.begin(9600);
-  NeuralNetwork NN(layers, NumberOf(layers), 0.14, 0.02); // Creating a Neural-Network with learning-rates of 0.14 & 0.02 for weights & bias(es)
+  while (!Serial){ }; 
+
+  // Creating a Neural-Network with learning-rates of 0.14 & 0.02 for weights & bias(es)
+  NeuralNetwork NN(layers, NumberOf(layers), 0.14, 0.02);
 
   do{
     for (unsigned int j = 0; j < NumberOf(inputs); j++) // Epoch

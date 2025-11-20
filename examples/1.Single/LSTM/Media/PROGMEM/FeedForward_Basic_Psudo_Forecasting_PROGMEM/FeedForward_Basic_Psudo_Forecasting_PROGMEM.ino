@@ -1,7 +1,7 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #define _3_OPTIMIZE 0B00000001 // ENABLES REDUCE_RAM_DELETE__GATED_OUTPUTS (Comment\Disable it to increase CPU performance)
 #define _2_OPTIMIZE 0B00100000 // ENABLES MULTIPLE_BIASES_PER_LAYER
-#define _1_OPTIMIZE 0B01001010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
+#define _1_OPTIMIZE 0B11001010 // USE_PROGMEM + https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define USE_LSTM__NB           // Makes LSTM the core-architecture of your NeuralNetwork. (NB = NO_BACKPROP support)
 #define SELU                   // Defines core activation-function of your NeuralNetwork. 
 #define LSTM_ACT Sigmoid       // Defines the core recurrent-activation-function of your NeuralNetwork. (Sigmoid is the default, not necessary to define)
@@ -17,12 +17,12 @@ float input[3];
 
 // Thanks to #define _2_OPTIMIZE B00100000 you have:
 // [Pretrained Biases] 1 for each neuron of layer-to-layer
-float biases[] = {
+const PROGMEM float biases[] = {
   // LSTM Layer 0 -> 1
-   1.00026536e+00,  1.00000000e+00, 1.00250888e+00, 1.00000000e+00,  1.00000000e+00,  1.00000000e+00, // Forget gate
-   2.20722690e-01,  1.30023473e-05, 0.00000000e+00, 1.64558411e-01,  0.00000000e+00,  1.36244589e-05, // Input/update gate
-   0.00000000e+00, -1.02434615e-11, 1.70869172e-01, 1.76502556e-01, -1.66924641e-01, -2.71643700e-07, // Cell state
-   1.20677855e-02,  0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -1.84525296e-01 , 0.00000000e+00, // Output gate
+   1.00026536e+00,  1.00000000e+00, 1.00250888e+00, 1.00000000e+00,  1.00000000e+00,  1.00000000e+00, // forget gate
+   2.20722690e-01,  1.30023473e-05, 0.00000000e+00, 1.64558411e-01,  0.00000000e+00,  1.36244589e-05, // input/update gate
+   0.00000000e+00, -1.02434615e-11, 1.70869172e-01, 1.76502556e-01, -1.66924641e-01, -2.71643700e-07, // cell state
+   1.20677855e-02,  0.00000000e+00, 0.00000000e+00, 0.00000000e+00, -1.84525296e-01 , 0.00000000e+00, // output gate
 
   // LSTM Layer 1 -> 2
    1.0829587 , // forget gate
@@ -32,7 +32,7 @@ float biases[] = {
 };
 
 // [Pretrained weights]
-float weights[] = {
+const PROGMEM float weights[] = {
   // LSTM LAYER 0 -> 1
 
   // forget gate

@@ -1,23 +1,14 @@
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-//#define DISABLE_SINGLE_TIMESTEP_THRESHOLD // You may completely disable the single-threshold-logic to reduce sketch-size (if unnecessary)
 #define _1_OPTIMIZE 0B01011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
-#define _2_OPTIMIZE 0B00100000 // Enables MULTIPLE_BIASES_PER_LAYER
-#define USE_DENSE_RNN_PAIR__NB // Defines both RNN & DENSE architectures for your NeuralNetwork. (NB = NO_BACKPROP support)
-#define THRESHOLD 3            // Timestep threshold for ...
-#define AT_HIDDEN 1            // ... 2nd hidden-layer (index 1), before it outputs
+#define _2_OPTIMIZE 0B00100000 // ENABLES MULTIPLE_BIASES_PER_LAYER
+#define USE_RNN__NB            // Makes (vanilla)-RNN the core-architecture of your NeuralNetwork. (NB = NO_BACKPROP support)
 #define SELU                   // Defines core activation-function of your NeuralNetwork.
 #include "PseudoSensors.h"     // A fake/pseudo temperature-sensor on which the NN was trained on. (OVER-trained, for the sake of Visualization in plotter)
 #include <NeuralNetwork.h>
 
 
-// First Layer is always an input/feature-layer, therefore we don't have to specify any architecture for it
-LayerType Architectures[] = {
-  RNN(),
-  RNN(),
-  DENSE(),
-};
-const unsigned int layers[] = {1, 5, 3, 1}; // 1 input/feature layer -> 5 & 3 RNN hidden-neurons -> 1 DENSE output
-float *output; // 4th layer's output(s)
+const unsigned int layers[] = {1, 8, 1}; // 1 input/feature -> 8 hidden-neurons -> 1 output
+float *output; // 3rd layer's output(s)
 
 // Input data, gathered from our pseudo-temperature-sensor | 3 temperature-points for each timestep
 float input[3];
@@ -25,40 +16,38 @@ float input[3];
 // Thanks to #define _2_OPTIMIZE B00100000 you have:
 // [Pretrained Biases] 1 for each neuron of layer-to-layer
 float biases[] = {
-  0.032366186,  0.009003694, -0.015172903  , 0.0, -0.006930798, // RNN   Layer 0 -> 1
-  0.013656618, -0.013992845, -0.00013149012, // RNN   Layer 1 -> 2
-  0.06328548 // DENSE Layer 2 -> 3
+  // RNN Layer 0 -> 1
+  0.01358685, -0.00514791, 0.00213663, 0, 0.00012937, 0, 0.01629594, 0.00138612,
+  // RNN Layer 1 -> 2
+  0.03628523
 };
 
 // [Pretrained weights]
 float weights[] = {
   // RNN Layer 0 -> 1
-   1.30399001f,
-   0.14601776f,  0.25613067f, -0.55393171f, -0.69367051f, -0.06464627f,
-   1.18315744f,
-   0.36774260f,  0.03865614f,  0.24619871f,  0.21447489f,  0.59151757f,
-  -0.02828937f,
-   0.07648949f,  0.32602647f, -0.54867667f,  0.75738585f, -0.20915025f,
+   1.22961831f,
+   0.09631307f, -0.49769780f, -0.52050328f,  0.14724196f,  0.14216658f,  0.31458798f,  0.34053445f,  0.42788458f,
+   1.06252575f,
+   0.26479334f,  0.33770260f,  0.36780581f,  0.28700602f,  0.06649943f,  0.37049711f,  0.01079199f,  0.24036717f,
+   0.02880220f,
+  -0.26020879f, -0.46077374f,  0.62794960f, -0.14259411f, -0.33157930f,  0.38858604f, -0.02152641f,  0.20956597f,
   -2.07335281f,
-  -0.72064269f, -0.04980764f, -0.32614806f,  0.05776641f,  0.60702848f,
-  -0.11433228f,
-  -0.43350682f,  0.67583454f,  0.49443546f,  0.04716558f, -0.19171867f,
-
+  -0.46790832f,  0.18415610f, -0.31656858f,  0.44898683f, -0.18732452f,  0.51421177f, -0.32222831f, -0.20495902f,
+  -0.12038947f,
+   0.47241697f, -0.26723957f,  0.10427390f,  0.60275561f, -0.33342332f, -0.27658278f, -0.37639344f,  0.04331696f,
+  -2.07136917f,
+   0.28059754f, -0.23191825f,  0.23295835f,  0.05440384f,  0.65276182f,  0.35014871f, -0.22016022f, -0.46160263f,
+   1.66096437f,
+   0.32154834f,  0.35375106f, -0.26415607f, -0.56341839f, -0.17914364f,  0.24136791f, -0.29237694f,  0.36419830f,
+   1.21911037f,
+   0.29247519f, -0.18353373f, -0.12029932f, -0.15544552f, -0.51464641f,  0.25716805f,  0.22204265f, -0.65589458f,
   // RNN Layer 1 -> 2
-   0.69408470f,  0.71752638f, -0.06637309f,  1.00600314f, -0.56027120f,
-  -0.11874792f, -0.77567267f, -0.20694412f,
-  -0.28963336f, -0.02655280f, -0.04302825f, -0.30166563f,  0.98483843f,
-   0.67279196f,  0.11816070f, -0.47508934f,
-   0.47242293f, -0.96838081f,  0.10515124f, -0.66345203f, -0.62638056f,
-   0.48355943f, -0.21138959f,  0.84680498f,
-
-  // DENSE Layer 2 -> 3
-  0.43826136,   0.14729896,   -0.43494859,
-
+   0.19118384f,  0.03528649f, -0.76362145f,  0.42128202f, -0.12675120f, -0.65542620f,  0.29082689f,  0.03534147f,
+  -0.41052172f
 };
 
 // Creating NeuralNetwork with pretrained Weights and Biases;
-NeuralNetwork NN(layers, weights, biases, NumberOf(layers) OPTIONAL_TIME(THRESHOLD, AT_HIDDEN), Architectures);
+NeuralNetwork NN(layers, weights, biases, NumberOf(layers));
 
 
 void setupTempSensor() {
@@ -71,6 +60,7 @@ void setupTempSensor() {
 
 void setup(){
   Serial.begin(9600); // Initialization/begining of Serial at 9600 baud-rate
+  while (!Serial){ }; // Wait for the Serial connection to be established 
   setupTempSensor();  // Initialization + population of timestep-0 with temperatures
   NN.print();         // Prints the weights & biases of each layer
 }
@@ -95,3 +85,4 @@ void loop(){
   Serial.print("Temperature:");
   Serial.println(input[2], 7);
 }
+

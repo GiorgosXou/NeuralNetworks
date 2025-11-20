@@ -100,7 +100,10 @@ unsigned int timestamp;
 void setup()
 {
   Serial.begin(9600);
-  NeuralNetwork NN(layers, weights, biases, NumberOf(layers)); // Creating a NeuralNetwork with pretrained Weights and Biases
+  while (!Serial){ }; 
+
+  // Creating a NeuralNetwork with pretrained Weights and Biases
+  NeuralNetwork NN(layers, weights, biases, NumberOf(layers));
 
   //Goes through each image
   for (unsigned int i = 0; i < 2; i++)           
