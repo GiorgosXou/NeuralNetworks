@@ -661,7 +661,7 @@ Here most of the resources I came across the internet, I recommend you to have a
 * **```General:```**
 * * _**```Math:```**_
 * * * [What the cap over letters in math means](https://en.wikipedia.org/wiki/Hat_operator#:~:text=article%3A%20unit%20vector-,Estimated%20value,%CE%B5%20(the%20statistical%20errors).)
-* * * [When log is written without a base, is the equation normally referring to log base 10 or natural log?](https://math.stackexchange.com/questions/293783)
+#define Q_FLOAT_RANGE 4.0 // (2.0) - (-2.0) = 4.0
 * * _**```Grammar:```**_
 * * * [Plural of feedforward](https://en.wiktionary.org/wiki/feedforwards)
 * * _**```Just "Random":```**_

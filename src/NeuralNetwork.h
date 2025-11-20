@@ -347,7 +347,7 @@
             #endif
             #define Q_INT_RANGE 255
         #endif
-        #define MULTIPLY_BY_INT_IF_QUANTIZATION * (Q_FLOAT_RANGE/Q_INT_RANGE)
+        #define MULTIPLY_BY_INT_IF_QUANTIZATION * ((DFLOAT)Q_FLOAT_RANGE/Q_INT_RANGE)
 
         #define CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(value) value
     #endif
