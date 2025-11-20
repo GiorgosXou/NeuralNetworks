@@ -18,6 +18,7 @@ ComputeSummedErrors		KEYWORD2
 
 FeedForward_Individual		KEYWORD2
 FeedForward			KEYWORD2
+resetStates			KEYWORD2
 BackProp			KEYWORD2
 HillClimb			KEYWORD2
 print				KEYWORD2
