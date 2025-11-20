@@ -1,17 +1,35 @@
+[SECTION_TRAINING]: #%E2%80%8D-training
 
-[EXAMPLE_CUSTOM_FUNCTIONS_INO]: ./examples/Other/Custom_activation_function/Custom_activation_function.ino
-[EXAMPLE_FEED_INDIVIDUAL_INO]: ./examples/Other/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
-[EXAMPLE_IN_EEPROM_INO]: ./examples/Media/FeedForward_from_internal_EEPROM/FeedForward_from_internal_EEPROM.ino
-[EXAMPLE_EXTERNAL_FRAM_INO]: ./examples/Media/FeedForward_from_external_FRAM/FeedForward_from_external_FRAM.ino
-[EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO]: ./examples/Media/Save_NN_to_external_FRAM/Save_NN_to_external_FRAM.ino
-[EXAMPLE_DOUBLE_XOR_BACKPROP_INO]: ./examples/Basic/Backpropagation_double_Xor/Backpropagation_double_Xor.ino
-[EXAMPLE_INT_QUANTIZED_XOR_INO]: ./examples/Other/Int_quantized_double_Xor_PROGMEM/Int_quantized_double_Xor_PROGMEM.ino
-[EXAMPLE_DOUBLE_PRECISION]: ./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino
-[EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]: ./examples/Other/RAM_Efficient_HillClimb_double_xor/RAM_Efficient_HillClimb_double_xor.ino
+[BASIC_EXAMPLES_MLP]:  ./examples/1.Single/DENSE%20(MLP)/Basic
+[BASIC_EXAMPLES_RNN]:  ./examples/1.Single/RNN%20(Vanilla)/Basic
+[BASIC_EXAMPLES_GRU]:  ./examples/1.Single/GRU/Basic
+[BASIC_EXAMPLES_LSTM]: ./examples/1.Single/LSTM/Basic
+
+[MEDIA_EXAMPLES_MLP]:  ./examples/1.Single/DENSE%20(MLP)/Media
+[MEDIA_EXAMPLES_RNN]:  ./examples/1.Single/RNN%20(Vanilla)/Media
+[MEDIA_EXAMPLES_GRU]:  ./examples/1.Single/GRU/Media
+[MEDIA_EXAMPLES_LSTM]: ./examples/1.Single/LSTM/Media
+
+[OTHER_EXAMPLES_MLP]:  ./examples/1.Single/DENSE%20(MLP)/Other
+[OTHER_EXAMPLES_RNN]:  ./examples/1.Single/RNN%20(Vanilla)/Other
+[OTHER_EXAMPLES_GRU]:  ./examples/1.Single/GRU/Other
+[OTHER_EXAMPLES_LSTM]: ./examples/1.Single/LSTM/Other
+
+[EXAMPLE_MNIST_RNN]: ./examples/1.Single/RNN%20(Vanilla)/Other/mnist_progmem_quantized/mnist_progmem_quantized.ino
+
+[EXAMPLE_CUSTOM_FUNCTIONS_INO]: ./examples/1.Single/DENSE%20(MLP)/Other/Custom_activation_function/Custom_activation_function.ino
+[EXAMPLE_FEED_INDIVIDUAL_INO]: ./examples/1.Single/DENSE%20(MLP)/Other/FeedForward_Individual_MNIST_PROGMEM/FeedForward_Individual_MNIST_PROGMEM.ino
+[EXAMPLE_IN_EEPROM_INO]: ./examples/1.Single/DENSE%20(MLP)/Media/FeedForward_from_internal_EEPROM/FeedForward_from_internal_EEPROM.ino
+[EXAMPLE_EXTERNAL_FRAM_INO]: ./examples/1.Single/DENSE%20(MLP)/Media/FeedForward_from_external_FRAM/FeedForward_from_external_FRAM.ino
+[EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO]: ./examples/1.Single/DENSE%20(MLP)/Media/Save_NN_to_external_FRAM/Save_NN_to_external_FRAM.ino
+[EXAMPLE_DOUBLE_XOR_BACKPROP_INO]: ./examples/1.Single/DENSE%20(MLP)/Basic/Backpropagation_double_Xor/Backpropagation_double_Xor.ino
+[EXAMPLE_INT_QUANTIZED_XOR_INO]: ./examples/1.Single/DENSE%20(MLP)/Other/Int_quantized_double_Xor_PROGMEM/Int_quantized_double_Xor_PROGMEM.ino
+[EXAMPLE_DOUBLE_PRECISION]: ./examples/1.Single/DENSE%20(MLP)/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino
+[EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]: ./examples/1.Single/DENSE%20(MLP)/Other/RAM_Efficient_HillClimb_double_xor/RAM_Efficient_HillClimb_double_xor.ino
 
 
-# Simple [MLP - NeuralNetwork](https://en.wikipedia.org/wiki/Multilayer_perceptron) Library For Microcontrollers 
-Nothing "Import ant", just a simple library for implementing Neural-Networks(NNs) easily and effectively on any Arduino board and many microcontrollers.
+# [NeuralNetwork](https://en.wikipedia.org/wiki/Neural_network_(machine_learning)) Library For Microcontrollers 
+Nothing *"Import ant"*, just a simple library for implementing both [MLP](https://en.wikipedia.org/wiki/Multilayer_perceptron) & [Recurrent](https://en.wikipedia.org/wiki/Recurrent_neural_network) Neural-Networks easily and effectively on most Arduino compatible boards and microcontrollers.
 
 # 📚 Summary
 | NN<span>&nbsp;</span>Functions | Input<span>&nbsp;</span>Type<span>&nbsp;</span>(x)|Output<span>&nbsp;</span>Type<span>&nbsp;</span>(Y) |<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|
@@ -35,7 +53,8 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Support for [double precision](#define-macro-properties).
 - - ```+``` Many [activation-functions](#dfloat-activation-functions).
 - - ```+``` [Use of storage medias.](#%EF%B8%8F--examples 'Such as SD, PROGMEM, EEPROM, FRAM')
-- - ```+``` [Exceptional solutions.](## 'eg. look at FeedForward_Individual')
+- - ```+``` [Exceptional solutions.][EXAMPLE_MNIST_RNN]
+- - ```+``` RNN GRU LSTM.
 - - ```+``` Simplicity!  
  
 
@@ -53,55 +72,52 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️  Examples
-***✨ ([See also](#-training)): training with Tensorflow section)***
+***✨ ([See also][SECTION_TRAINING]): training with Tensorflow section)***
 
-- ***`🔤 Basic:`***
-- - [Using a NN inside the loop](./examples/Basic/Run_In_Loop/Run_In_Loop.ino 'Run_In_Loop')
-- - [Pre-trained NN behaving as a 3-input-xor circuit](./examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino 'FeedForward_double_Xor.ino')
-- - [Training a NN to behave as a 3-input-xor circuit][EXAMPLE_DOUBLE_XOR_BACKPROP_INO]
-- - [Training a NN to behave as a single xor-gate](./examples/Basic/Backpropagation_Single_Xor/Backpropagation_Single_Xor.ino 'Backpropagation_Single_Xor.ino')
-- - [Using multiple Activ.-functions per layer-to-layer](./examples/Basic/Any_Activation_Function_Per_Layer/Any_Activation_Function_Per_Layer.ino 'Any_Activation_Function_Per_Layer.ino')
-- - [Using multiple biases per layer-to-layer](./examples/Basic/Multiple_biases/Multiple_biases.ino 'Multiple_biases.ino')
-- ***`💾 Media:`***
-- - [Save NN into SD and load it into RAM after restart](./examples/Media/Save_load_NN_from_SD/Save_load_NN_from_SD.ino 'Save_load_NN_from_SD.ino')
-- - [Saving a NN into the internal EEPROM for later use](./examples/Media/Save_NN_to_internal_EEPROM/Save_NN_to_internal_EEPROM.ino 'Save_NN_to_internal_EEPROM.ino')
-- - [Saving a NN into an external FRAM for later use][EXAMPLE_SAVE_INTO_EXTERNAL_FRAM_INO]
-- - [Running NN mostly via internal EEPROM (not RAM)][EXAMPLE_IN_EEPROM_INO]
-- - [Running NN mostly via external FRAM (not RAM)][EXAMPLE_EXTERNAL_FRAM_INO]
-- - [Running NN mostly via flash memmory (PROGMEM)](./examples/Media/FeedForward_double_Xor_PROGMEM/FeedForward_double_Xor_PROGMEM.ino 'FeedForward_double_Xor_PROGMEM.ino')
-- - [Upgrade old v2.X.X SD files to v3](./examples/Media/Upgrade_Old_SD_NN_files/Upgrade_Old_SD_NN_files.ino)
-- ***`🎲 Other:`***
-- - [Pre-trained `int8_t`-quantized NN ✨][EXAMPLE_INT_QUANTIZED_XOR_INO]
-- - [Using a custom function made by you][EXAMPLE_CUSTOM_FUNCTIONS_INO]
-- - [Support for 8Byte "double" instead of "float"](./examples/Other/Precision_for_8byte_double/Precision_for_8byte_double.ino 'Precision_for_8byte_double ')
-- - [Recognizing handwritten digits (MNIST) ✨][EXAMPLE_FEED_INDIVIDUAL_INO]
-- - [RAM Efficient HillClimb double xor ✨][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]
+- **`🔤 Basic:`** [MLP][BASIC_EXAMPLES_MLP] | [RNN][BASIC_EXAMPLES_RNN] | [GRU][BASIC_EXAMPLES_GRU] | [LSTM][BASIC_EXAMPLES_LSTM]  
+- **`💾 Media:`** [MLP][MEDIA_EXAMPLES_MLP] | [RNN][MEDIA_EXAMPLES_RNN] | [GRU][MEDIA_EXAMPLES_GRU] | [LSTM][MEDIA_EXAMPLES_LSTM]
+- **`🎲 Other:`** [MLP][OTHER_EXAMPLES_MLP] | [RNN][OTHER_EXAMPLES_RNN] | [GRU][OTHER_EXAMPLES_GRU] | [LSTM][OTHER_EXAMPLES_LSTM]
 
 
 # 📌 Important
-1. I am **NOT a professional** in any of those fields...
-2. In case of error with 'POINTER_REGS' click [here](https://forum.arduino.cc/index.php?topic=613857.0)
-3. `bias` means biases if [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties) is enabled
-4. Ensure you use (32-bit) floats during training unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties).
-5. If you want support for Back-propagation **without hidden-layers** see [`_3_OPTIMIZE 0B00001000`](#define-macro-properties)
-6. <details><summary><b>And most important, destructor wont free last-layer's outputs!</b></summary><b>By design</b>, the destructor won't free\deallocate the last layer's outputs, allowing you to continue using <a href="https://github.com/GiorgosXou/NeuralNetworks/blob/9ffc36f6e897fe486e2d58ecf8d2cbb9848f71e9/examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino#L7">these outputs</a> through the pointer in your sketch. <b>To fully delete</b> the neural-network and free the associated resources, <b>it's your responsibility to:</b> either <code>delete[] outputs</code> <b>or</b> <code>delete[] NN.layers[NN.numberOflayers - 1].outputs;</code> <ins>at the end of the scope</ins>. <b>Additionally</b>, with <code>NN.load(file)</code>: ensure you deleted last-layer's <code>*outputs</code> in your sketch, in case you plan to re-use the same pointer for capturing the outputs of the newly-loaded-NN's feedforward.</details>
+1. <details><summary><b>MOST IMPORTANT</b>, DESTRUCTOR WONT FREE LAST-LAYER'S OUTPUTS !!!!</summary><b>By design</b>, the destructor won't free\deallocate the last layer's outputs, allowing you to continue using <a href="https://github.com/GiorgosXou/NeuralNetworks/blob/9ffc36f6e897fe486e2d58ecf8d2cbb9848f71e9/examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino#L7">these outputs</a> through the pointer in your sketch. <b>To fully delete</b> the neural-network and free the associated resources, <b>it's your responsibility to:</b> either <code>delete[] outputs</code> <b>or</b> <code>delete[] NN.layers[NN.numberOflayers - 1].outputs;</code> <ins>at the end of the scope</ins>. <b>Additionally</b>, with <code>NN.load(file)</code>: ensure you deleted last-layer's <code>*outputs</code> in your sketch, in case you plan to re-use the same pointer for capturing the outputs of the newly-loaded-NN's feedforward.</details>
+2. If you need back-propagation **without hidden-layers** see [`_3_OPTIMIZE 0B00001000`](#define-macro-properties)
+3. Ensure to use *(32-bit)* float-precision during [training][SECTION_TRAINING] unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties)
+4. `bias` simply means biases when you enable [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties)
+5. In case you have an error realated to 'POINTER_REGS' [check this link here](https://forum.arduino.cc/index.php?topic=613857.0)
+6. Last but not least,I am **NOT a professional** in any of those fields.
 
 
 # 🔬 Tested on
 
 <details><summary><strong>Arduino UNO</strong></summary>
 
-- Don't [`USE_64_BIT_DOUBLE`](#define-macro-properties):  [`double` is the same as `float` on the UNO](https://www.arduino.cc/reference/en/language/variables/data-types/double/)</details>
+- Can't [`USE_64_BIT_DOUBLE`](#define-macro-properties):  [`double` is the same as `float` on the UNO](https://www.arduino.cc/reference/en/language/variables/data-types/double/)
+</details>
+<details><summary><strong>ESP32-S3-Zero</strong></summary>
+
+- Don't forget for serial to: `USB CDC on Boot: "Enabled"`
+- If having issues when flashing, [hold the *(left)*-boot-button while connecting to the computer, then release it, and flash again.](https://www.waveshare.com/wiki/ESP32-S3-Zero#accordion2:~:text=If%20programming%20fails%2C%20press%20and%20hold%20the%20boot%20button%20while%20connecting%20to%20the%20computer%2C%20then%20release%20it%2C%20and%20programming%20again.)
+- Uses software-emulated EEPROM, so don't expect internal-EEPROM examples\functionalities to work on it
+- `USE_PROGMEM` works via plain `const` logic, therfore don't worry about bloated-code when enabling it
+</details> 
 <details><summary><strong>ESP32-C3</strong></summary>
 
 - You may need to increase serial baud-rate from `9600` to `115200`
-- Uses software-emulated EEPROM, so don't expect internal-EEPROM examples\functionalities to work on it </details>
+- Uses software-emulated EEPROM, so don't expect internal-EEPROM examples\functionalities to work on it
+- `USE_PROGMEM` works via plain `const` logic, therfore don't worry about bloated-code when enabling it
+</details> 
 <details><summary><strong>ATtiny85</strong></summary>
 
 - `NN.print()` Function is disabled!
 - Doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) (i think..?)
 - If you want to use "Serial" on an ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
 - [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on an ATtiny85 won't work properly _(due to SRAM limitations, unless NN too small)_, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths will Work! [...] <sup><sub>(since the first release I haven't tested it again on the ATtiny85 at least yet, so I am not 100% sure)</sub></sup>
+</details>
+<details><summary><strong>Pico 2</strong></summary>
+
+- Uses software-emulated EEPROM, so don't expect internal-EEPROM examples\functionalities to work on it
+- `USE_PROGMEM` works via plain `const` logic, therfore don't worry about bloated-code when enabling it
 </details>
 
 
@@ -115,15 +131,15 @@ Understanding the Basics of a Neural Network:
 |<details><summary>`NeuralNetwork()`</summary>Default Constructors</details>|
 |<details><summary>`NeuralNetwork(String file)`</summary>Available if `#include <SD.h>`, lets you load NN from SD. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
 |<details><summary>`NeuralNetwork(unsigned int address)`</summary>Available if defined `_3_OPTIMIZE 0B10000000`-*(`USE_EXTERNAL_FRAM`)* or<br>Available if defined `_1_OPTIMIZE 0B10000000`-*(`USE_INTERNAL_EEPROM`)*</details>|
-|<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
+|<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, *_PropsPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
 |<details><summary>`NeuralNetwork(*layer_, &NumberOflayers, LRw, LRb, *_PropsPerLayer)`</summary>Available if backpropagation is available (`! NO_BACKPROP`)</details>|
-|<details><summary>`NeuralNetwork(*layer_, *default_Weights, &NumberOflayers, *_ActFunctionPerLayer)`</summary>Available if [`NO_BIAS`](#define-macro-properties) enabled</details>|
-|<details><summary>`NeuralNetwork(*layer_, *default_Weights, *default_Bias, &NumberOflayers, *_ActFunctionPerLayer)`</summary>(:</details>|
+|<details><summary>`NeuralNetwork(*layer_, *default_Weights, &NumberOflayers, *_PropsPerLayer)`</summary>Available if [`NO_BIAS`](#define-macro-properties) enabled</details>|
+|<details><summary>`NeuralNetwork(*layer_, *default_Weights, *default_Bias, &NumberOflayers, *_PropsPerLayer)`</summary>(:</details>|
 
 ```c++
  IS_CONST IDFLOAT *default_Bias
  IS_CONST IDFLOAT *default_Weights
- byte *_ActFunctionPerLayer = NULL
+ LayerType *_PropsPerLayer = NULL
  const unsigned int *layer_
  const unsigned int &NumberOflayers
  const DFLOAT LRw
@@ -139,7 +155,7 @@ Understanding the Basics of a Neural Network:
 |`FeedForward_Individual(x)`|[DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference')| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array|<details><summary>RAM Optimized FeedForward</summary>"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. **Important note:** You can't train with it. <br><sup>(Almost no RAM usage for input layer, see also: [example][EXAMPLE_FEED_INDIVIDUAL_INO])</sup></details>|
 | ```*FeedForward(x) ```| [Template](https://www.geeksforgeeks.org/cpp/templates-cpp/ 'Any type but, preferably use DFLOAT ("float" or "double" based on preference)') Array| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| <details><summary>Returns the output of the NN</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
 | ```BackProp(x) ```| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
-|`load(x)`| String|bool| <details><summary>Loads NN from SD</summary>Available if `#include <SD.h>`. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
+|`load(x)`| String|bool| <details><summary>Loads NN from SD or FS</summary>Available if [_3_OPTIMIZE 0B00000010](#define-macro-properties) or `#include <SD.h>`. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
 |`save(x)`| String \ u_int|bool \ u_int| <details><summary>Saves NN to storage media</summary> SD \ internal-EEPROM or external-FRAM</details>|
 |`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM. The same is true for the rest of memmory-types)_</details>|
 
@@ -208,7 +224,7 @@ Due to *(my uncertainty and)* the strict RAM optimization that allows the librar
 
 if you want to use other activation function from the default one, just define one other:
 ```c++
-#define Sigmoid //[default] No need definition, for single activation across network
+#define Sigmoid // Default one, no need definition for single activation across network
 #define Tanh
 #define ReLU
 #define LeakyReLU
@@ -217,15 +233,19 @@ if you want to use other activation function from the default one, just define o
 ...
 ```
 
-Use any activation function per layer-to-layer, like :
+Use any activation function per layer-to-layer, like:
 ```c++
 #define ACTIVATION__PER_LAYER
 #include <NeuralNetwork.h>
 
-unsigned int layers[] = {3, 4, ..., 2, 1};
-byte Actv_Functions[] = {   1, ..., 2, 0};
+unsigned int layers[] = {3, 4, 2, 1}; // layer units
+byte ActivFunctions[] = {
+  Idx_Tanh,   // Index 1 = Tanh    | Layers : 0 -> 1
+  Idx_ReLU,   // Index 2 = ReLU    | Layers : 1 -> 2
+  Idx_Sigmoid // Index 0 = Sigmoid | Layers : 2 -> 3
+};
 
-// Tanh > ... > ReLU > Sigmoid
+// Tanh > ReLU > Sigmoid
 ```
 If you want to drastically reduce ROM & slightly RAM size you can Define which Functions to use/compile, like:
 ```c++
@@ -239,10 +259,14 @@ If you want to drastically reduce ROM & slightly RAM size you can Define which F
         ...
 #include <NeuralNetwork.h>
 
-unsigned int layers[] = {3, 4, ..., 2, 1};
-byte Actv_Functions[] = {   1, ..., 2, 0};
+unsigned int layers[] = {3, 4, 2, 1}; // layer units
+byte ActivFunctions[] = {
+  Idx_ELU,    // Index 1 = ELU     | Layers : 0 -> 1
+  Idx_SELU,   // Index 2 = SELU    | Layers : 1 -> 2
+  Idx_Sigmoid // Index 0 = Sigmoid | Layers : 2 -> 3
+};
 
-// ELU > ... > SELU > Sigmoid
+// ELU > SELU > Sigmoid
 ```
 <sup>⚠️ have in mind that because I used f(x) for derivatives there might be chances of mistakes  (?)</sup>
 
@@ -282,10 +306,14 @@ float NeuralNetwork::Layer::my_sigmoidDer(const float &fx){ return fx - fx * fx;
 float NeuralNetwork::Layer::my_sigmoid   (const float &x ){ return 1 / (1 + exp(-x)); }
 
 
-unsigned int layers[] = {3, 4, ..., 2, 1};
-byte Actv_Functions[] = {   0, ..., 0, 1};
+unsigned int layers[] = {3, 4, 2, 1}; // layer units
+byte ActivFunctions[] = {
+  Idx_Tanh,      // Index 0 = Tanh       | Layers : 0 -> 1
+  Idx_Tanh,      // Index 0 = Tanh       | Layers : 1 -> 2
+  Idx_my_sigmoid // Index 1 = my_sigmoid | Layers : 2 -> 3
+};
 
-// Tanh > ... > Tanh > my_sigmoid
+// Tanh > Tanh > my_sigmoid
 ```
 > [!CAUTION]
 > Be careful commenting in front of `#define`, see issue [#29](https://github.com/GiorgosXou/NeuralNetworks/issues/29)
@@ -295,21 +323,21 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 <br>
 
 ##  ```DFLOAT``` Variables Of Activation Functions 
-| Enabling MACRO | Activation Variables| Default | Explenation|
+| Enabling MACRO | Activation Variables| Default | Explanation|
 |    ------   | ------ | ------ | ------ |
 |```#define LeakyReLU```|NN.AlphaLeaky| 0.01   | the α of Leaky |
 |```#define ELU```     |NN.AlphaELU  | 1      | the α of ELU   |
-|```#define SELU```    |NN.AlphaSELU | 1.6733 | the α of SELU  |
-|```#define SELU```    |NN.LamdaSELU | 1.0507 | the λ of SELU  |
+|```#define SELU```    |NN.AlphaSELU | 1.67326324 | the α of SELU  |
+|```#define SELU```    |NN.LamdaSELU | 1.05070098 | the λ of SELU  |
 
 <br>
 
 ## ```Type``` Other Variables
-**NOTE:** if you [`USE_INTERNAL_EEPROM`](#define-macro-properties), then only `_numberOfInputs`,`_numberOfOutputs` and `outputs` are available
+**NOTE:** When you [`USE_INTERNAL_EEPROM`](#define-macro-properties) or [`USE_EXTERNAL_FRAM`](#define-macro-properties), then only `_numberOfInputs`,`_numberOfOutputs` and `outputs` are available
 
-| Type | NN's Variables | Explenation|
+| Type | NN's Variables | Explanation|
 | ------ | ------ | ------ |
-|```byte*```      |NN.```ActFunctionPerLayer``` |if ```ACTIVATION__PER_LAYER``` defined|
+|```byte*```      |NN.```PropsPerLayer``` |if ```ACTIVATION__PER_LAYER``` defined|
 |```DFLOAT```       |NN.```LearningRateOfWeights```|The Learning-Rate-Of-Weights |
 |```DFLOAT```       |NN.```LearningRateOfBiases```| The Learning-Rate-Of-Biases|
 |```IDFLOAT*```      |NN.```weights```|If [REDUCE_RAM_WEIGHTS_LVL2](#define-macro-properties)|
@@ -345,7 +373,7 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B10000000```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use<span>&nbsp;</span>internal<span>&nbsp;</span>EEPROM<span>&nbsp;</span>instead<span>&nbsp;</span>of<span>&nbsp;</span>RAM</summary>Weights, biases, and activation functions stored-into and used-from the internal EEPROM of the MCU. Additionally, this means `REDUCE_RAM_WEIGHTS_LVLX` has no effect. see also: [example][EXAMPLE_IN_EEPROM_INO]</details> |<sub><sup>`USE_INTERNAL_EEPROM`</sup></sub>|
 | ```0B01000000```  |<sup><sub></sub></sup>|<details><summary>Use NN without biases</summary>It disables the use of biases in the entire NN</details> |<sub><sup>`NO_BIAS`</sup></sub>|
 | ```0B00100000```  |<sup><sub></sub></sup>|<details><summary>Use more than 1 bias, layer-to-layer</summary>Enables the use of a unique bias for each unit\\neuron of each layer-to-layer</details> |<sub><sup>`MULTIPLE_BIASES_PER_LAYER`</sup></sub>|
-| ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/#:~:text=about%20myself.%5Cn%22-,The%20F()%20macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`F_MACRO`</sup></sub>|
+| ```0B00010000```  |<sup><sub></sub></sup>|<details><summary>Use [F() macro](https://docs.arduino.cc/language-reference/en/variables/utilities/PROGMEM/#:~:text=about%20myself.%5Cn%22-,The,macro,-When%20an%20instruction) for print function</summary>`Serial.print(...)` strings, normally saved in RAM. This ensures strings are stored in PROGMEM *(At least for Arduino boards)*</details> |<sub><sup>`F_MACRO`</sup></sub>|
 | ```0B00001000```  |<sup><sub>⚠️📌</sub></sup>|<details><summary>Use `int16_t` quantization</summary> Weights and biases are stored as `int16_t` *(2-bytes each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `float` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
 | ```0B00000100```  |<sup><sub>⚠️</sub></sup>|<details><summary>Use `int8_t ` quantization</summary>Weights and biases are stored as `int8_t` *(1-byte each)*. During the proccess of feedforward each individual weight or bias: temporarily converts back to it's equivalent float [...] Reduces memmory-footprint by a factor of half the size of the "equivalent" `int16_t` weights and biases. Slightly CPU intensive. *(**See also:** [Training > int-quantization + details](#int-quantization))*</details> |<sub><sup>`USE_INT_QUANTIZATION`</sup></sub>|
 | ```0B00000010```  |<sup><sub></sub></sup>|<details><summary><sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub> for multiple NN </summary>It does the same thing as `REDUCE_RAM_STATIC_REFERENCE` but for multiple NN objects *(instead for just one)*. If you use `FeedForward_Individual` It is recommended to fallback to the original `_1_OPTIMIZE 0B00000100` and manually change `NN.me`</details> |<sub><sup>`...FOR_MULTIPLE_NN_OBJECTS`</sup></sub>|
@@ -356,6 +384,9 @@ byte Actv_Functions[] = {   0, ..., 0, 1};
 | ```0B00100000``` | <sup><sub>⚠️</sub></sup> | <details><summary>Same as above but for fine-tuning</summary>Enables RAM-efficient Hill-Climbing but only for pre-trained NNs, such that you only use it for fine-tuning. see also: [example][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]</details> |<sub><sup>`RAM_...CLIMB_WITHOUT_NEW`</sup></sub>|
 | ```0B00010000``` | <sup><sub></sub></sup> | <details><summary>Dynamic learning-rates for Hill-Climb</summary>In case of need for dynamic-changes in learning-rates durin Hill Climbing. see also: [example][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]</details> |<sub><sup>`...DYNAMIC_LEARNING_RATES`</sup></sub>|
 | ```0B00001000``` | <sup><sub></sub></sup> | <details><summary>Support BackProp without hidden-layers</summary></details> |<sub><sup>`SUPPORT_NO_HIDDEN_BACKPROP`</sup></sub>|
+| ```0B00000100``` | <sup><sub></sub></sup> | <details><summary>Disables `static`-use for activation</summary>(Not recomended) usually auto-enabled when using `Softmax`</details> |<sub><sup>`DISABLE_STATIC_FOR_ACTS`</sup></sub>|
+| ```0B00000010``` | <sup><sub></sub></sup> | <details><summary>Enables FS functionality support</summary>commit fd20e89f00b73b58930f63912d0249f7f3512d1a</details> |<sub><sup>`SUPPORTS_FS_FUNCTIONALITY`</sup></sub>|
+| ```0B00000001``` | <sup><sub></sub></sup> | <details><summary>Reduce RAM usage for GRU & LSTM</summary>*(at least theoretically)* should reduce ram usage drasticly *(when using more that 2 layers)* by defining *(per layer)*-`gatedOutputs` locally&temporarily inside `Layer::{ARCH}_Only_FeedForward(...)`, in stack</details> |<sub><sup>`REDUCE_RAM...GATED_OUTPUTS`</sup></sub>|
 
 <br>
 
@@ -367,10 +398,23 @@ Don't use keywords to define optimizations, it won't work, use _X_OPTIMIZE
 
 
 # 👨‍💻 Training
-To train a neural-network, you can use Tensorflow to do so. Here's a basic python example:
+To train a neural-network, you can use [TensorFlow](https://www.tensorflow.org/) to do so. Here's a few basic python *(mostly set-up)* examples for you to get started with:
+
+### [🔹MLP](https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense)
 
 ```python
-| ```0B00000001``` | <sup><sub></sub></sup> | <details><summary>Reduce RAM usage for GRU & LSTM</summary>reduces ram usage drasticly *(when using more that 2 layers)* by defining *(per layer)*-`gatedOutputs` locally&temporarily inside `Layer::LSTM_Only_FeedForward(...)`, in stack</details> |<sub><sup>`REDUCE_RAM...GATED_OUTPUTS`</sup></sub>|
+# 🔹 Create a simple MLP neural network
+model = tf.keras.Sequential([
+    Input(shape=(input_size,)), # Input layer
+    Dense(3, activation='sigmoid', dtype=tf.float32), # Dense  3 units 
+    Dense(1, activation='sigmoid', dtype=tf.float32)  # Output 1 unit 
+])
+```
+
+<details><summary>Click here to see the full <b>training example</b></summary>
+
+```python
+# pip install tensorflow
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow as tf
@@ -450,9 +494,182 @@ for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
 print('};\n')
 ```
 
+</details>
+
+
+### [🔹RNN (Vanilla)](https://www.tensorflow.org/api_docs/python/tf/keras/layers/SimpleRNN)
+
+```Python
+# 🔹 Build Stateful Multi-Layer SimpleRNN Model
+model = Sequential([ # Input shape is (timesteps, features) | You may want to use kernel_initializer="he_normal"
+    Input(shape=(seq_length, 1), batch_size=batch_size, dtype=tf.float32),
+    SimpleRNN(8, activation='selu', return_sequences=True , stateful=True, dtype=tf.float32),
+    SimpleRNN(1, activation='selu', return_sequences=False, stateful=True, dtype=tf.float32)
+])
+```
+
+<details><summary>See how weights and biases should be <b>printed</b></summary>
+
+```python
+# TensorFlow’s (default) `use_bias=True` is `_2_OPTIMIZE 0B00100000` while for use_bias=False is `_2_OPTIMIZE 0B01000000`
+print("#define _2_OPTIMIZE 0B00100000 // Enables MULTIPLE_BIASES_PER_LAYER \n") 
+
+weights_biases = model.get_weights()
+rnn_layers = model.layers[0:] # Skipping 0-index Input/Feature-Layer
+
+# Extract and print biases
+print('float biases[] = {')
+for layer in rnn_layers:
+    print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in layer.get_weights()[-1])},")
+print('};\n')
+
+# Extract and print weights
+print("float weights[] = {", end='')
+for i, layer in enumerate(rnn_layers):
+    weights = layer.get_weights() # layer weights
+    k  = weights[0].T # Transposed weights of layer 
+    rk = weights[1].T # Transposed recurrent-weights of layer
+    rows = k.shape[0]
+    print(f"\n  // RNN LAYER {i+1}")
+    for row_idx in range(rows):
+        print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in k[row_idx])},")
+        print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in rk[row_idx])},")
+print("};")
+```
+
+</details>
+
+### [🔹GRU](https://www.tensorflow.org/api_docs/python/tf/keras/layers/GRU)
+``` python
+# 🔹 Build Stateful Multi-Layer GRU Model
+model = Sequential([ # Input shape is (timesteps, features) | You many want to use kernel_initializer="he_normal"
+    Input(shape=(seq_length, 1), batch_size=batch_size, dtype=tf.float32),
+    GRU(7, activation='selu', return_sequences=True , stateful=True, reset_after=False, dtype=tf.float32),
+    GRU(1, activation='selu', return_sequences=False, stateful=True, reset_after=False, dtype=tf.float32),
+])
+```
+
+<details><summary>See how weights and biases should be <b>printed</b></summary>
+
+```python
+# TensorFlow’s (default) `use_bias=True` is `_2_OPTIMIZE 0B00100000` while for use_bias=False is `_2_OPTIMIZE 0B01000000`
+print("#define _2_OPTIMIZE 0B00100000 // Enables MULTIPLE_BIASES_PER_LAYER \n") 
+
+weights_biases = model.get_weights()
+gru_layers = model.layers[0:] # Skipping 0-index Input/Feature-Layer
+
+
+def print_row(k, gate_str):
+    print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in k)}, // {gate_str} gate")
+
+def print_interleaved_rows(k, rk):
+    k__np =  k.numpy().T 
+    rk_np = rk.numpy().T
+    num_rows = k__np.shape[0]
+
+    for row_idx in range(num_rows):
+        print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in k__np[row_idx])},")
+        print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in rk_np[row_idx])},")
+
+
+print("float biases[] = {")
+for i, layer in enumerate(gru_layers):
+    print(f"  // GRU LAYER {i+1}") # type(layer).__name__
+    weights = layer.get_weights()
+    k_update, k_reset, k_hidden = tf.split(weights[-1], num_or_size_splits=3, axis=0)
+    print_row(k_reset , "Reset" )
+    print_row(k_hidden, "Hidden")
+    print_row(k_update, "Update")
+print("};\n\n")
+
+print("float weights[] = {", end='')
+for i, layer in enumerate(gru_layers):
+    print(f"\n  // GRU LAYER {i+1}")
+    weights = layer.get_weights()
+
+    # Split into gates
+    k__update, k__reset, k__hidden = tf.split(weights[0], num_or_size_splits=3, axis=1)
+    rk_update, rk_reset, rk_hidden = tf.split(weights[1], num_or_size_splits=3, axis=1)
+
+    print("\n  // Reset gate "); print_interleaved_rows(k__reset, rk_reset)
+    print("\n  // Hidden gate"); print_interleaved_rows(k__hidden, rk_hidden)
+    print("\n  // Update gate"); print_interleaved_rows(k__update, rk_update)
+print("};")
+```
+
+</details>
+
+### [🔹LSTM](https://www.tensorflow.org/api_docs/python/tf/keras/layers/LSTM)
+```python
+# 🔹 Build Stateful Multi-Layer LSTM Model
+model = Sequential([ # Input shape is (timesteps, features) | You may want to use kernel_initializer="he_normal"
+    Input(shape=(seq_length, 1), batch_size=batch_size, dtype=tf.float32),
+    LSTM(6, activation='selu', return_sequences=True , stateful=True, dtype=tf.float32),
+    LSTM(1, activation='selu', return_sequences=False, stateful=True, dtype=tf.float32)
+])
+```
+
+
+<details><summary>See how weights and biases should be <b>printed</b></summary>
+
+```python
+# TensorFlow’s (default) `use_bias=True` is `_2_OPTIMIZE 0B00100000` while for use_bias=False is `_2_OPTIMIZE 0B01000000`
+print("#define _2_OPTIMIZE 0B00100000 // Enables MULTIPLE_BIASES_PER_LAYER \n") 
+
+weights_biases = model.get_weights()
+lstm_layers = model.layers[0:]
+
+
+def print_row(k, gate_str):
+    print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in k)}, // {gate_str}")
+
+def print_interleaved_rows(k, rk):
+    k__np =  k.numpy().T 
+    rk_np = rk.numpy().T
+    num_rows = k__np.shape[0]
+
+    for row_idx in range(num_rows):
+        print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in k__np[row_idx])},")
+        print(f"  {', '.join(f"{f"{val:.8f}" if val < 0 else f" {val:.8f}"}f" for val in rk_np[row_idx])},")
+
+
+print("float biases[] = {")
+for i, layer in enumerate(lstm_layers):
+    weights = layer.get_weights()
+    print(f"  // LSTM LAYER {i+1}") # type(layer).__name__
+    k_input, k_forget, k_cell, k_output = tf.split(weights[-1], num_or_size_splits=4, axis=0)
+    print_row(k_forget, "forget gate")
+    print_row(k_input , "input gate" )
+    print_row(k_cell  , "cell state" )
+    print_row(k_output, "output gate")
+print("};\n\n")
+
+
+print("float weights[] = {", end='')
+for i, layer in enumerate(lstm_layers):
+    print(f"\n  // LSTM LAYER {i+1}")
+    weights = layer.get_weights()
+
+    # Split into gates
+    k__input, k__forget, k__cell, k__output = tf.split(weights[0], num_or_size_splits=4, axis=1)
+    rk_input, rk_forget, rk_cell, rk_output = tf.split(weights[1], num_or_size_splits=4, axis=1)
+
+    print("\n  // forget gate"); print_interleaved_rows(k__forget, rk_forget)
+    print("\n  // input gate" ); print_interleaved_rows(k__input , rk_input )
+    print("\n  // cell state" ); print_interleaved_rows(k__cell  , rk_cell  )
+    print("\n  // output gate"); print_interleaved_rows(k__output, rk_output)
+print("};")
+```
+
+</details>
+
+
+> [!TIP]
+> The equivalent of TensorFlow's *(default)* `use_bias=True` is `_2_OPTIMIZE 0B00100000` while for `use_bias=False` is `_2_OPTIMIZE 0B01000000`
+
 ### Int quantization
 
- *([See also](EXAMPLE_INT_QUANTIZED_XOR_INO))* Assuming you already have either enabled [`int16_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , is set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
+ *([See also](EXAMPLE_INT_QUANTIZED_XOR_INO))* Assuming you already have either enabled [`int16_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00001000') or [`int8_t`](#define-macro-properties '#define _2_OPTIMIZE 0B00000100')... before proceeding with the example, you should know that the default range of weights *(that maps floats to ints)* , are set to `200.0` for `int16_t` and `51.0` for `int8_t` via this simple formula:
 ```cpp
 // FLOAT RANGE FOR INT16 = (100.0) - (-100.0) = 200.0 | MAX - MIN
 // FLOAT RANGE FOR INT8  = ( 25.5) - (- 25.5) =  51.0 | MAX - MIN
@@ -460,10 +677,10 @@ print('};\n')
 
 You can change that by defining your own value in your sketch, like:
 ```cpp
-#define Q_FLOAT_RANGE 40.0 // (20.0) - (-20.0) = 40.0 | Ensure you used a dot!
+#define Q_FLOAT_RANGE 4.0 // (2.0) - (-2.0) = 4.0
 ```
 
-<details><summary>Now click here to see the full <b>int-quantization training example</b></summary>
+<details><summary>Now click here to see the full <b>int-quantization MLP training example</b></summary>
 
 ```python
 # pip install tensorflow
@@ -586,7 +803,7 @@ for i in range(len(inputs)):
 
 
 > [!IMPORTANT]
-> Make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(Althought, just so you know... Tensorflow doesn't seem to support 1 bias per layer-to-layer)*. **Finally** make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
+> Make sure you have *(on top of your sketch)* enabled\\defined `_2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER` or `_2_OPTIMIZE 0B01000000 // NO_BIAS ` depending on your needs of use. Additionally, if you want to use just 1 bias per layer-to-layer don't use any of those 2 optimizations *(althought, it must be noted that... unless customly done, Tensorflow doesn't support 1 bias per layer-to-layer)*. **Finally**, make sure to use `float32` unless your MCU is compatible and you want to `USE_64_BIT_DOUBLE`-optimization
 > *([see also examples](#✏️-examples) on how to train a NN directly on an MCU)*
 
 <br>
@@ -599,6 +816,140 @@ I want to **really thanks** [Underpower Jet](https://www.youtube.com/channel/UCW
 # 🌐 Research
 Here most of the resources I came across the internet, I recommend you to have a brief look if you want to _(but please be aware of the fact that for few of those sites, I had only opened them checked something and then closed them in a matter of seconds [so, please don't get them all seriously])_
 
+
+**```17\11\2025```** 
+- **```Interesting:```**
+- - <sub><sup>⭐ </sup></sub>[Differentiable Logic Cellular Automata](https://google-research.github.io/self-organising-systems/difflogic-ca/?hn '2025-03-19 04:34:05 PM') [2](https://news.ycombinator.com/item?id=43286161)
+- **```NeuralNetworks:```**
+- - [The Essential Guide to Neural Network Architectures](https://www.v7labs.com/blog/neural-network-architectures-guide '2025-08-04 08:11:07 AM')
+- - [What are kernel initializers and what is their significance?](https://datascience.stackexchange.com/questions/37378 '2025-08-03 04:17:08 AM')
+- - [How LLMs survive in low precision | Quantization Fundamentals](https://www.youtube.com/watch?v=qoQJq5UwV1c '2025-08-04 05:36:52 AM')
+- - [Compressing Neural Networks for Embedded AI: Pruning, Projection, and Quantization](https://www.youtube.com/watch?v=7uV3-eTB5es '2025-08-16 12:31:41 PM')
+- - ***```Training:```***
+- - - [Is it possible to train a neural network without backpropagation?](https://stats.stackexchange.com/questions/235862/is-it-possible-to-train-a-neural-network-without-backpropagation '2025-03-19 08:07:12 PM')
+- - - [How to set adaptive learning rate for GradientDescentOptimizer?](https://stackoverflow.com/questions/33919948/ '2025-08-03 04:02:54 AM')
+- - - [Simulated Annealing with C](https://minimatech.org/simulated-annealing-with-c/ '2025-08-04 06:06:33 AM')
+- - ***```Seems Interesting:```***
+- - - [Could you make a neural network in cellular automata?](https://www.reddit.com/r/cellular_automata/comments/qgbc8w/could_you_make_a_neural_network_in_cellular/ '2025-03-21 11:05:49 AM')
+- - - [ Swarm-Based Nature-Inspired Metaheuristics for Neural Network Optimization](https://www.igi-global.com/chapter/swarm-based-nature-inspired-metaheuristics-for-neural-network-optimization/187679 '2025-03-19 08:10:12 PM')
+- - - [Recurrent neural-network training by a learning automaton approach for trajectory learning and control system design](https://ieeexplore.ieee.org/document/668879/authors#authors '2025-03-21 11:04:43 AM')
+- - ***```RNN:```***
+- - - ***```(Mostly vanilla) RNN:```***
+- - - - [Number of parameters in Simple RNNs](https://datascience.stackexchange.com/questions/88436/number-of-parameters-in-simple-rnns '2025-03-19 07:26:44 PM')
+- - - - [RNN Theory and Math Clearly Explained](https://www.youtube.com/watch?v=jPPWc0y-08Q '2025-03-21 10:34:33 AM')
+- - - - [Gesture Recognition and Recurrent Neural Networks on an Arduino](https://spinwearables.com/rnn/ '2025-03-19 07:35:09 PM Chris zaf')
+- - - - [MIT 6.S094: Recurrent Neural Networks for Steering Through Time](https://www.youtube.com/watch?v=nFTQ7kHQWtc&t=2259s '2025-03-19 08:04:08 PM')
+- - - - [What exactly is a hidden state in an LSTM and RNN?](https://ai.stackexchange.com/questions/16133/what-exactly-is-a-hidden-state-in-an-lstm-and-rnn '2025-03-20 11:53:34 AM')
+- - - - ***```Training:```***
+- - - - - [Backpropagation in RNN](https://medium.com/@abhishekjainindore24/backpropagation-in-rnn-abd87b940a7d)
+- - - - - [BPTT - Derivatives for W,V and U](https://www.youtube.com/watch?v=XoxsM5c8H-E '2025-03-21 11:00:07 AM')
+- - - - - [9.7. Backpropagation Through Time](https://d2l.ai/chapter_recurrent-neural-networks/bptt.html)
+- - - - - [RNN Training: Welcome to your Tape - Side B](https://medium.com/learn-love-ai/step-by-step-walkthrough-of-rnn-training-part-ii-7141084d274b '2025-03-21 10:08:18 AM')
+- - - - - [Backpropagation Through Time for Recurrent Neural Network](https://mmuratarat.github.io/2019-02-07/bptt-of-rnn '2025-03-21 10:07:20 AM')
+- - - - - [Backpropagation of a vanilla RNN](https://lucyliu-ucsb.github.io/posts/Backpropagation-of-a-vanilla-RNN/ '2025-03-21 10:57:26 AM')
+- - - - ***```Examples:```***
+- - - - - [RNN From Scratch In Python](https://www.youtube.com/watch?v=4wuIOcD1LLI '2025-03-19 08:13:18 PM')
+- - - - - [Implementing Recurrent Neural Network from Scratch](https://github.com/gy910210/rnn-from-scratch '2025-03-20 08:36:37 AM')
+- - - - - [Building a Recurrent Neural Network From Scratch](https://medium.com/@thisislong/building-a-recurrent-neural-network-from-scratch-ba9b27a42856 '2025-03-20 08:40:23 AM')
+- - - - - [Jordan net: a 3-layer recurrent neural network (neural net) for Arduino DUE](https://forum.arduino.cc/t/jordan-net-a-3-layer-recurrent-neural-network-neural-net-for-arduino-due/334678 '2025-03-21 09:54:02 AM')
+- - - - ***```ChatGPT:```***
+- - - - - [RNN](https://chatgpt.com/c/67bf05a3-d500-8000-ba9f-d3e39f69e55b '2025-03-19 07:46:23 PM')
+- - - - ***```Tensorflow:```***
+- - - - - [Number of parameters in Simple RNNs](https://datascience.stackexchange.com/questions/88436/number-of-parameters-in-simple-rnns '2025-03-19 04:45:19 PM')
+- - - - - [Mathematical structure of SimpleRNN in keras](https://stats.stackexchange.com/questions/371877/mathematical-structure-of-simplernn-in-keras '2025-03-19 04:44:17 PM')
+- - - - - [TensorFlow / Keras: What is stateful = True in LSTM layers?](https://datascience.stackexchange.com/questions/66031/tensorflow-keras-what-is-stateful-true-in-lstm-layers '2025-03-21 10:53:19 AM')
+- - - - - [Can you train an RNN model (Keras) by giving only one input at a time and get output continuously as you feed data instead of feeding all data at once in batches?](https://www.quora.com/Can-you-train-an-RNN-model-Keras-by-giving-only-one-input-at-a-time-and-get-output-continuously-as-you-feed-data-instead-of-feeding-all-data-at-once-in-batches '2025-03-21 10:47:59 AM')
+- - - - - <sub><sup>⭐ </sup></sub>[If float32 is only 6-7 digits, how do values where the first 6-7 digits are just 0s make sense?](https://www.reddit.com/r/learnpython/comments/x7boeq/if_float32_is_only_67_digits_how_do_values_where/ '2025-03-23 10:41:03 AM')
+- - - ***```GRU:```***
+- - - - <sub><sup>⭐ </sup></sub>[To understand the underlying math of GRU neural network in TensorFlow Keras](https://stats.stackexchange.com/a/613773/466641)
+- - - - <sub><sup>⭐ </sup></sub>[\[GRU\] Applying and Understanding Gated Recurrent Unit in Python](https://www.youtube.com/watch?v=rdz0UqQz5Sw '2025-05-14 10:50:47 AM')
+- - - - [Understanding the flow of information through GRU cell](https://ashish-cse16.medium.com/understanding-the-flow-of-information-through-gru-cell-198655bc7074 '2025-05-14 01:33:19 PM')
+- - - - [Simple Explanation of GRU (Gated Recurrent Units)](https://www.youtube.com/watch?v=tOuXgORsXJ4 '2025-03-25 02:41:54 PM')
+- - - - [Gated Recurrent Unit | GRU | Explained in detail](https://www.youtube.com/watch?v=IBs8D8PWMc8 '2025-03-25 12:04:21 PM')
+- - - - ***```Tensorflow:```***
+- - - - - [TensorFlow - tf.keras.layers.GRU](https://www.tensorflow.org/api_docs/python/tf/keras/layers/GRU '2025-05-14 11:24:51 AM')
+- - - - - [TensorFlow - `reset_after` parameter](https://keras.io/api/layers/recurrent_layers/gru/#:~:text=reset_after%3A%20GRU%20convention%20(whether%20to%20apply%20reset%20gate%20after%20or%20before%20matrix%20multiplication).%20False%20is%20%22before%22%2C%20True%20is '2025-05-14 01:46:24 PM')
+- - - - - [GRU resetAfter support](https://github.com/tensorflow/tfjs/pull/3620 '2025-08-04 06:04:00 AM')
+- - - ***```LSTM:```***
+- - - - <sub><sup>⭐ </sup></sub>[\[LSTM\] Applying and Understanding Long Short-term Memory in Python](https://www.youtube.com/watch?v=rmxogwIjOhE '2025-05-26 01:08:14 PM')
+- - - - <sub><sup>⭐ </sup></sub>[/keras/src/layers/rnn/lstm.py](https://github.com/keras-team/keras/blob/f6c4ac55692c132cd16211f4877fac6dbeead749/keras/src/layers/rnn/lstm.py#L218-L274 '2025-05-26 01:11:21 PM')
+- - - - [Understanding LSTM Networks](https://colah.github.io/posts/2015-08-Understanding-LSTMs/ '2025-05-14 01:38:19 PM')
+- - ***```Projects:```***
+- - - <sub><sup>⭐ </sup></sub>[Neural Networks (MNIST inference) on the “3-cent” Microcontroller](https://cpldcpu.com/2024/05/02/machine-learning-mnist-inference-on-the-3-cent-microcontroller/#more-1674 '2025-04-08 10:11:36 PM')
+- - ***```Other:```***
+- - - <sub><sup>⭐ </sup></sub>[A Fundamental Unit Of Intelligence](https://www.youtube.com/watch?v=Dykkubb-Qus '2025-08-02 06:23:09 PM')
+- - ***```Watch Later:```***
+- - - [Recurrent Neural Network implementation](https://stackoverflow.com/questions/39910695/recurrent-neural-network-implementation '2025-03-21 10:46:16 AM')
+- - - [Banach Space Representer Theorems for Neural Networks](https://www.youtube.com/watch?v=nLlIUeOqIcs '2025-03-19 04:23:06 PM')
+- - - [Next-generation recurrent network models for cognitive neuroscience](https://www.youtube.com/watch?v=Eq-chOIbOwM '2025-03-19 04:24:02 PM')
+- - - [G-Email: AI Agents: Introduction (Part-1) | Vipra Singh](https://mail.google.com/mail/u/0/#inbox/FMfcgzQZTgRNxBtfNwhKMwswvmJqvCQc '2025-03-19 04:29:35 PM')
+- - - [Gradient Based Learning Algorithms vs Global Optimization Learning Algorithms for Neural Networks](https://stats.stackexchange.com/questions/98983/gradient-based-learning-algorithms-vs-global-optimization-learning-algorithms-fo?newreg=3e4fe90446c3477fbb9e2dc52f04bcfa '2025-03-21 11:02:43 AM')
+- - - [Mamba: Linear-Time Sequence Modeling with Selective State Spaces (COLM Oral 2024)](https://www.youtube.com/watch?v=X-7rgesJaGM '2025-08-02 06:26:24 PM')
+- - - [MAMBA from Scratch: Neural Nets Better and Faster than Transformers](https://www.youtube.com/watch?v=N6Piou4oYx8 '2025-08-02 06:32:10 PM')
+- - - [Why Different Neuron Parts Learn Differently?](https://www.youtube.com/watch?v=9StHNcGs-JM '2025-08-02 08:53:08 PM')
+- - - [LSTM Time Series Forecasting with TensorFlow & Python – Step-by-Step Tutorial](https://www.youtube.com/watch?v=94PlBzgeq90 '2025-08-03 04:11:21 AM')
+- - - [recurrent neural network from scratch using c#](https://www.youtube.com/watch?v=7lp6NY4wgeA '2025-08-04 06:01:25 AM')
+- **```MCUs & Arduino:```**
+- - ***```ESP32:```***
+- - - <sub><sup>⭐ </sup></sub>[Use randomSeed() to fallback to PRNG](https://github.com/espressif/arduino-esp32/discussions/7399 '2025-02-17 05:32:41 PM')
+- - ***```CH32V003:```***
+- - - [CH32V arduino support issue](https://community.platformio.org/t/ch32v-arduino-support-issue/38128/9 '2025-07-24 10:34:12 PM')
+- - ***```SIMD:```***
+- - - ***```Pico 2 (RP2350):```***
+- - - - [GPT - Is there a C-api?](https://chatgpt.com/share/67b32cae-0604-8000-b143-de94ac59f082 '2025-02-17 02:35:20 PM')
+- - - - [Reddit post speaking about SIMD too](https://www.reddit.com/r/embedded/comments/1eqyp48/ '2025-02-17 02:26:06 PM')
+- - - - ***```Random:```***
+- - - - - [RP2350 dsp instructions](https://forums.raspberrypi.com/viewtopic.php?t=381317 '2025-02-17 02:20:49 PM')
+- - ***```Random:```***
+- - - [Guide to PROGMEM on ESP8266 and Arduino IDE](https://www.youtube.com/watch?v=mg7netw1JuM '2025-02-22 01:48:43 AM')
+- - ***```AVR:```***
+- - - ***```register Keyword:```***
+- - - - <sub><sup>⭐ </sup></sub>[Register](https://forum.arduino.cc/t/register/682625 '2025-11-07 09:19:28 PM')
+- - - ***```EEMEM keyword:```***
+- - - - [Set EEPROM from PC before program](https://arduino.stackexchange.com/a/28261/77085 '2025-10-27 12:35:33 AM')
+- - - - [ChatGPT -  Decode EEPROM file](https://chatgpt.com/share/68fea49c-be90-8000-b7db-da3420e66d56 '2025-10-27 12:46:32 AM | TODO like PROGMEM')
+- - - - [IDE upload to EEPROM](https://forum.arduino.cc/t/ide-upload-to-eeprom/480090 '2025-10-27 12:44:53 AM')
+- - - - [EEprom content declaration data directly from sketch](https://forum.arduino.cc/t/eeprom-content-declaration-data-directly-from-sketch/410404 '2025-10-27 12:45:36 AM')
+- - - - [.eep file empty unless also read](https://community.platformio.org/t/eep-file-empty-unless-also-read/2648 '2025-10-27 12:49:41 AM')
+- - - - [Something that looks interesting](https://www.fucik.name/Arduino/eemem.php) from [source](https://forum.arduino.cc/t/eemem/261238 '2025-10-27 12:50:56 AM')
+- - - - <sub><sup>⭐⭐</sup></sub>[Same thing can be done with any memmory type?](https://www.avrfreaks.net/s/topic/a5C3l000000UaPYEA0/t153758 '2025-10-27 12:52:30 AM | #define FRAMEM __attribute__((section( ".fram ")))')
+- - - ***```ATMega:```***
+- - - - [Little Endian or Big Endian?](https://forum.arduino.cc/t/little-endian-or-big-endian/41382 '2025-07-23 12:14:58 PM')
+- **```Programming:```**
+- - [Are two for-loops slower than a bigger one?](https://stackoverflow.com/questions/61131725/are-two-for-loops-slower-than-a-bigger-one '2025-08-30 09:53:41 AM')
+- - ***```C/C++:```***
+- - - [Why is zero-length array allowed only if it's heap allocated?](https://stackoverflow.com/questions/6861776/why-is-zero-length-array-allowed-only-if-its-heap-allocated '2025-09-05 01:25:10 PM')
+- - - [The difference of int8_t, int_least8_t and int_fast8_t?](https://stackoverflow.com/questions/5254051/the-difference-of-int8-t-int-least8-t-and-int-fast8-t '2025-07-23 12:24:58 PM')
+- - - [Can you make a computed goto in C++?](https://stackoverflow.com/questions/45380073/can-you-make-a-computed-goto-in-c '2025-07-23 12:41:36 PM')
+- - - [How to speed up dynamic dispatch by 20% using computed gotos in standard C++](https://stackoverflow.com/questions/58774170/how-to-speed-up-dynamic-dispatch-by-20-using-computed-gotos-in-standard-c '2025-07-23 12:42:57 PM')
+- - - [What optimizations does __builtin_unreachable facilitate?](https://stackoverflow.com/questions/54764535/what-optimizations-does-builtin-unreachable-facilitate '2025-07-23 12:44:19 PM')
+- - - [How do I force the compiler to evaluate a switch at compile time?](https://stackoverflow.com/questions/61652334/how-do-i-force-the-compiler-to-evaluate-a-switch-at-compile-time '2025-07-24 01:56:46 PM')
+- - - [Difference between "if constexpr()" Vs "if()"](https://stackoverflow.com/questions/43434491/difference-between-if-constexpr-vs-if '2025-07-24 01:55:18 PM')
+- - - [A hands-on showdown of compiler flags](https://medium.com/nerd-for-tech/compiler-optimizations-boosting-code-performance-without-doing-much-95f1182a5757 '2025-08-02 08:49:43 PM')
+- - - [3.12 Options That Control Optimization](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html '2025-08-03 04:32:08 AM')
+- - - ***```Bitfields:```***
+- - - - [Why bit endianness is an issue in bitfields?](https://stackoverflow.com/questions/6043483/why-bit-endianness-is-an-issue-in-bitfields#comment6992041_6043483 '2025-07-23 10:47:15 AM | tl;dr Safe as long as you read and write the bits in the same system')
+- - - - [Is Aggregate Initialization of Bit-Fields Allowed?](https://stackoverflow.com/questions/34856936/is-aggregate-initialization-of-bit-fields-allowed '2025-08-16 06:12:07 PM | tldr YES')
+- - - - [Is it possible to use array of bit fields?](https://stackoverflow.com/questions/41918433/ '2025-08-02 05:14:25 AM | bitmask is better i think')
+- - - - [Purpose of empty bit fields in a structure?](https://stackoverflow.com/questions/35075688/purpose-of-empty-bit-fields-in-a-structure '2025-08-28 01:56:52 AM')
+- - - ***```Macros:```***
+- - - - [Macro definition to determine big endian or little endian machine?](https://stackoverflow.com/questions/2100331/macro-definition-to-determine-big-endian-or-little-endian-machine '2025-07-23 12:28:50 PM')
+- - - - [How to detect if long double is of extended precision or not at compile time?](https://stackoverflow.com/questions/8751109 '2025-07-29 01:45:58 AM | for floats is FLT_MANT_DIG')
+- - - - [Do any C or C++ compilers optimize within define macros?](https://stackoverflow.com/questions/6796344/do-any-c-or-c-compilers-optimize-within-define-macros '2025-08-02 08:51:52 PM')
+- - - - [Can I capture the underlying value of one macro when defining another?](https://stackoverflow.com/questions/42095942 '2025-08-04 02:09:45 AM')
+- - - - [How to compare strings in C conditional preprocessor-directives](https://stackoverflow.com/questions/2335888/ '2025-08-04 08:05:26 AM')
+- - - - [Is it possible to define macro inside macro?](https://stackoverflow.com/questions/48431325/ '2025-08-04 03:29:34 AM')
+- - - - **?** [6.5.15 Push/Pop Macro Pragmas](https://gcc.gnu.org/onlinedocs/gcc/Push_002fPop-Macro-Pragmas.html '2025-08-04 03:50:46 AM')
+- - - - ***```#undef:```***
+- - - - - [When do we need #ifdef before #undef?](https://stackoverflow.com/a/9090656/11465149 '2025-08-19 05:39:19 PM')
+- - - - - ["You can apply the #undef directive to an identifier that has no previous definition;..."](https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-appendix-pre-undef '2025-08-19 05:38:27 PM')
+- - - - - ["‘#undef’ has no effect if the name is not a macro."](https://gcc.gnu.org/onlinedocs/cpp/Undefining-and-Redefining-Macros.html#index-_0023undef '2025-08-19 05:37:12 PM')
+- - ***```Python:```***
+- - - [Better options to the basic Arduino Serial Plotter?](https://arduino.stackexchange.com/a/66715/77085 '2025-08-02 04:20:02 AM | you may need sudo')
+- **```(ALU) Arithmetic Logic Unit```**
+- - [Elite: "The game that couldn't be written"](https://youtu.be/lC4YLMLar5I?t=2924 '2025-03-21 11:08:05 AM | Random but really cool')
+
+<br>
 
 **```22\11\2023```** 
 * **```Code Related:```**
@@ -661,7 +1012,7 @@ Here most of the resources I came across the internet, I recommend you to have a
 * **```General:```**
 * * _**```Math:```**_
 * * * [What the cap over letters in math means](https://en.wikipedia.org/wiki/Hat_operator#:~:text=article%3A%20unit%20vector-,Estimated%20value,%CE%B5%20(the%20statistical%20errors).)
-#define Q_FLOAT_RANGE 4.0 // (2.0) - (-2.0) = 4.0
+* * * [When log is written without a base, is the equation normally referring to log base 10 or natural log?](https://math.stackexchange.com/questions/293783)
 * * _**```Grammar:```**_
 * * * [Plural of feedforward](https://en.wiktionary.org/wiki/feedforwards)
 * * _**```Just "Random":```**_
@@ -749,9 +1100,9 @@ Here most of the resources I came across the internet, I recommend you to have a
 * * [Macro functions](http://crasseux.com/books/ctutorial/Macro-functions.html#:~:text=Macros%20that%20do%20so%20are,absolute%20value%20of%20its%20parameter.)
 * * [(Random)](http://www.cplusplus.com/doc/tutorial/preprocessor/)
 
-#
 
-### Old Research:
+<details><summary>click to expand older research</summary>
+
 > | ``` ``` | Intresting   |```NN.```| Neural Network(s) |```A.```| Arduino etc.  |```-```| Mostly .NET & Other |```*```| Maybe Intresting?
 
 | NNs | PROGMEM | Define directive | Other & "Random" | 
@@ -792,28 +1143,29 @@ Here most of the resources I came across the internet, I recommend you to have a
 |[* Playlist](https://www.youtube.com/watch?v=QJoa0JYaX1I&list=PLRqwX-V7Uu6Y7MdSCaIfsxc561QI0U0Tb)| | |[NN. Looking Inside](https://ml4a.github.io/ml4a/looking_inside_neural_nets/)| 
 |[- ```SciBasic```](https://github.com/xieguigang/sciBASIC)| | | |
 
+
+</details>
+
 <br>
 
 # 💗 Donation 
-<p align="left" width="100%">
-    <img width="31%" href="" src="https://raw.githubusercontent.com/GiorgosXou/Random-stuff/main/Images/img4.png">
-</p>
 
-
-Any amount of donation, will be highly appreciated! 
-| Monero address: <sup>`87PVyQ8Vt768hnvVyR9Qw1NyGzDea4q9Zd6AuwHb8tQBU9VdRYjRoBL7Ya8yRPVQakW2pjt2UWEtzYoxiRd7xpuB4XSJVAW`</sup>
+Be the first person who donates to this project *(as of 2025-11-17)* Any amount of donation, will be highly appreciated! 
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url) [![Donate](https://img.shields.io/badge/Donate-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XDMZ9RGLBWS8U&source=url)
+| Or via Monero address: <sup>`87PVyQ8Vt768hnvVyR9Qw1NyGzDea4q9Zd6AuwHb8tQBU9VdRYjRoBL7Ya8yRPVQakW2pjt2UWEtzYoxiRd7xpuB4XSJVAW`</sup>
 
 
 # 🕳️ Outro
-- Forgive me if I've made any mistakes and please don't take me seriously with every claim i make, I am mainly "self taught" in this field of NeuralNetworks, I am not a professional programmer nor do I have a good knowledge in many of the fields used to create this library, **I just make things because I love to** [...] 
+Forgive me if I've made any mistakes and please don't take me seriously with every claim i make, I am mainly "self taught" in this field of NeuralNetworks, I am not a professional programmer nor do I have a good knowledge in many of the fields used to create this library, **I just make things because I love to** [...] 
 
-- Also looking for jobs, if you are interested let me know, I really like working with embeded systems, C\C++, python, CLIs and etc.
-- Life is suffering.
+Also looking for jobs, if you are interested let me know, I really like working with embeded systems, C\C++, python, CLIs and etc.
+
+
+Life is suffering.
 
 **if** you want to help me&others to educate ourselves better **and if** you have a love and passion for sharing and helping, **then** I suggest you to **[join our discord server ](https://discord.gg/R2RVeD3gY8)** 🤍
 
-<sup><sub>My Instagram account is: [giorgos.xou](https://www.instagram.com/giorgos.xou/) [;)](http://prntscr.com/xtz4s6) feel free to ask me anything</sub></sup>
+<sup><sub>[.](http://prntscr.com/xtz4s6)</sub></sup>
 
             
