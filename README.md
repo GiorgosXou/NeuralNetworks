@@ -110,10 +110,10 @@ Understanding the Basics of a Neural Network:
 <details><summary><strong>ATtiny85</strong></summary>
 
 - `NN.print()` Function is disabled!
-- Doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit) that makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory) (i think..?)
+- See [MNIST example run via the internal 512-Byte EEPROM](https://github.com/GiorgosXou/ATTiny85-MNIST-RNN-EEPROM 'Running an RNN MNIST model (mostly) via the internal 512-Byte EEPROM').
+- Doesn't have [FPU](https://en.wikipedia.org/wiki/Floating-point_unit 'Floating-Point Unit') this makes Maths on it, "difficult" for the [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory 'Static Random-Access Memory') (i think..?)
 - If you want to use "Serial" on an ATtiny85 Click [Here](https://www.youtube.com/watch?v=9CX4i6rMXS) (Be Careful SoftwareSerial Uses A lot of [SRAM](https://en.wikipedia.org/wiki/Static_random-access_memory))
-- [Backprop](https://en.m.wikipedia.org/wiki/Backpropagation) maths on an ATtiny85 won't work properly _(due to SRAM limitations, unless NN too small)_, though [Feed](https://en.wikipedia.org/wiki/Feed_forward_(control)) [Forword](https://en.wikipedia.org/wiki/Feedforward_neural_network) maths will Work! [...] <sup><sub>(since the first release I haven't tested it again on the ATtiny85 at least yet, so I am not 100% sure)</sub></sup>
-</details>
+</details> 
 <details><summary><strong>Pico 2</strong></summary>
 
 - Uses software-emulated EEPROM, so don't expect internal-EEPROM examples\functionalities to work on it
