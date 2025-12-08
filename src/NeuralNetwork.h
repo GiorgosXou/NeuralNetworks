@@ -22,9 +22,9 @@
     #endif
 #endif
 
-// Defines a list of microcontroller series (as) As__No_Common_Serial_Support (in that moment)
+// Defines a list of microcontroller series (as) AS__NO_COMMON_SERIAL_SUPPORT (in that moment)
 #if defined(As__AVR_ATtinyX__) // or etc.
-    #define As__No_Common_Serial_Support
+    #define AS__NO_COMMON_SERIAL_SUPPORT
 #endif
 
 #define SD_NN_WRITE_MODE O_WRITE | O_CREAT
@@ -2935,7 +2935,7 @@ public:
     #endif
 
     //If Microcontroller isn't one of the .._No_Common_Serial_Support Series then it compiles the code below.
-    #if !defined(As__No_Common_Serial_Support) // then Compile:
+    #if !defined(AS__NO_COMMON_SERIAL_SUPPORT) // then Compile:
     void NeuralNetwork::print()
     {
         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -4415,7 +4415,7 @@ public:
 
 
     //If Microcontroller isn't one of the Attiny Series then it compiles the code below.
-    #if !defined(As__No_Common_Serial_Support) // then Compile:
+    #if !defined(AS__NO_COMMON_SERIAL_SUPPORT) // then Compile:
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             #if defined(USE_RNN_LAYERS_ONLY) // ##25 we don't need `or defined(USE_PAIR__DENSE_RNN)` since DENSE & RNN are merged together in plain-print
                 void NeuralNetwork::Layer::RNN_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
@@ -4967,7 +4967,7 @@ public:
                 }
             }
         #endif // (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)) [OR NOT]
-    #endif // !defined(As__No_Common_Serial_Support)
+    #endif // !defined(AS__NO_COMMON_SERIAL_SUPPORT)
 // #pragma endregion Layer.cpp
 #endif
 
