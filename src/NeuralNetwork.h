@@ -44,8 +44,52 @@
 
 #define __NN_VERSION__ "VERSION: 4.0.0-Alpha"\n
 
-// - That gives you access to the standard types and constants of the Arduino language.
-#include "Arduino.h"
+
+
+#if defined(ARDUINO)
+    #include "Arduino.h"  // - That gives you access to the standard types and constants of the Arduino language.
+    #define NN_RANDOM(min,max)  random(min,max)
+    #define NN_RANDOM_SET(seed) randomSeed(seed)
+    #define NN_PRINT_1(x)       Serial.print(x)
+    #define NN_PRINT_2(x,y)     Serial.print(x,y)
+    #define NN_PRINTLN()        Serial.println()
+    #define NN_PRINTLN_1(x)     Serial.println(x)
+    #define NN_PRINTLN_2(x,y)   Serial.println(x,y)
+    #define NN_FILE File
+    #define CHAR_BYTE byte
+    #define NN_FS_SEEK(x) seek(x)
+#else 
+    // By "native" I mean not bare-metal (nor ARDUINO) eg. Linux Windows Mac etc. 
+    // (but it should mostly work as it is for bare-metal too), 
+    #define NN_NATIVE
+    // using char since that's acceptaple natively
+    #define CHAR_BYTE char
+    // g++ -o main.o main.cpp
+    // #include <stdio.h> // (for printf) but don't include it here.
+    #include <math.h>
+    #include <stdint.h> // for int8_t
+    using byte = uint8_t; // supports -std=c++11 too
+    #define NN_RANDOM(min,max) (rand() % (max - min) + min)
+    #define NN_RANDOM_SET(seed) srand(seed)
+    // for SUPPORTS_FS_FUNCTIONALITY + #include <fstream>
+    #define NN_FILE std::fstream
+    // seek at position in file
+    #define NN_FS_SEEK(x) seekp(x)
+    // just a printf | simply map UART to printf and you should be fine
+    static inline void nn_print(float         v) { printf("%f" , v);}
+    static inline void nn_print(double        v) { printf("%lf", v);}
+    static inline void nn_print(unsigned char v) { printf("%u" , v);}
+    static inline void nn_print(int           v) { printf("%d" , v);}
+    static inline void nn_print(unsigned int  v) { printf("%u" , v);}
+    static inline void nn_print(const char*   v) { printf("%s" , v);}
+    #define NN_PRINT_1(x)     nn_print(x)
+    #define NN_PRINT_2(x,y)   nn_print(x)
+    #define NN_PRINTLN()      printf("\n")
+    #define NN_PRINTLN_1(x)   printf("%s\n",x)
+    #define NN_PRINTLN_2(x,y) do {nn_print(x); printf("\n");} while(0)
+#endif
+
+
 
 // https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
 // considering there's a scope it's looking for the library if you declare it above the #include <NeuralNetwork.h> it will enable the functionality else no.. meaning that I don't need to worry about destructor optimization #8
@@ -293,13 +337,16 @@
     #endif
 
     #if ((_2_OPTIMIZE bitor 0B11101111) == 0B11111111)
-        #if defined(ESP32)
-            #error "💥 [2] 0B00010000 PROGMEM on ESP32 is emulated, therefore F() macro is not really supported."
-        #endif
         #undef MSG13
-        #define MSG13 \n- " [2] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
-        #undef F_MACRO
-        #define F_MACRO F
+        #if defined(NN_NATIVE)
+            #define MSG13 \n- " [2] 0B000X0000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There's no native-support for F() macro."
+        #elif defined(ESP32)
+            #define MSG13 \n- " [2] 0B000X0000 [I] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] PROGMEM on ESP32 is emulated, therefore F() macro is not used."
+        #else
+            #define MSG13 \n- " [2] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using F() macro for NN.print()."
+            #undef F_MACRO
+            #define F_MACRO F
+        #endif
     #endif
 
     #if (((_2_OPTIMIZE bitor 0B11110111) == 0B11111111) or ((_2_OPTIMIZE bitor 0B11111011) == 0B11111111)) 
@@ -425,7 +472,11 @@
 
     #if ((_3_OPTIMIZE bitor 0B11111101) == 0B11111111) // Using an optimization bit instead of __has_include due to the fact that "FS.h" is inside most of the cores and therefore it gets compiled
         #undef MSG23
-        #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (SUPPORTS_FS_FUNCTIONALITY) enabled."
+        #if defined(NN_NATIVE)
+            #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (NN_NATIVE) (SUPPORTS_FS_FUNCTIONALITY) enabled." 
+        #else
+            #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (SUPPORTS_FS_FUNCTIONALITY) enabled."
+        #endif
         #define SUPPORTS_FS_FUNCTIONALITY
     #endif
 
@@ -1653,9 +1704,9 @@ public:
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) 
-        NeuralNetwork(File&  file);
-        bool save    (File&  file);
-        bool load    (File&  file);
+        NeuralNetwork(NN_FILE&  file);
+        bool save    (NN_FILE&  file);
+        bool load    (NN_FILE&  file);
     #endif
 
     #if defined(INCLUDES_EEPROM_H) and !defined(USE_INTERNAL_EEPROM)
@@ -1711,7 +1762,7 @@ public:
     #endif
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY)
-        NeuralNetwork::NeuralNetwork(File& file){
+        NeuralNetwork::NeuralNetwork(NN_FILE& file){
             #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
                 isAllocdWithNew = false;
             #endif
@@ -2352,23 +2403,23 @@ public:
                 #endif
             #endif
             
-            // random(-1,2) means {-1,0,1}
+            // NN_RANDOM(-1,2) means {-1,0,1}
             for (unsigned int l = 0; l < numberOflayers; l++){
                 #if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
-                    *layers[l].bias += (LearningRateOfBiases * random(-1,2) * direction);
+                    *layers[l].bias += (LearningRateOfBiases * NN_RANDOM(-1,2) * direction);
                 #endif
                 for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
                     for (unsigned int i = 0; i < layers[l]._numberOfOutputs; i++){
                         #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
-                            layers[l].bias[i + (p * layers[l]._numberOfOutputs)] += (LearningRateOfBiases * random(-1,2) * direction);
+                            layers[l].bias[i + (p * layers[l]._numberOfOutputs)] += (LearningRateOfBiases * NN_RANDOM(-1,2) * direction);
                         #endif
                         for (unsigned int j = 0; j < SIZEOF_FROM(layers[l]._numberOfInputs, layers[l]._numberOfOutputs, PropsPerLayer[l].arch); j++)
                         {
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                weights[i_j++] += (LearningRateOfWeights * random(-1,2) * direction);
+                                weights[i_j++] += (LearningRateOfWeights * NN_RANDOM(-1,2) * direction);
                             #else
                                 // eew! but whatever for now... at least for NUMBER_OF_PATHS == 1 it gets optimised
-                                layers[l].weights[i][j + (p * SIZEOF_FROM(layers[l]._numberOfInputs, layers[l]._numberOfOutputs, PropsPerLayer[l].arch))] += (LearningRateOfWeights * random(-1,2) * direction);
+                                layers[l].weights[i][j + (p * SIZEOF_FROM(layers[l]._numberOfInputs, layers[l]._numberOfOutputs, PropsPerLayer[l].arch))] += (LearningRateOfWeights * NN_RANDOM(-1,2) * direction);
                             #endif
                         }
                     }
@@ -2381,8 +2432,8 @@ public:
         * A computationally-expensive but memmory-efficient Hill-Climbing algorithm,
         * that uses barely any extra amount of RAM to train the NN. (Just a few bytes)
         * WARNING: This algorithm may not work with MCUs that utilize TRNG 
-        * (True-RNG) at the back-end of `random()` function, if not any fallback
-        * to PRNG via eg. `randomSeed()` exists.
+        * (True-RNG) at the back-end of `NN_RANDOM()\random()` function, if not any fallback
+        * to PRNG via eg. `NN_RANDOM_SET()\randomSeed()` exists.
         */
         bool NeuralNetwork::HillClimb(DFLOAT error, DFLOAT tolerance)
         {
@@ -2401,7 +2452,7 @@ public:
                 // climb-back\revert-changes
                 --nn_seed;
                 // ++ to skip the bad seed later on
-                randomSeed(nn_seed++);
+                NN_RANDOM_SET(nn_seed++);
                 climb(-1);
             }else{
                 // if we revert we keep the same old_error, else:
@@ -2409,7 +2460,7 @@ public:
             }
 
             // climb-up\retry
-            randomSeed(nn_seed++);
+            NN_RANDOM_SET(nn_seed++);
             climb(1);
 
             // TODO: a HillClimbing with Spike if preciist?
@@ -2473,48 +2524,48 @@ public:
     
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) 
-        bool NeuralNetwork::save(File& myFile)
+        bool NeuralNetwork::save(NN_FILE& myFile)
         {
             if (myFile){
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     unsigned int totalNumOfWeights = 0; // we write 0 so we can seek at the end and set the real value
-                    myFile.write(reinterpret_cast<byte*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
+                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
                 #endif
                 #if defined(SINGLE_TIMESTEP_THRESHOLD) // I have to move it bellow the line above since at the end it seeks to 0 when REDUCE_RAM_WEIGHTS_LVL2
-                    myFile.write(reinterpret_cast<byte*>(&threshold), sizeof(threshold));
-                    myFile.write(reinterpret_cast<byte*>(&atIndex)  , sizeof(atIndex));
+                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&threshold), sizeof(threshold));
+                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&atIndex)  , sizeof(atIndex));
                 #endif
-                myFile.write(reinterpret_cast<byte*>(&numberOflayers), sizeof(numberOflayers));
+                myFile.write(reinterpret_cast<CHAR_BYTE*>(&numberOflayers), sizeof(numberOflayers));
                 for(unsigned int n=0; n<numberOflayers; n++){
                     #if defined(ACTIVATION__PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                        myFile.write(reinterpret_cast<byte*>(&PropsPerLayer[n]), sizeof(*PropsPerLayer));
+                        myFile.write(reinterpret_cast<CHAR_BYTE*>(&PropsPerLayer[n]), sizeof(*PropsPerLayer));
                     #endif
-                    myFile.write(reinterpret_cast<byte*>(&layers[n]._numberOfInputs), sizeof(NeuralNetwork::Layer::_numberOfInputs));
-                    myFile.write(reinterpret_cast<byte*>(&layers[n]._numberOfOutputs), sizeof(NeuralNetwork::Layer::_numberOfOutputs));
+                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n]._numberOfInputs), sizeof(NeuralNetwork::Layer::_numberOfInputs));
+                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n]._numberOfOutputs), sizeof(NeuralNetwork::Layer::_numberOfOutputs));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        myFile.write(reinterpret_cast<byte*>(layers[n].bias), sizeof(*NeuralNetwork::Layer::bias));
+                        myFile.write(reinterpret_cast<CHAR_BYTE*>(layers[n].bias), sizeof(*NeuralNetwork::Layer::bias));
                     #endif
                     // TODO: make an i_j loop for REDUCE_RAM_WEIGHTS_LVL2 instead
                     for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
                         for(unsigned int i=0; i<layers[n]._numberOfOutputs; i++){
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                myFile.write(reinterpret_cast<byte*>(&layers[n].bias[i + (p * layers[n]._numberOfOutputs)]), sizeof(*NeuralNetwork::Layer::bias));
+                                myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n].bias[i + (p * layers[n]._numberOfOutputs)]), sizeof(*NeuralNetwork::Layer::bias));
                             #endif
-                            //WARN: ##21 File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, specifically for GRU and LSTM layers.
+                            //WARN: ##21 NN_FILE compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, specifically for GRU and LSTM layers.
                             for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
                             {
                                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                    myFile.write(reinterpret_cast<byte*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
+                                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&weights[totalNumOfWeights++]), sizeof(*weights)); // I would had used i_j but I have totalNumOfWeights so... :)
                                 #else
-                                    myFile.write(reinterpret_cast<byte*>(&layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))]), sizeof(**NeuralNetwork::Layer::weights));
+                                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n].weights[i][j + (p * SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch))]), sizeof(**NeuralNetwork::Layer::weights));
                                 #endif
                             }
                         }
                     }
                 }
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                    myFile.seek(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
-                    myFile.write(reinterpret_cast<byte*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
+                    myFile.NN_FS_SEEK(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
+                    myFile.write(reinterpret_cast<CHAR_BYTE*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
                 #endif
                 myFile.close();
                 return true;
@@ -2582,7 +2633,7 @@ public:
         #endif
 
 
-        bool NeuralNetwork::load(File& myFile) {
+        bool NeuralNetwork::load(NN_FILE& myFile) {
             if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
                 pdestract();
 
@@ -2592,18 +2643,18 @@ public:
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     // TODO: remove count_ij in favor of i_j (if so, reminder: at the end, set it to zero again) see also issue #32
                     unsigned int count_ij; // it needs to be unsigned since we write an unsigned :P
-                    myFile.read(reinterpret_cast<byte*>(&count_ij), sizeof(count_ij)); // don't worry it takes into account USE_RNN_LAYERS_ONLY
+                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&count_ij), sizeof(count_ij)); // don't worry it takes into account USE_RNN_LAYERS_ONLY
                     weights = new IDFLOAT[count_ij];
                     i_j = 0;
                     count_ij = 0;
                 #endif
 
                 #if defined(SINGLE_TIMESTEP_THRESHOLD)
-                    myFile.read(reinterpret_cast<byte*>(&threshold), sizeof(threshold));
-                    myFile.read(reinterpret_cast<byte*>(&atIndex)  , sizeof(atIndex));
+                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&threshold), sizeof(threshold));
+                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&atIndex)  , sizeof(atIndex));
                 #endif
 
-                myFile.read(reinterpret_cast<byte*>(&numberOflayers), sizeof(numberOflayers));
+                myFile.read(reinterpret_cast<CHAR_BYTE*>(&numberOflayers), sizeof(numberOflayers));
                 layers = new Layer[numberOflayers];
 
                 #if defined(ACTIVATION__PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
@@ -2625,14 +2676,14 @@ public:
                 for (unsigned int i = 0; i < numberOflayers; i++)
                 {
                     #if defined(ACTIVATION__PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                        myFile.read(reinterpret_cast<byte*>(&PropsPerLayer[i]), sizeof(*PropsPerLayer));
+                        myFile.read(reinterpret_cast<CHAR_BYTE*>(&PropsPerLayer[i]), sizeof(*PropsPerLayer));
                     #endif
-                    myFile.read(reinterpret_cast<byte*>(&tmp_layerInputs), sizeof(tmp_layerInputs));
-                    myFile.read(reinterpret_cast<byte*>(&tmp_layerOutputs), sizeof(tmp_layerOutputs));
+                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&tmp_layerInputs), sizeof(tmp_layerInputs));
+                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&tmp_layerOutputs), sizeof(tmp_layerOutputs));
                     #if !defined(NO_BIAS)
                         #if !defined(MULTIPLE_BIASES_PER_LAYER)
                             tmp_bias  = new IDFLOAT;
-                            myFile.read(reinterpret_cast<byte*>(tmp_bias), sizeof(*tmp_bias));
+                            myFile.read(reinterpret_cast<CHAR_BYTE*>(tmp_bias), sizeof(*tmp_bias));
                         #else
                             tmp_bias = new IDFLOAT[tmp_layerOutputs * NUMBER_OF_PATHS]; // reminder: this is fine for NOT-REDUCE_RAM_WEIGHTS_LVL2 too
                         #endif
@@ -2649,12 +2700,12 @@ public:
                         for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
                             for(unsigned int j=0; j<tmp_layerOutputs; j++){
                                 #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                    myFile.read(reinterpret_cast<byte*>(&layers[i].bias[j + (tmp_layerOutputs * p)]), sizeof(*NeuralNetwork::Layer::bias));
+                                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&layers[i].bias[j + (tmp_layerOutputs * p)]), sizeof(*NeuralNetwork::Layer::bias));
                                 #endif
                                 if (!p)
                                     layers[i].weights[j] = new IDFLOAT[SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch) * NUMBER_OF_PATHS]; // #21
                                 for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++){
-                                    myFile.read(reinterpret_cast<byte*>(&layers[i].weights[j][k + (p * SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch))]), sizeof(**NeuralNetwork::Layer::weights));
+                                    myFile.read(reinterpret_cast<CHAR_BYTE*>(&layers[i].weights[j][k + (p * SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch))]), sizeof(**NeuralNetwork::Layer::weights));
                                 }
                             }
                         }
@@ -2664,17 +2715,17 @@ public:
                                 for(unsigned int j=0; j<tmp_layerOutputs; j++){
 
                                     #if defined(MULTIPLE_BIASES_PER_LAYER)
-                                        myFile.read(reinterpret_cast<byte*>(&tmp_bias[j + (p * tmp_layerOutputs)]), sizeof(*tmp_bias));
+                                        myFile.read(reinterpret_cast<CHAR_BYTE*>(&tmp_bias[j + (p * tmp_layerOutputs)]), sizeof(*tmp_bias));
                                     #endif
 
                                     for(unsigned int k=0; k<SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs, PropsPerLayer[i].arch); k++){ // #21
-                                        myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                        myFile.read(reinterpret_cast<CHAR_BYTE*>(&weights[count_ij++]), sizeof(*weights));
                                     }
                                 }
                             }
                         #else
                             for(unsigned int j=0; j<(SIZEOF_FROM(tmp_layerInputs, tmp_layerOutputs,) * NUMBER_OF_PATHS * tmp_layerOutputs); j++){ // #21
-                                myFile.read(reinterpret_cast<byte*>(&weights[count_ij++]), sizeof(*weights));
+                                myFile.read(reinterpret_cast<CHAR_BYTE*>(&weights[count_ij++]), sizeof(*weights));
                             }
                         #endif
 
@@ -2945,8 +2996,8 @@ public:
             unsigned int tmp_addr = address;
         #endif
 
-        Serial.println();
-        Serial.println(F_MACRO("----------------------"));
+        NN_PRINTLN();
+        NN_PRINTLN_1(F_MACRO("----------------------"));
 
         for (unsigned int i = 0; i < numberOflayers; i++)
         {
@@ -2954,7 +3005,7 @@ public:
                 AtlayerIndex = i;
             #endif  
             layers[i].FUNCTION_OF(NN_TYPE_ARCHITECTURE, print)(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(i)); // It's fine for USE_PAIR__DENSE_RNN since we compact both architectures in plain `print()` (for "useless" functions, it seems best to we care more about sketch-size-logic rather than speed)
-            Serial.println(F_MACRO("----------------------"));
+            NN_PRINTLN_1(F_MACRO("----------------------"));
         }
         #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
             address = tmp_addr;
@@ -3256,24 +3307,24 @@ public:
 
                 #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
                     #if defined(USE_PAIR__DENSE_RNN) // NOTE: not USE_DENSE_PAIR (also TODO)
-                        bias[i] = (IDFLOAT)random(-90000, 90000) / 100000;
+                        bias[i] = (IDFLOAT)NN_RANDOM(-90000, 90000) / 100000;
                     #elif defined(USE_LSTM_LAYERS_ONLY)
                         for (unsigned int j = i * 4; j < (i + 1) * 4; ++j) // Meh... It may not be the fastest/energy-efficient but I think it's fine since it is just initialization and as of 2025-05-23 03:23:35 PM Backpop is not implemented yet
-                            bias[j] = (IDFLOAT)random(-90000, 90000) / 100000;
+                            bias[j] = (IDFLOAT)NN_RANDOM(-90000, 90000) / 100000;
                     #elif defined(USE_GRU_LAYERS_ONLY)
                         for (unsigned int j = i * 3; j < (i + 1) * 3; ++j) // Meh... It may not be the fastest/energy-efficient but I think it's fine since it is just initialization and as of 2025-04-06 09:20:50 PM Backpop is not implemented yet
-                            bias[j] = (IDFLOAT)random(-90000, 90000) / 100000;
+                            bias[j] = (IDFLOAT)NN_RANDOM(-90000, 90000) / 100000;
                     #else
-                        bias[i] = (IDFLOAT)random(-90000, 90000) / 100000;
+                        bias[i] = (IDFLOAT)NN_RANDOM(-90000, 90000) / 100000;
                     #endif
                 #endif
                 
                 for (unsigned int j = 0; j < SIZEOF_FROM(_numberOfInputs, _numberOfOutputs, layerArchitecture) * NUMBER_OF_PATHS; j++)
                 {
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2) // TODO: IDFLOAT support | ignore IDFLOAT below for now
-                        me->weights[me->i_j++] = (IDFLOAT)random(-90000, 90000) / 100000;
+                        me->weights[me->i_j++] = (IDFLOAT)NN_RANDOM(-90000, 90000) / 100000;
                     #else
-                        weights[i][j] = (IDFLOAT)random(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
+                        weights[i][j] = (IDFLOAT)NN_RANDOM(-90000, 90000) / 100000;  // Pseudo-Random Number between -90000 and 90000, divided by 100000.
                     #endif
                 }
             }
@@ -4421,56 +4472,56 @@ public:
                 void NeuralNetwork::Layer::RNN_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
                 {
                     #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
+                        NN_PRINT_1(F_MACRO(PRINT_MESSAGE_INT_Q));
                     #else
-                        Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
+                        NN_PRINT_1(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                     #endif
-                    Serial.print(F_MACRO("RNN [("));
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("+"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO(")*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("]"));
+                    NN_PRINT_1(F_MACRO("RNN [("));
+                    NN_PRINT_1(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("+"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO(")*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("]"));
                     #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(me->get_type_memmory_value<byte>(me->address));
+                        NN_PRINT_1(F_MACRO("| F(x):"));
+                        NN_PRINT_1(me->get_type_memmory_value<byte>(me->address));
                     #endif
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("| bias:"));
+                        NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
-                    Serial.println();
+                    NN_PRINTLN();
                     DFLOAT tmp_ijweight; // Reminder: don't change it to IDFLOAT
                     for (unsigned int i = 0; i < _numberOfOutputs; i++)
                     {
                         #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            Serial.print(F_MACRO("   B:"));
-                            Serial.println(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO("   B:"));
+                            NN_PRINTLN_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
 
-                        Serial.print(i + 1);
-                        Serial.print(F_MACRO(" "));
+                        NN_PRINT_1(i + 1);
+                        NN_PRINT_1(F_MACRO(" "));
                         for (unsigned int j = 0; j < _numberOfInputs; j++)
                         {
                             tmp_ijweight = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                            Serial.print(F_MACRO(" W:"));
-                            if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
-                            Serial.print(tmp_ijweight, DFLOAT_LEN);
-                            Serial.print(F_MACRO(" "));
+                            NN_PRINT_1(F_MACRO(" W:"));
+                            if (tmp_ijweight > 0 ) NN_PRINT_1(F_MACRO(" "));
+                            NN_PRINT_2(tmp_ijweight, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO(" "));
                         }
-                        Serial.println();
+                        NN_PRINTLN();
 
-                        Serial.print(F_MACRO("  "));
+                        NN_PRINT_1(F_MACRO("  "));
                         for (unsigned int j = 0; j < _numberOfOutputs; j++)
                         {
                             tmp_ijweight = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                            Serial.print(F_MACRO(" U:"));
-                            if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
-                            Serial.print(tmp_ijweight, DFLOAT_LEN);
-                            Serial.print(F_MACRO(" "));
+                            NN_PRINT_1(F_MACRO(" U:"));
+                            if (tmp_ijweight > 0 ) NN_PRINT_1(F_MACRO(" "));
+                            NN_PRINT_2(tmp_ijweight, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO(" "));
                         }
-                        Serial.println();
+                        NN_PRINTLN();
 
                     }
                 }
@@ -4480,81 +4531,81 @@ public:
             void NeuralNetwork::Layer::print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
             {
                 #if defined(USE_INT_QUANTIZATION)
-                    Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
+                    NN_PRINT_1(F_MACRO(PRINT_MESSAGE_INT_Q));
                 #else
-                    Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
+                    NN_PRINT_1(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                 #endif
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
                     LayerType props= me->get_type_memmory_value<LayerType>(me->address); // LayerProps in this case
                     if (props.arch){
-                        Serial.print(F_MACRO("RNN [("));
-                        Serial.print(_numberOfInputs);
-                        Serial.print(F_MACRO("+"));
-                        Serial.print(_numberOfOutputs);
-                        Serial.print(F_MACRO(")"));
+                        NN_PRINT_1(F_MACRO("RNN [("));
+                        NN_PRINT_1(_numberOfInputs);
+                        NN_PRINT_1(F_MACRO("+"));
+                        NN_PRINT_1(_numberOfOutputs);
+                        NN_PRINT_1(F_MACRO(")"));
                      }else{
-                        Serial.print(F_MACRO("DENSE ["));
-                        Serial.print(_numberOfInputs);
+                        NN_PRINT_1(F_MACRO("DENSE ["));
+                        NN_PRINT_1(_numberOfInputs);
                      }
                 #else
-                    Serial.print(F_MACRO("DENSE "));
-                    Serial.print(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("DENSE "));
+                    NN_PRINT_1(_numberOfInputs);
                 #endif
-                Serial.print(F_MACRO("*"));
-                Serial.print(_numberOfOutputs);
+                NN_PRINT_1(F_MACRO("*"));
+                NN_PRINT_1(_numberOfOutputs);
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                    Serial.print(F_MACRO("]"));
+                    NN_PRINT_1(F_MACRO("]"));
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
-                    Serial.print(F_MACRO("| F(x):"));
+                    NN_PRINT_1(F_MACRO("| F(x):"));
                     #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                        Serial.print(props.fx);
+                        NN_PRINT_1(props.fx);
                     #else
-                        Serial.print(me->get_type_memmory_value<byte>(me->address));
+                        NN_PRINT_1(me->get_type_memmory_value<byte>(me->address));
                     #endif
                 #endif
                 #if defined(SINGLE_TIMESTEP_THRESHOLD)
                     if (_AtlayerIndex == me->atIndex){
-                        Serial.print(F_MACRO("| Threshold:"));
-                        Serial.print(me->threshold);
+                        NN_PRINT_1(F_MACRO("| Threshold:"));
+                        NN_PRINT_1(me->threshold);
                     }
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    Serial.print(F_MACRO("| bias:"));
-                    Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    NN_PRINT_1(F_MACRO("| bias:"));
+                    NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
-                Serial.println();
+                NN_PRINTLN();
                 DFLOAT tmp_ijweight; // Reminder: don't change it to IDFLOAT
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
                     #if defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("   B:"));
-                        Serial.println(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("   B:"));
+                        NN_PRINTLN_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
 
-                    Serial.print(i + 1);
-                    Serial.print(F_MACRO(" "));
+                    NN_PRINT_1(i + 1);
+                    NN_PRINT_1(F_MACRO(" "));
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
                     {
                         tmp_ijweight = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        Serial.print(F_MACRO(" W:"));
-                        if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
-                        Serial.print(tmp_ijweight, DFLOAT_LEN);
-                        Serial.print(F_MACRO(" "));
+                        NN_PRINT_1(F_MACRO(" W:"));
+                        if (tmp_ijweight > 0 ) NN_PRINT_1(F_MACRO(" "));
+                        NN_PRINT_2(tmp_ijweight, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO(" "));
                     }
-                    Serial.println();
+                    NN_PRINTLN();
 
                     #if defined(USE_PAIR__DENSE_RNN)
-                        Serial.print(F_MACRO("  "));
+                        NN_PRINT_1(F_MACRO("  "));
                         for (unsigned int j = 0; j < _numberOfOutputs * props.arch; j++)
                         {
                             tmp_ijweight = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                            Serial.print(F_MACRO(" U:"));
-                            if (tmp_ijweight > 0 ) Serial.print(F_MACRO(" "));
-                            Serial.print(tmp_ijweight, DFLOAT_LEN);
-                            Serial.print(F_MACRO(" "));
+                            NN_PRINT_1(F_MACRO(" U:"));
+                            if (tmp_ijweight > 0 ) NN_PRINT_1(F_MACRO(" "));
+                            NN_PRINT_2(tmp_ijweight, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO(" "));
                         }
-                        Serial.println();
+                        NN_PRINTLN();
                     #endif
                 }
             }
@@ -4567,11 +4618,11 @@ public:
                     DFLOAT w; // DFLOAT because we MULTIPLY_BY_INT_IF_QUANTIZATION
                     for (unsigned int i = 0; i < len; i++){
                         w = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
-                        Serial.print(F_MACRO("  W:"));
-                        if (w > 0) Serial.print(F_MACRO(" "));
-                        Serial.print(w, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("  W:"));
+                        if (w > 0) NN_PRINT_1(F_MACRO(" "));
+                        NN_PRINT_2(w, DFLOAT_LEN);
                     }
-                    Serial.println();
+                    NN_PRINTLN();
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                         me->i_j += len;
@@ -4583,11 +4634,11 @@ public:
                 {
                     for (unsigned int i = 0; i < _numberOfOutputs; i++){
                         #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                            Serial.print(F_MACRO("   B:"));
-                            Serial.println(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO("   B:"));
+                            NN_PRINTLN_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
-                        Serial.print(i+1); printGateWeights(_numberOfInputs);
-                        Serial.print(i+1); printGateWeights(_numberOfOutputs);
+                        NN_PRINT_1(i+1); printGateWeights(_numberOfInputs);
+                        NN_PRINT_1(i+1); printGateWeights(_numberOfOutputs);
                     }
                 }
             #endif
@@ -4597,37 +4648,37 @@ public:
                 void NeuralNetwork::Layer::GRU_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
                 {
                     #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
+                        NN_PRINT_1(F_MACRO(PRINT_MESSAGE_INT_Q));
                     #else
-                        Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
+                        NN_PRINT_1(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                     #endif
-                    Serial.print(F_MACRO("GRU [(("));
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO(")+("));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("))*3] "));
+                    NN_PRINT_1(F_MACRO("GRU [(("));
+                    NN_PRINT_1(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO(")+("));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("))*3] "));
                     #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(me->get_type_memmory_value<byte>(me->address));
+                        NN_PRINT_1(F_MACRO("| F(x):"));
+                        NN_PRINT_1(me->get_type_memmory_value<byte>(me->address));
                     #endif
                     #if defined(SINGLE_TIMESTEP_THRESHOLD)
                         if (_AtlayerIndex == me->atIndex){
-                            Serial.print(F_MACRO("| Threshold:"));
-                            Serial.print(me->threshold);
+                            NN_PRINT_1(F_MACRO("| Threshold:"));
+                            NN_PRINT_1(me->threshold);
                         }
                     #endif
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("| bias:"));
+                        NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
-                    Serial.println();
-                    Serial.println(F_MACRO("- RESET -" )); gatePrint();
-                    Serial.println(F_MACRO("- HIDDEN -")); gatePrint();
-                    Serial.println(F_MACRO("- UPDATE -")); gatePrint(); // #14
+                    NN_PRINTLN();
+                    NN_PRINTLN_1(F_MACRO("- RESET -" )); gatePrint();
+                    NN_PRINTLN_1(F_MACRO("- HIDDEN -")); gatePrint();
+                    NN_PRINTLN_1(F_MACRO("- UPDATE -")); gatePrint(); // #14
                 }
             #endif
 
@@ -4636,38 +4687,38 @@ public:
                 void NeuralNetwork::Layer::LSTM_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex))
                 { 
                     #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO(PRINT_MESSAGE_INT_Q));
+                        NN_PRINT_1(F_MACRO(PRINT_MESSAGE_INT_Q));
                     #else
-                        Serial.print(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
+                        NN_PRINT_1(F_MACRO(PRINT_MESSAGE_TYPE_MEM));
                     #endif
-                    Serial.print(F_MACRO("LSTM [(("));
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO(")+("));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("))*4] "));
+                    NN_PRINT_1(F_MACRO("LSTM [(("));
+                    NN_PRINT_1(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO(")+("));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("))*4] "));
                     #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(me->get_type_memmory_value<byte>(me->address));
+                        NN_PRINT_1(F_MACRO("| F(x):"));
+                        NN_PRINT_1(me->get_type_memmory_value<byte>(me->address));
                     #endif
                     #if defined(SINGLE_TIMESTEP_THRESHOLD)
                         if (_AtlayerIndex == me->atIndex){
-                            Serial.print(F_MACRO("| Threshold:"));
-                            Serial.print(me->threshold);
+                            NN_PRINT_1(F_MACRO("| Threshold:"));
+                            NN_PRINT_1(me->threshold);
                         }
                     #endif
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("| bias:"));
+                        NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
-                    Serial.println();
-                    Serial.println(F_MACRO("- FORGET -")); gatePrint();
-                    Serial.println(F_MACRO("- UPDATE -")); gatePrint(); 
-                    Serial.println(F_MACRO("- CELL -"  )); gatePrint();
-                    Serial.println(F_MACRO("- OUTPUT -")); gatePrint(); // #14
+                    NN_PRINTLN();
+                    NN_PRINTLN_1(F_MACRO("- FORGET -")); gatePrint();
+                    NN_PRINTLN_1(F_MACRO("- UPDATE -")); gatePrint(); 
+                    NN_PRINTLN_1(F_MACRO("- CELL -"  )); gatePrint();
+                    NN_PRINTLN_1(F_MACRO("- OUTPUT -")); gatePrint(); // #14
                 }
             #endif
 
@@ -4678,11 +4729,11 @@ public:
                 void NeuralNetwork::Layer::printGateWeights(const IDFLOAT *w, const unsigned int len)
                 {
                     for (unsigned int i = 0; i < len; i++){
-                        Serial.print(F_MACRO("  W:"));
-                        if (TYPE_MEMMORY_READ_IDFLOAT(w[i]) > 0) Serial.print(F_MACRO(" "));
-                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(w[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("  W:"));
+                        if (TYPE_MEMMORY_READ_IDFLOAT(w[i]) > 0) NN_PRINT_1(F_MACRO(" "));
+                        NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(w[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     }
-                    Serial.println();
+                    NN_PRINTLN();
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                         me->i_j += len;
@@ -4694,16 +4745,16 @@ public:
                 {
                     for (unsigned int i = 0; i < _numberOfOutputs; i++){
                         #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                            Serial.print(F_MACRO("   B:"));
-                            Serial.println(TYPE_MEMMORY_READ_IDFLOAT(b[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO("   B:"));
+                            NN_PRINTLN_2(TYPE_MEMMORY_READ_IDFLOAT(b[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
 
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            Serial.print(i+1); printGateWeights(&me->weights[me->i_j], _numberOfInputs);
-                            Serial.print(i+1); printGateWeights(&me->weights[me->i_j], _numberOfOutputs);
+                            NN_PRINT_1(i+1); printGateWeights(&me->weights[me->i_j], _numberOfInputs);
+                            NN_PRINT_1(i+1); printGateWeights(&me->weights[me->i_j], _numberOfOutputs);
                         #else
-                            Serial.print(i+1); printGateWeights(&weights[i][offset], _numberOfInputs);
-                            Serial.print(i+1); printGateWeights(&weights[i][offset + _numberOfInputs], _numberOfOutputs);
+                            NN_PRINT_1(i+1); printGateWeights(&weights[i][offset], _numberOfInputs);
+                            NN_PRINT_1(i+1); printGateWeights(&weights[i][offset + _numberOfInputs], _numberOfOutputs);
                         #endif
                     }
                 }
@@ -4714,36 +4765,36 @@ public:
                 void NeuralNetwork::Layer::GRU_Only_print()
                 { 
                     #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO("INT_Q "));
+                        NN_PRINT_1(F_MACRO("INT_Q "));
                     #endif
                     #if defined(CONST_MODERN_PROGMEM_LOGIC)
-                        Serial.print(F_MACRO("CONST* "));
+                        NN_PRINT_1(F_MACRO("CONST* "));
                     #endif
                     #if defined(AVR_PROGMEM_LOGIC)
-                        Serial.print(F_MACRO("PROGMEM "));
+                        NN_PRINT_1(F_MACRO("PROGMEM "));
                     #endif
-                    Serial.print(F_MACRO("GRU [(("));
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO(")+("));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("))*3] "));
+                    NN_PRINT_1(F_MACRO("GRU [(("));
+                    NN_PRINT_1(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO(")+("));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("))*3] "));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("| bias:"));
+                        NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER) 
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex]));
+                        NN_PRINT_1(F_MACRO("| F(x):"));
+                        NN_PRINT_1(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex]));
                     #endif
-                    Serial.println();
+                    NN_PRINTLN();
 
-                    Serial.println(F_MACRO("- RESET -" )); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
-                    Serial.println(F_MACRO("- HIDDEN -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
-                    Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2])); // #14
+                    NN_PRINTLN_1(F_MACRO("- RESET -" )); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
+                    NN_PRINTLN_1(F_MACRO("- HIDDEN -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
+                    NN_PRINTLN_1(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2])); // #14
                 }
             #endif
 
@@ -4752,37 +4803,37 @@ public:
                 void NeuralNetwork::Layer::LSTM_Only_print()
                 { 
                     #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO("INT_Q "));
+                        NN_PRINT_1(F_MACRO("INT_Q "));
                     #endif
                     #if defined(CONST_MODERN_PROGMEM_LOGIC)
-                        Serial.print(F_MACRO("CONST* "));
+                        NN_PRINT_1(F_MACRO("CONST* "));
                     #endif
                     #if defined(AVR_PROGMEM_LOGIC)
-                        Serial.print(F_MACRO("PROGMEM "));
+                        NN_PRINT_1(F_MACRO("PROGMEM "));
                     #endif
-                    Serial.print(F_MACRO("LSTM [(("));
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO(")+("));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("))*4] "));
+                    NN_PRINT_1(F_MACRO("LSTM [(("));
+                    NN_PRINT_1(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO(")+("));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("))*4] "));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("| bias:"));
+                        NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex]));
+                        NN_PRINT_1(F_MACRO("| F(x):"));
+                        NN_PRINT_1(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex]));
                     #endif
-                    Serial.println();
+                    NN_PRINTLN();
 
-                    Serial.println(F_MACRO("- FORGET -")); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
-                    Serial.println(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
-                    Serial.println(F_MACRO("- CELL -"  )); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2]));
-                    Serial.println(F_MACRO("- OUTPUT -")); gatePrint((_numberOfInputs+_numberOfOutputs)*3 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*3])); // #14
+                    NN_PRINTLN_1(F_MACRO("- FORGET -")); gatePrint(0                                    OPTIONAL_MULTI_BIAS(bias));
+                    NN_PRINTLN_1(F_MACRO("- UPDATE -")); gatePrint((_numberOfInputs+_numberOfOutputs)   OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs])); 
+                    NN_PRINTLN_1(F_MACRO("- CELL -"  )); gatePrint((_numberOfInputs+_numberOfOutputs)*2 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*2]));
+                    NN_PRINTLN_1(F_MACRO("- OUTPUT -")); gatePrint((_numberOfInputs+_numberOfOutputs)*3 OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs*3])); // #14
                 }
             #endif
 
@@ -4791,74 +4842,74 @@ public:
                 void NeuralNetwork::Layer::RNN_Only_print()
                 {
                     #if defined(USE_INT_QUANTIZATION)
-                        Serial.print(F_MACRO("INT_Q "));
+                        NN_PRINT_1(F_MACRO("INT_Q "));
                     #endif
                     #if defined(CONST_MODERN_PROGMEM_LOGIC)
-                        Serial.print(F_MACRO("CONST* "));
+                        NN_PRINT_1(F_MACRO("CONST* "));
                     #endif
                     #if defined(AVR_PROGMEM_LOGIC)
-                        Serial.print(F_MACRO("PROGMEM "));
+                        NN_PRINT_1(F_MACRO("PROGMEM "));
                     #endif
-                    Serial.print(F_MACRO("RNN [("));
-                    Serial.print(_numberOfInputs);
-                    Serial.print(F_MACRO("+"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO(")*"));
-                    Serial.print(_numberOfOutputs);
-                    Serial.print(F_MACRO("]"));
+                    NN_PRINT_1(F_MACRO("RNN [("));
+                    NN_PRINT_1(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("+"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO(")*"));
+                    NN_PRINT_1(_numberOfOutputs);
+                    NN_PRINT_1(F_MACRO("]"));
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                        Serial.print(F_MACRO("| bias:"));
-                        Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("| bias:"));
+                        NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
                     #if defined(ACTIVATION__PER_LAYER)
-                        Serial.print(F_MACRO("| F(x):"));
-                        Serial.print(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex]));
+                        NN_PRINT_1(F_MACRO("| F(x):"));
+                        NN_PRINT_1(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex]));
                     #endif
-                    Serial.println();
+                    NN_PRINTLN();
 
                     for (unsigned int i = 0; i < _numberOfOutputs; i++)
                     {
                         #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                            Serial.print(F_MACRO("   B:"));
-                            Serial.println(TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            NN_PRINT_1(F_MACRO("   B:"));
+                            NN_PRINTLN_2(TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
 
-                        Serial.print(i + 1);
-                        Serial.print(F_MACRO(" "));
+                        NN_PRINT_1(i + 1);
+                        NN_PRINT_1(F_MACRO(" "));
                         for (unsigned int j = 0; j < _numberOfInputs; j++)
                         {
                             //weights[i][j] = (DFLOAT)j;
-                            Serial.print(F_MACRO(" W:"));
+                            NN_PRINT_1(F_MACRO(" W:"));
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                                if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                                Serial.print(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) NN_PRINT_1(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                                NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                             #else
-                                if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                                Serial.print(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) NN_PRINT_1(F_MACRO(" "));
+                                NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                             #endif
-                            Serial.print(F_MACRO(" "));
+                            NN_PRINT_1(F_MACRO(" "));
                         }
-                        Serial.println();
+                        NN_PRINTLN();
 
-                        Serial.print(F_MACRO("  "));
+                        NN_PRINT_1(F_MACRO("  "));
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                             for (unsigned int j = 0; j < _numberOfOutputs; j++)
                             {
-                                Serial.print(F_MACRO(" U:"));
-                                if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                                Serial.print(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
+                                NN_PRINT_1(F_MACRO(" U:"));
+                                if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) NN_PRINT_1(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                                NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                NN_PRINT_1(F_MACRO(" "));
                             }
                         #else
                             for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
                             {
-                                Serial.print(F_MACRO(" U:"));
-                                if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                                Serial.print(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
+                                NN_PRINT_1(F_MACRO(" U:"));
+                                if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) NN_PRINT_1(F_MACRO(" "));
+                                NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                NN_PRINT_1(F_MACRO(" "));
                             }
                         #endif
-                        Serial.println();
+                        NN_PRINTLN();
                     }
                 }
             #endif
@@ -4867,76 +4918,76 @@ public:
             void NeuralNetwork::Layer::print()
             {
                 #if defined(USE_INT_QUANTIZATION)
-                    Serial.print(F_MACRO("INT_Q "));
+                    NN_PRINT_1(F_MACRO("INT_Q "));
                 #endif
                 #if defined(CONST_MODERN_PROGMEM_LOGIC)
-                    Serial.print(F_MACRO("CONST* "));
+                    NN_PRINT_1(F_MACRO("CONST* "));
                 #endif
                 #if defined(AVR_PROGMEM_LOGIC)
-                    Serial.print(F_MACRO("PROGMEM "));
+                    NN_PRINT_1(F_MACRO("PROGMEM "));
                 #endif
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
                     if (me->PropsPerLayer[me->AtlayerIndex].arch){
-                        Serial.print(F_MACRO("RNN [("));
-                        Serial.print(_numberOfInputs);
-                        Serial.print(F_MACRO("+"));
-                        Serial.print(_numberOfOutputs);
-                        Serial.print(F_MACRO(")"));
+                        NN_PRINT_1(F_MACRO("RNN [("));
+                        NN_PRINT_1(_numberOfInputs);
+                        NN_PRINT_1(F_MACRO("+"));
+                        NN_PRINT_1(_numberOfOutputs);
+                        NN_PRINT_1(F_MACRO(")"));
                     }else{
-                        Serial.print(F_MACRO("DENSE ["));
-                        Serial.print(_numberOfInputs);
+                        NN_PRINT_1(F_MACRO("DENSE ["));
+                        NN_PRINT_1(_numberOfInputs);
                     }
                 #else
-                    Serial.print(F_MACRO("DENSE "));
-                    Serial.print(_numberOfInputs);
+                    NN_PRINT_1(F_MACRO("DENSE "));
+                    NN_PRINT_1(_numberOfInputs);
                 #endif
-                Serial.print(F_MACRO("*"));
-                Serial.print(_numberOfOutputs);
+                NN_PRINT_1(F_MACRO("*"));
+                NN_PRINT_1(_numberOfOutputs);
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
-                    Serial.print(F_MACRO("]"));
+                    NN_PRINT_1(F_MACRO("]"));
                 #endif
                 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
-                    Serial.print(F_MACRO("| bias:"));
-                    Serial.print(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                    NN_PRINT_1(F_MACRO("| bias:"));
+                    NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
                 #if defined(ACTIVATION__PER_LAYER)
-                    Serial.print(F_MACRO("| F(x):"));
-                    Serial.print(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex])); // NOTE: GET_ACTIVATION_FUNCTION_FROM takes into account plain MULTIPLE_NN_TYPE_ARCHITECTURES
+                    NN_PRINT_1(F_MACRO("| F(x):"));
+                    NN_PRINT_1(GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex])); // NOTE: GET_ACTIVATION_FUNCTION_FROM takes into account plain MULTIPLE_NN_TYPE_ARCHITECTURES
                 #endif
                 #if defined(SINGLE_TIMESTEP_THRESHOLD)
                     if (me->AtlayerIndex == me->atIndex){
-                        Serial.print(F_MACRO("| Threshold:"));
-                        Serial.print(me->threshold);
+                        NN_PRINT_1(F_MACRO("| Threshold:"));
+                        NN_PRINT_1(me->threshold);
                     }
                 #endif
-                Serial.println();
+                NN_PRINTLN();
 
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
                     #if defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES
-                        Serial.print(F_MACRO("   B:"));
-                        Serial.println(TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                        NN_PRINT_1(F_MACRO("   B:"));
+                        NN_PRINTLN_2(TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
 
-                    Serial.print(i + 1);
-                    Serial.print(F_MACRO(" "));
+                    NN_PRINT_1(i + 1);
+                    NN_PRINT_1(F_MACRO(" "));
                     for (unsigned int j = 0; j < _numberOfInputs; j++)
                     {
                         //weights[i][j] = (DFLOAT)j;
-                        Serial.print(F_MACRO(" W:"));
+                        NN_PRINT_1(F_MACRO(" W:"));
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                            Serial.print(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) NN_PRINT_1(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                            NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #else
-                            if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                            Serial.print(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                            if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) NN_PRINT_1(F_MACRO(" "));
+                            NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                         #endif
-                        Serial.print(F_MACRO(" "));
+                        NN_PRINT_1(F_MACRO(" "));
                     }
-                    Serial.println();
+                    NN_PRINTLN();
 
                     #if defined(USE_RNN_LAYERS_ONLY) or defined(USE_PAIR__DENSE_RNN)
-                        Serial.print(F_MACRO("  "));
+                        NN_PRINT_1(F_MACRO("  "));
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                             #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES) // might change it to USE_PAIR__DENSE_RNN
                                 for (unsigned int j = 0; j < _numberOfOutputs * me->PropsPerLayer[me->AtlayerIndex].arch; j++)
@@ -4944,10 +4995,10 @@ public:
                                 for (unsigned int j = 0; j < _numberOfOutputs; j++)
                             #endif
                             {
-                                Serial.print(F_MACRO(" U:"));
-                                if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) Serial.print(F_MACRO(" ")); // if gratter than 10 too or something would be nice
-                                Serial.print(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
+                                NN_PRINT_1(F_MACRO(" U:"));
+                                if (TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0) NN_PRINT_1(F_MACRO(" ")); // if gratter than 10 too or something would be nice
+                                NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j++]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                NN_PRINT_1(F_MACRO(" "));
                             }
                         #else
                             #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES) // might change it to USE_PAIR__DENSE_RNN
@@ -4956,18 +5007,18 @@ public:
                                 for (unsigned int j = _numberOfInputs; j < (_numberOfInputs + _numberOfOutputs); j++)
                             #endif
                             {
-                                Serial.print(F_MACRO(" U:"));
-                                if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) Serial.print(F_MACRO(" "));
-                                Serial.print(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
-                                Serial.print(F_MACRO(" "));
+                                NN_PRINT_1(F_MACRO(" U:"));
+                                if (TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION > 0 ) NN_PRINT_1(F_MACRO(" "));
+                                NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
+                                NN_PRINT_1(F_MACRO(" "));
                             }
                         #endif
-                        Serial.println(); // meh...
+                        NN_PRINTLN(); // meh...
                     #endif
                 }
             }
         #endif // (defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)) [OR NOT]
-    #endif // !defined(AS__NO_COMMON_SERIAL_SUPPORT)
+    #endif // !defined(AS__NO_COMMON_SERIAL_SUPPORT) 
 // #pragma endregion Layer.cpp
 #endif
 
