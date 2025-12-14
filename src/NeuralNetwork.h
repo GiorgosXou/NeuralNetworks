@@ -46,7 +46,7 @@
 
 
 
-// Minimal type traits (primarely) for Arduino (don't worry they they are evaluated at compile-time)
+// Minimal type traits (primarely) for Arduino (don't worry they are evaluated at compile-time)
 template<bool B, typename T = void> struct nn_enable_if          {};
 template<         typename T>       struct nn_enable_if<true, T> { typedef T type; };
 
