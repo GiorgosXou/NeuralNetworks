@@ -46,6 +46,16 @@
 
 
 
+// Minimal type traits (primarely) for Arduino (don't worry they they are evaluated at compile-time)
+template<bool B, typename T = void> struct nn_enable_if          {};
+template<         typename T>       struct nn_enable_if<true, T> { typedef T type; };
+
+template<typename T> struct is_not_a_cstring                { static const bool value = true ;};
+template<size_t   N> struct is_not_a_cstring<const char[N]> { static const bool value = false;};
+template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool value = false;};
+
+
+
 #if defined(ARDUINO)
     #include "Arduino.h"  // - That gives you access to the standard types and constants of the Arduino language.
     #define NN_RANDOM(min,max)  random(min,max)
@@ -55,7 +65,6 @@
     #define NN_PRINTLN()        Serial.println()
     #define NN_PRINTLN_1(x)     Serial.println(x)
     #define NN_PRINTLN_2(x,y)   Serial.println(x,y)
-    #define NN_FILE File
     #define CHAR_BYTE byte
     #define NN_FS_SEEK(x) seek(x)
 #else 
@@ -72,7 +81,6 @@
     #define NN_RANDOM(min,max) (rand() % (max - min) + min)
     #define NN_RANDOM_SET(seed) srand(seed)
     // for SUPPORTS_FS_FUNCTIONALITY + #include <fstream>
-    #define NN_FILE std::fstream
     // seek at position in file
     #define NN_FS_SEEK(x) seekp(x)
     // just a printf | simply map UART to printf and you should be fine
@@ -1704,9 +1712,9 @@ public:
         bool load_old(String file); // [OLD V.2.X.X] For migration to V3.0.0 or backwards compatibility
     #endif
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) 
-        NeuralNetwork(NN_FILE&  file);
-        bool save    (NN_FILE&  file);
-        bool load    (NN_FILE&  file);
+        template <typename T_File, typename = typename nn_enable_if<is_not_a_cstring<T_File>::value>::type> NeuralNetwork(T_File&  file);
+        template <typename T_File, typename = typename nn_enable_if<is_not_a_cstring<T_File>::value>::type> bool save    (T_File&  file);
+        template <typename T_File, typename = typename nn_enable_if<is_not_a_cstring<T_File>::value>::type> bool load    (T_File&  file);
     #endif
 
     #if defined(INCLUDES_EEPROM_H) and !defined(USE_INTERNAL_EEPROM)
@@ -1762,7 +1770,8 @@ public:
     #endif
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY)
-        NeuralNetwork::NeuralNetwork(NN_FILE& file){
+        template <typename T_File, typename>
+        NeuralNetwork::NeuralNetwork(T_File& file){
             #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) || !defined(NO_BACKPROP) || defined(RAM_EFFICIENT_HILL_CLIMB) // #8
                 isAllocdWithNew = false;
             #endif
@@ -2524,7 +2533,8 @@ public:
     
 
     #if defined(SUPPORTS_SD_FUNCTIONALITY) || defined(SUPPORTS_FS_FUNCTIONALITY) 
-        bool NeuralNetwork::save(NN_FILE& myFile)
+        template <typename T_File, typename>
+        bool NeuralNetwork::save(T_File& myFile)
         {
             if (myFile){
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2551,7 +2561,7 @@ public:
                             #if defined(MULTIPLE_BIASES_PER_LAYER)
                                 myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n].bias[i + (p * layers[n]._numberOfOutputs)]), sizeof(*NeuralNetwork::Layer::bias));
                             #endif
-                            //WARN: ##21 NN_FILE compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, specifically for GRU and LSTM layers.
+                            //WARN: ##21 T_File compatibility is not guaranteed between MCUs compiled with REDUCE_RAM_WEIGHTS_LVL2 enabled and those compiled with it disabled, specifically for GRU and LSTM layers.
                             for(unsigned int j=0; j<SIZEOF_FROM(layers[n]._numberOfInputs, layers[n]._numberOfOutputs, PropsPerLayer[n].arch); j++)
                             {
                                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -2633,7 +2643,8 @@ public:
         #endif
 
 
-        bool NeuralNetwork::load(NN_FILE& myFile) {
+        template <typename T_File, typename>
+        bool NeuralNetwork::load(T_File& myFile) {
             if (numberOflayers !=0 || isAlreadyLoadedOnce) // to prevent undefined delete[] and memory leaks for the sake of reloading as many times as you want :)
                 pdestract();
 
