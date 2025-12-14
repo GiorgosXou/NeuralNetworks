@@ -2577,7 +2577,6 @@ public:
                     myFile.NN_FS_SEEK(0); // NOTE: that's SuS depending on the defined SD library one might choose | in relation to the myFile.println("        "); and print below | espressif's ESP32 SD-FS implementation uses default seek mode to 	SEEK_SET – It moves file pointer position to the beginning of the file.
                     myFile.write(reinterpret_cast<CHAR_BYTE*>(&totalNumOfWeights), sizeof(totalNumOfWeights));
                 #endif
-                myFile.close();
                 return true;
             }
             return false;
