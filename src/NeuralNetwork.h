@@ -45,17 +45,6 @@
 #define __NN_VERSION__ "VERSION: 4.0.0-Alpha"\n
 
 
-
-// Minimal type traits (primarely) for Arduino (don't worry they are evaluated at compile-time)
-template<bool B, typename T = void> struct nn_enable_if          {};
-template<         typename T>       struct nn_enable_if<true, T> { typedef T type; };
-
-template<typename T> struct is_not_a_cstring                { static const bool value = true ;};
-template<size_t   N> struct is_not_a_cstring<const char[N]> { static const bool value = false;};
-template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool value = false;};
-
-
-
 #if defined(ARDUINO)
     #include "Arduino.h"  // - That gives you access to the standard types and constants of the Arduino language.
     #define NN_RANDOM(min,max)  random(min,max)
@@ -97,6 +86,15 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
     #define NN_PRINTLN_2(x,y) do {nn_print(x); printf("\n");} while(0)
 #endif
 
+
+
+// Minimal type traits (primarely) for Arduino (don't worry they are evaluated at compile-time)
+template<bool B, typename T = void> struct nn_enable_if {};
+template<typename T>                struct nn_enable_if<true, T> { typedef T type; };
+
+template<typename T> struct is_not_a_cstring                { static const bool value = true ;};
+template<size_t   N> struct is_not_a_cstring<const char[N]> { static const bool value = false;};
+template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool value = false;};
 
 
 // https://arduino.stackexchange.com/questions/94743/is-ifdef-sd-h-considered-a-bad-practice/
