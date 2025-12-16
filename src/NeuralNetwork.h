@@ -451,6 +451,7 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
         #undef MSG18
         #define MSG18 \n- " [3] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Only pre-established NNs allowed with (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)."
         #define RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW
+        #define AS_TYPE_OF_HILL_CLIMB
         #define NO_BACKPROP
     #endif
 
@@ -461,7 +462,6 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
         #undef MSG19
         #define MSG19 \n- " [3] 0B00010000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You enabled support for (HILL_CLIMB_DYNAMIC_LEARNING_RATES)."
         #define HILL_CLIMB_DYNAMIC_LEARNING_RATES
-        #define AS_TYPE_OF_HILL_CLIMB
     #endif
 
     #if ((_3_OPTIMIZE bitor 0B11110111) == 0B11111111)
@@ -2242,8 +2242,8 @@ public:
 
     template<typename T> DFLOAT *NeuralNetwork::FeedForward(const T *inputs)
     {
-        #if !defined(NO_BACKPROP) // No need for (RAM_EFFICIENT_HILL_CLIMB) or (RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW) | [The bellow line, is just an error note]
-            #if defined(RAM_EFFICIENT_HILL_CLIMB) or defined(RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW)
+        #if !defined(NO_BACKPROP) // No need for (RAM_EFFICIENT_HILL_CLIMB) | [The bellow line, is just an error note]
+            #if defined(RAM_EFFICIENT_HILL_CLIMB) 
                 _inputs = inputs; /* 💥 𝗡𝗢𝗧𝗘: Try `#define _2_OPTIMIZE 0B00000001`, most probably you left backpropagation enabled. If purposefully then, please use (DFLOAT) `float` | (`template<typename T>` is not yet supported with backpropagation). */
             #else
                 _inputs = inputs; /* 💥 𝗡𝗢𝗧𝗘: Most likely you are using Backpropagation with the wrong type of inputs/training-data, please use (DFLOAT) `float` | `(template<typename T>` is not yet supported with backpropagation). */
