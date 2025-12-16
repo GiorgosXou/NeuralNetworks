@@ -157,6 +157,7 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 #define MSG22
 #define MSG23
 #define MSG24
+#define MSG25
 #define LOVE \n 𝖀𝖓𝖈𝖔𝖓𝖉𝖎𝖙𝖎𝖔𝖓𝖆𝖑 𝕷𝖔𝖛𝖊 
                      
 // Memmory substrate message PROGMEM EEPROM etc.
@@ -497,7 +498,16 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 #endif
 
 
-// _4_OPTIMIZE will be here <-------------------------------
+#if defined(_4_OPTIMIZE)
+    #if ((_4_OPTIMIZE bitor 0B01111111) == 0B11111111) // NOTE: error #31
+        #undef MSG25
+        #define MSG25 \n- " [4] 0B10000000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCE_RAM_RESET_STATES_BY_DELETION) enabled."
+        #define REDUCE_RAM_RESET_STATES_BY_DELETION
+    #endif
+#endif
+
+
+// _5_OPTIMIZE will be here <-------------------------------
 // TODO: PORTABLE_ACROSS_NN_ARCHITECTURES and add error if hardcoded RELATIVE_ACTIVATION_FUNCTION number is not defined #19 // SUPPORT_CROSS_DEFINITION_COMPATIBILITY_ACROSS_NN_TYPE_ARCHITECTURES
 // TODO: DISABLE_TIMESTEP_LOGIC #17 or maybe SWITCH instead of DISABLE since by default plain/_ONLY RNNs of any type don't use it
 
@@ -704,6 +714,15 @@ struct LayerProps {
     #define OPTIONAL_TIME(x, y)
 #endif
 
+
+#if defined(REDUCE_RAM_RESET_STATES_BY_DELETION)  // ##31
+    #if !defined(HAS_HIDDEN_STATES)
+        #error "💥 Please disable `#define _4_OPTIMIZE 0B10000000` | You can't use REDUCE_RAM_RESET_STATES_BY_DELETION with an MLP (a neural-netwrok architecture, that doesn't have hidden-states)."
+    #endif
+    #if defined(USE_DENSE_PAIR)
+        #error "💥 Please disable `#define _4_OPTIMIZE 0B10000000` | You can't USE_DENSE_PAIR with REDUCE_RAM_RESET_STATES_BY_DELETION yet."
+    #endif
+#endif
 
 // TODO: Once I'll add support for FRAM I need to change those errors for RAM_EFFICIENT_HILL_CLIMB to inform the user to use RAM_EFFICIENT_HILL_CLIMB_WITHOUT_NEW instead! 
 // Because there is no initialization nor destrcuction proccess of dynamic parameters during FRAM usage
@@ -1270,7 +1289,7 @@ struct LayerProps {
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 MSG24 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
+#define INFORMATION LOVE __NN_VERSION__ MSG0 MSG1 MSG2 MSG22 MSG3 MSG4 MSG5 MSG6 MSG7 MSG8 MSG9 MSG10 MSG11 MSG12 MSG13 MSG14 MSG15 MSG16 MSG17 MSG18 MSG19 MSG20 MSG21 MSG23 MSG24 MSG25 \n\n 𝗨𝗦𝗜𝗡𝗚 MEM_SUBSTRATE_MSG NN_ARCH_MSG TIMESTEP_MSG [ƒx] ALL_A AN_1 AN_2 AN_3 AN_4 AN_5 AN_6 AN_7 AN_8 AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 CSTA CA1 CA2 CA3 CA4 CA5 |~|\n\n NB AN_9 AN_10 AN_11 AN_12 AN_13 AN_14 NB_CA1 NB_CA2 NB_CA3 NB_CA4 NB_CA5
 #pragma message( STR(INFORMATION) )
 
 
@@ -1410,6 +1429,10 @@ private:
             #else
                 DFLOAT *hiddenStates;        // previous timestep's outputs of this layer  [1D Array] pointers.
             #endif
+        #endif
+
+        #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
+            void initializeStates();
         #endif
         
         //#if defined(REDUCE_RAM_WEIGHTS_LVL1)
@@ -1562,6 +1585,10 @@ private:
 
 
 public:
+
+    #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
+        void initializeStates();
+    #endif
 
     #if defined(HAS_HIDDEN_STATES)
         void resetStates();
@@ -2151,10 +2178,16 @@ public:
     #if defined(SUPPORTS_INDIVIDUAL_FEEDFORWARD)
         void NeuralNetwork::reset_Individual_Input_Counter() { Individual_Input = 0;}
 
+
         DFLOAT *NeuralNetwork::FeedForward_Individual(const DFLOAT &input) 
         {
             #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
                 me = this;
+            #endif
+
+            #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
+                if (layers[0].hiddenStates == NULL) // if the first layer of a type-RNN, has no hidden-states then re-initializeStates 
+                    initializeStates();
             #endif
 
             #if defined(USE_INTERNAL_EEPROM) or defined(USE_EXTERNAL_FRAM)
@@ -2240,6 +2273,15 @@ public:
     #endif
 
 
+    #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
+        void NeuralNetwork::initializeStates()
+        {
+            for (unsigned int i=0; i < numberOflayers; i++)
+                layers[i].initializeStates();
+        }
+    #endif
+
+
     template<typename T> DFLOAT *NeuralNetwork::FeedForward(const T *inputs)
     {
         #if !defined(NO_BACKPROP) // No need for (RAM_EFFICIENT_HILL_CLIMB) | [The bellow line, is just an error note]
@@ -2252,6 +2294,11 @@ public:
 
         #if defined(REDUCE_RAM_STATIC_REFERENCE_FOR_MULTIPLE_NN_OBJECTS)
             me = this;
+        #endif
+
+        #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
+            if (layers[0].hiddenStates == NULL) // if the first layer of a type-RNN, has no hidden-states then re-initializeStates 
+                initializeStates();
         #endif
         
         #if defined(REDUCE_RAM_DELETE_OUTPUTS) // https://stackoverflow.com/a/4190737/11465149 https://stackoverflow.com/a/50290082/11465149
@@ -3038,22 +3085,46 @@ public:
 //=======================================================================================================================================================================
 
 // #pragma region Layer.cpp
+    #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
+        void NeuralNetwork::Layer::initializeStates()
+        {
+            #if defined(HAS_HIDDEN_STATES)
+                hiddenStates = new DFLOAT[_numberOfOutputs]{}; 
+            #endif
+            #if defined(USE_LSTM_LAYERS_ONLY)
+                cellStates = new DFLOAT[_numberOfOutputs]{}; 
+            #endif
+        }
+    #endif
+
+
     #if defined(HAS_HIDDEN_STATES)
         void NeuralNetwork::Layer::resetStates()
         {
-            #if defined(USE_DENSE_PAIR)
+            #if defined(USE_DENSE_PAIR) // #31 at some point
                 if (hiddenStates == NULL)
                     return;
             #endif
 
-            for (unsigned int i = 0; i < _numberOfOutputs; i++){ // TODO: test delete[] re-new aproach, to see what effects it has in terms of sketch-size (as an alternative, optimization)
+            #if defined(REDUCE_RAM_RESET_STATES_BY_DELETION) // #31
                 #if defined(HAS_HIDDEN_STATES)
-                    hiddenStates[i] = 0;
+                    delete[] hiddenStates;
+                    hiddenStates = NULL;
                 #endif
                 #if defined(USE_LSTM_LAYERS_ONLY)
-                    cellStates[i] = 0;
+                    delete[] cellStates;
+                    cellStates = NULL;
                 #endif
-            }
+            #else
+                for (unsigned int i = 0; i < _numberOfOutputs; i++){
+                    #if defined(HAS_HIDDEN_STATES)
+                        hiddenStates[i] = 0;
+                    #endif
+                    #if defined(USE_LSTM_LAYERS_ONLY)
+                        cellStates[i] = 0;
+                    #endif
+                }
+            #endif
         }
     #endif
 
