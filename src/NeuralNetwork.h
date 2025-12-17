@@ -4110,7 +4110,6 @@ public:
                 #endif
 
                 // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
-                // #12 [see also a03b1609fe7ec40fdc9b10d62c93134adc098b12] for a plain MLP/ANN an inlined code with me->i_j++, would redure the sketch about a few bytes for UNO. Instead of this, that's now | I may TODO: a macro for this case too 
                 #if defined(REDUCE_RAM_WEIGHTS_LVL2)
                     ACCUMULATED_DOT_PRODUCT_OF(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs);
                 #else
@@ -4173,7 +4172,7 @@ public:
                     #endif
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        ACCUMULATED_DOT_PRODUCT_OF(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs); // #12 [see also a03b1609fe7ec40fdc9b10d62c93134adc098b12] for a plain MLP/ANN an inlined code with me->i_j++, would redure the sketch about a few bytes for UNO. Instead of this, that's now | I may TODO: a macro for this case too 
+                        ACCUMULATED_DOT_PRODUCT_OF(inputs, &me->weights[me->i_j], &outputs[i], _numberOfInputs);
                         ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &me->weights[me->i_j], &outputs[i], _numberOfOutputs);
                     #else
                         ACCUMULATED_DOT_PRODUCT_OF(inputs, weights[i], &outputs[i], _numberOfInputs); // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
