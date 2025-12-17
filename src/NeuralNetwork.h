@@ -580,7 +580,7 @@ struct LayerProps {
         #undef NN_TYPE_ARCHITECTURE
         #define NN_TYPE_ARCHITECTURE RNN_Only_
     #else
-        // WARN: ##26 Reminder to either add 0-check or disable REDUCED_SKETCH_SIZE_DOT_PROD when I'll add the merged RNN+DENSE optimization (SLOW_PAIR_RNN_SKETCH_REDUCE)
+        // WARN: ##26 Reminder to either add 0-check or disable REDUCED_SKETCH_SIZE_DOT_PROD when I'll add the merged RNN+DENSE optimization (SLOW_PAIR_RNN_SKETCH_REDUCE) | I am saying this because when merged, I'm planing to pass `len` as `(me->PropsPerLayer[me->AtlayerIndex]).arch * _numberOfOutputs` in `accumulatedDotProduct(..., len )`
         #undef LayerType
         #define A_TYPE_OF_RNN_ARCHITECTURE RNN_Only_
         #undef OPTIONAL_LAYER_TYPE_ARCHITECTURE
