@@ -11,7 +11,7 @@
 
 
 // First Layer is always an input/feature-layer, therefore we don't have to specify any architecture for it
-LayerType Architectures[] = {
+LayerType architectures[] = {
   RNN(),
   RNN(),
   DENSE(),
@@ -58,7 +58,7 @@ float weights[] = {
 };
 
 // Creating NeuralNetwork with pretrained Weights and Biases;
-NeuralNetwork NN(layers, weights, biases, NumberOf(layers) OPTIONAL_TIME(THRESHOLD, AT_HIDDEN), Architectures);
+NeuralNetwork NN(layers, weights, biases, NumberOf(layers) OPTIONAL_TIME(THRESHOLD, AT_HIDDEN), architectures);
 
 
 void setupTempSensor() {

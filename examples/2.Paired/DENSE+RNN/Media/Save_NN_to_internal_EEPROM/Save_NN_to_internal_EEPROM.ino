@@ -18,7 +18,7 @@
 
 
 // First Layer is always an input/feature-layer, therefore we don't have to specify any architecture for it
-LayerType Architectures[] = {
+LayerType architectures[] = {
   RNN(),
   RNN(),
   DENSE(),
@@ -66,7 +66,7 @@ float weights[] = {
 
 void setup(){
   Serial.begin(9600); // Initialization/begining of Serial at 9600 baud-rate
-  NeuralNetwork NN(layers, weights, biases, NumberOf(layers) OPTIONAL_TIME(THRESHOLD, AT_HIDDEN), Architectures); // Creating NeuralNetwork with pretrained Weights and Biases;
+  NeuralNetwork NN(layers, weights, biases, NumberOf(layers) OPTIONAL_TIME(THRESHOLD, AT_HIDDEN), architectures); // Creating NeuralNetwork with pretrained Weights and Biases;
   unsigned int endAddress = NN.save(IN_EEPROM_ADDRESS); // Saves the NN IN_EEPROM_ADDRESS and (optionally)returns where it ended
   Serial.println("Saved neural-network of " + String(endAddress - IN_EEPROM_ADDRESS) + "-Bytes into the internal EEPROM of the MCU");
 }
