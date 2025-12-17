@@ -15,6 +15,7 @@
 // Defines a list of microcontroller Attiny series As__AVR_ATtinyXXX__
 #if defined(__AVR_ATtiny2313__) || defined(__AVR_ATtiny4313__) || defined(__AVR_ATtiny24__) || defined(__AVR_ATtiny44__) || defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny25__) || defined(__AVR_ATtiny45__) || defined(__AVR_ATtiny85__)
     #define As__AVR_ATtinyX__
+    #define DISABLE_NN_SERIAL_SUPPORT
 
     #if defined(__AVR_ATtiny85__)
         #undef MSG0
@@ -22,8 +23,8 @@
     #endif
 #endif
 
-// Defines a list of microcontroller series (as) AS__NO_COMMON_SERIAL_SUPPORT (in that moment)
-#if defined(As__AVR_ATtinyX__) // or etc.
+// Disables serial support:  
+#if defined(DISABLE_NN_SERIAL_SUPPORT)
     #define AS__NO_COMMON_SERIAL_SUPPORT
 #endif
 
