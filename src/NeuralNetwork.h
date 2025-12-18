@@ -769,12 +769,11 @@ struct LayerProps {
 
 // Disable SIMD parallel processing if double-precision or int-quntization is enabled
 #if (!defined(DISABLE_SIMD_SUPPORT) && (defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)))
+    #undef MSG22
     #if defined(USE_64_BIT_DOUBLE)
-        #undef MSG7
-        #define MSG7 \n- " [1] 0B00000001 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
     #elif defined(USE_INT_QUANTIZATION)
-        #undef MSG7
-        #define MSG7 \n- " [2] 0B00001000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
+        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
     #else
         #define ESP_SUPPORTS_SIMD
         #undef ACCUMULATED_DOT_PRODUCT_OF
@@ -786,6 +785,7 @@ struct LayerProps {
         #else
             /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
         #endif
+        #define MSG22 \n- " [1] 0B00X00000 [I] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using SIMD acceleration."
         #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
             #undef MSG4
             #define MSG4 \n- " [1] 0B0000X000 [Χ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCED_SKETCH_SIZE_DOT_PROD) not used since (ESP_SUPPORTS_SIMD)."
