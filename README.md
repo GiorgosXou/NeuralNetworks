@@ -1,4 +1,5 @@
 [SECTION_TRAINING]: #%E2%80%8D-training
+[SECTION_BARE_AND_NATIVE_SUPPORT]: #-bare--native-support
 
 [BASIC_EXAMPLES_MLP]:  ./examples/1.Single/DENSE%20(MLP)/Basic
 [BASIC_EXAMPLES_RNN]:  ./examples/1.Single/RNN%20(Vanilla)/Basic
@@ -29,7 +30,7 @@
 
 
 # [NeuralNetwork](https://en.wikipedia.org/wiki/Neural_network_(machine_learning)) Library For Microcontrollers 
-Nothing *"Import ant"*, just a simple library for implementing both [MLP](https://en.wikipedia.org/wiki/Multilayer_perceptron) & [Recurrent](https://en.wikipedia.org/wiki/Recurrent_neural_network) Neural-Networks easily and effectively on most Arduino compatible boards and microcontrollers.
+Nothing *"Import ant"*, just a simple library for implementing both [MLP](https://en.wikipedia.org/wiki/Multilayer_perceptron) & [Recurrent](https://en.wikipedia.org/wiki/Recurrent_neural_network) Neural-Networks easily and effectively on most Arduino compatible boards and microcontrollers, with partial [bare-metal & native-support][SECTION_BARE_AND_NATIVE_SUPPORT].
 
 # 📚 Summary
 | NN<span>&nbsp;</span>Functions | Input<span>&nbsp;</span>Type<span>&nbsp;</span>(x)|Output<span>&nbsp;</span>Type<span>&nbsp;</span>(Y) |<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>Action<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>|
@@ -72,7 +73,7 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️  Examples
-***✨ ([See also][SECTION_TRAINING]): training with Tensorflow section)***
+***✨ (See also: [training with Tensorflow][SECTION_TRAINING] section & native examples)***
 
 - **`🔤 Basic:`** [MLP][BASIC_EXAMPLES_MLP] | [RNN][BASIC_EXAMPLES_RNN] | [GRU][BASIC_EXAMPLES_GRU] | [LSTM][BASIC_EXAMPLES_LSTM]  
 - **`💾 Media:`** [MLP][MEDIA_EXAMPLES_MLP] | [RNN][MEDIA_EXAMPLES_RNN] | [GRU][MEDIA_EXAMPLES_GRU] | [LSTM][MEDIA_EXAMPLES_LSTM]
@@ -85,7 +86,17 @@ Understanding the Basics of a Neural Network:
 3. Ensure to use *(32-bit)* float-precision during [training][SECTION_TRAINING] unless you [`USE_64_BIT_DOUBLE`](#define-macro-properties)
 4. `bias` simply means biases when you enable [`MULTIPLE_BIASES_PER_LAYER`](#define-macro-properties)
 5. In case you have an error realated to 'POINTER_REGS' [check this link here](https://forum.arduino.cc/index.php?topic=613857.0)
-6. Last but not least,I am **NOT a professional** in any of those fields.
+6. **Bare-metal and Native-OS** support are still on an experimental state!
+7. Last but not least,I am **NOT a professional** in any of those fields.
+
+
+# 🦾 Bare & Native support
+- To disable `NN.print()`, simply `#define DISABLE_NN_SERIAL_SUPPORT`
+- To use `NN.print()` with bare-metal, you should map `printf` to UART
+- [`USE_PROGMEM`](#define-macro-properties) in native-os applications, simply allows the use of `const`
+- To [`USE_INTERNAL_EEPROM`](#define-macro-properties) with bare-metal, an [`EEPROM.h`](https://github.com/SpenceKonde/ATTinyCore/blob/v2.0.0-devThis-is-the-head-submit-PRs-against-this/avr/libraries/EEPROM/EEPROM.h)-alike is needed
+- [`FS`](#define-macro-properties 'file system (SUPPORTS_FS_FUNCTIONALITY)') supports objects that implement: `read()` `write()` `seek()` `seekp()`
+
 
 
 # 🔬 Tested on
@@ -155,8 +166,8 @@ Understanding the Basics of a Neural Network:
 |`FeedForward_Individual(x)`|[DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference')| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array|<details><summary>RAM Optimized FeedForward</summary>"Feeds" the NN with each one X-input Individually until it returns Y-Output Values, If needed. **Important note:** You can't train with it. <br><sup>(Almost no RAM usage for input layer, see also: [example][EXAMPLE_FEED_INDIVIDUAL_INO])</sup></details>|
 | ```*FeedForward(x) ```| [Template](https://www.geeksforgeeks.org/cpp/templates-cpp/ 'Any type but, preferably use DFLOAT ("float" or "double" based on preference)') Array| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| <details><summary>Returns the output of the NN</summary>"Feeds" the NN with X-input values and returns Y-Output Values, If needed.</details>|
 | ```BackProp(x) ```| [DFLOAT](#%EF%B8%8F-functions-variables-- '"float" or "double" based on preference') Array| - | <details><summary>Trains the NN</summary>"Tells" to the NN if the output was correct/the-expected/X-inputs and then, "teaches" it.</details>|
-|`load(x)`| String|bool| <details><summary>Loads NN from SD or FS</summary>Available if [_3_OPTIMIZE 0B00000010](#define-macro-properties) or `#include <SD.h>`. Usefull\\**Important note:** moving it bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
-|`save(x)`| String \ u_int|bool \ u_int| <details><summary>Saves NN to storage media</summary> SD \ internal-EEPROM or external-FRAM</details>|
+|`load(x)`| String \ [T_File](## '[SD\FS] Template for anny kind of Object that implements `read()`, `write()`, `seek()` & `seekp()`') |bool| <details><summary>Loads NN from SD or FS</summary>Available if [_3_OPTIMIZE 0B00000010](#define-macro-properties) or `#include <SD.h>`. Usefull\\**Important note:** moving `#include <SD.h>` bellow `#include <NeuralNetwork.h>` will disable the support.</details>|
+|`save(x)`| String \ [T_File](## '[SD\FS] Template for anny kind of Object that implements `read()`, `write()`, `seek()` & `seekp()`') \ u_int|bool \ u_int| <details><summary>Saves NN to storage media</summary> SD \ internal-EEPROM or external-FRAM</details>|
 |`print()`| - |String| <details><summary>Prints the specs of the NN</summary> _(If [_1_OPTIMIZE 0B10000000](#define-macro-properties) prints from PROGMEM. The same is true for the rest of memmory-types)_</details>|
 
 <br>
@@ -361,7 +372,7 @@ byte ActivFunctions[] = {
 |  _1_OPTIMIZE | | Action |  Keyword |
 | :------: | :------: | ------ | ------ | 
 | ```0B00000000``` | |   Nothing | |
-| ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use PROGMEM instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights & biases. For non AVR-mcus, the same effect is achieved automatically without the old legacy-progmem-api, therefore you don't need to worry about compatibility etc.</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
+| ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use `const`\\`PROGMEM` instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights & biases. For non AVR-mcus, the same effect is achieved without the old legacy-progmem-api, therefore you don't need to worry about compatibility when enabling it.</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
 | ```0B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. **Important note:** in case you want to `delete[] NN->layers[NN->numberOflayers - 1].outputs;` make sure afterwards to `...outputs = NULL` *(if you plan to `feedforward` again later in your sketch)*. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|
 | ```0B00100000``` |<sup><sub>ⓘ</sub></sup>| <details><summary>Disables SIMD support when available</summary>You may disable SIMD-support to ensure the use of any type of input-data</details>| <sub><sup>`DISABLE_SIMD_SUPPORT`</sup></sub>|
 | ```0B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
@@ -385,13 +396,16 @@ byte ActivFunctions[] = {
 | ```0B00010000``` | <sup><sub></sub></sup> | <details><summary>Dynamic learning-rates for Hill-Climb</summary>In case of need for dynamic-changes in learning-rates durin Hill Climbing. see also: [example][EXAMPLE_HILL_CLIMB_RAM_EFFICIENT]</details> |<sub><sup>`...DYNAMIC_LEARNING_RATES`</sup></sub>|
 | ```0B00001000``` | <sup><sub></sub></sup> | <details><summary>Support BackProp without hidden-layers</summary></details> |<sub><sup>`SUPPORT_NO_HIDDEN_BACKPROP`</sup></sub>|
 | ```0B00000100``` | <sup><sub></sub></sup> | <details><summary>Disables `static`-use for activation</summary>(Not recomended) usually auto-enabled when using `Softmax`</details> |<sub><sup>`DISABLE_STATIC_FOR_ACTS`</sup></sub>|
-| ```0B00000010``` | <sup><sub></sub></sup> | <details><summary>Enables FS functionality support</summary>commit fd20e89f00b73b58930f63912d0249f7f3512d1a</details> |<sub><sup>`SUPPORTS_FS_FUNCTIONALITY`</sup></sub>|
-| ```0B00000001``` | <sup><sub></sub></sup> | <details><summary>Reduce RAM usage for GRU & LSTM</summary>*(at least theoretically)* should reduce ram usage drasticly *(when using more that 2 layers)* by defining *(per layer)*-`gatedOutputs` locally&temporarily inside `Layer::{ARCH}_Only_FeedForward(...)`, in stack</details> |<sub><sup>`REDUCE_RAM...GATED_OUTPUTS`</sup></sub>|
+| ```0B00000010``` | <sup><sub></sub></sup> | <details><summary>Enables FS functionality support</summary>Any object that implements `read()` `write()` `seek()` `seekp()` is accepted.</details> |<sub><sup>`SUPPORTS_FS_FUNCTIONALITY`</sup></sub>| <!-- (commit fd20e89f00b73b58930f63912d0249f7f3512d1a)-->
+| ```0B00000001``` | <sup><sub>🔄</sub></sup> | <details><summary>Reduce RAM usage for GRU & LSTM</summary>*(at least theoretically)* should reduce ram usage drasticly *(when using more that 2 layers)* by defining *(per layer)*-`gatedOutputs` locally&temporarily inside `Layer::{ARCH}_Only_FeedForward(...)`, in stack</details> |<sub><sup>`REDUCE_RAM...GATED_OUTPUTS`</sup></sub>|
+|  **_4_OPTIMIZE** | | | |
+| ```0B10000000```  |<sup><sub>🔄</sub></sup>|<details><summary>Reduces RAM, resets states by deletion</summary>`REDUCE_RAM_RESET_STATES_BY_DELETION` instead of reseting the `hiddenStates` of an RNN to `0`, now, when calling `resetStates()` it simply `delete[]`s them and re-initializes them at the next call of `FeedForward` ***(IMPORTANT: it definitely causes heap fragmentation)*** |<sub><sup>`...RESET_STATES_BY_DELETION`</sup></sub>|
 
 <br>
 
 Don't use keywords to define optimizations, it won't work, use _X_OPTIMIZE
 - ⚠️ = Backpropagation is not allowed
+- 🔄 = Only for RNN-type architectures
 - 📌 = Recommended
 
 <br>
