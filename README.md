@@ -73,7 +73,7 @@ Understanding the Basics of a Neural Network:
 - - ```-``` Even more properties, for many different needs.
 
 # ✏️  Examples
-***✨ (See also: [training with Tensorflow][SECTION_TRAINING] section & native examples)***
+***✨ (See also: [training with Tensorflow][SECTION_TRAINING] section & [native examples](https://github.com/GiorgosXou/native-os-neuralnetworks-examples))***
 
 - **`🔤 Basic:`** [MLP][BASIC_EXAMPLES_MLP] | [RNN][BASIC_EXAMPLES_RNN] | [GRU][BASIC_EXAMPLES_GRU] | [LSTM][BASIC_EXAMPLES_LSTM]  
 - **`💾 Media:`** [MLP][MEDIA_EXAMPLES_MLP] | [RNN][MEDIA_EXAMPLES_RNN] | [GRU][MEDIA_EXAMPLES_GRU] | [LSTM][MEDIA_EXAMPLES_LSTM]
