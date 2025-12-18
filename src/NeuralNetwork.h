@@ -60,7 +60,8 @@
 #else 
     // By "native" I mean not bare-metal (nor ARDUINO) eg. Linux Windows Mac etc. 
     // (but it should mostly work as it is for bare-metal too), 
-    #define NN_NATIVE
+    // #define NATIVE_NN
+    #define NATIVE_OR_BARE_NN
     // using char since that's acceptaple natively
     #define CHAR_BYTE char
     // g++ -o main.o main.cpp
@@ -346,8 +347,8 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 
     #if ((_2_OPTIMIZE bitor 0B11101111) == 0B11111111)
         #undef MSG13
-        #if defined(NN_NATIVE)
-            #define MSG13 \n- " [2] 0B000X0000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There's no native-support for F() macro."
+        #if defined(NATIVE_OR_BARE_NN)
+            #define MSG13 \n- " [2] 0B000X0000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] There's no native or bare-metal support for F() macro."
         #elif defined(ESP32)
             #define MSG13 \n- " [2] 0B000X0000 [I] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] PROGMEM on ESP32 is emulated, therefore F() macro is not used."
         #else
@@ -480,8 +481,8 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 
     #if ((_3_OPTIMIZE bitor 0B11111101) == 0B11111111) // Using an optimization bit instead of __has_include due to the fact that "FS.h" is inside most of the cores and therefore it gets compiled
         #undef MSG23
-        #if defined(NN_NATIVE)
-            #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (NN_NATIVE) (SUPPORTS_FS_FUNCTIONALITY) enabled." 
+        #if defined(NATIVE_OR_BARE_NN)
+            #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (SUPPORTS_FS_FUNCTIONALITY) for (NATIVE_OR_BARE_NN) enabled." 
         #else
             #define MSG23 \n- " [3] 0B00000010 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (SUPPORTS_FS_FUNCTIONALITY) enabled."
         #endif
