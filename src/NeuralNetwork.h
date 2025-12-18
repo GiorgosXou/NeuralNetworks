@@ -216,6 +216,9 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
             #undef TYPE_MEMMORY_READ_IDFLOAT
             #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_float(&x)
             #define AVR_PROGMEM_LOGIC
+        #elif defined(NATIVE_OR_BARE_NN)
+            #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Simply using `const`, (non-AVR) (CONST_MODERN_PROGMEM_LOGIC)."
+            #define CONST_MODERN_PROGMEM_LOGIC
         #else
             #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (non-AVR), (CONST_MODERN_PROGMEM_LOGIC)." 
             #define CONST_MODERN_PROGMEM_LOGIC
