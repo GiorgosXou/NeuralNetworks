@@ -80,6 +80,14 @@ Understanding the Basics of a Neural Network:
 - **`🎲 Other:`** [MLP][OTHER_EXAMPLES_MLP] | [RNN][OTHER_EXAMPLES_RNN] | [GRU][OTHER_EXAMPLES_GRU] | [LSTM][OTHER_EXAMPLES_LSTM]
 
 
+# 🦾 Bare & Native support
+- To disable `NN.print()`, simply `#define DISABLE_NN_SERIAL_SUPPORT`
+- To use `NN.print()` with bare-metal, you should map `printf` to UART
+- [`USE_PROGMEM`](#define-macro-properties) in native-os applications, simply allows the use of `const`
+- To [`USE_INTERNAL_EEPROM`](#define-macro-properties) with bare-metal, an [`EEPROM.h`](https://github.com/SpenceKonde/ATTinyCore/blob/v2.0.0-devThis-is-the-head-submit-PRs-against-this/avr/libraries/EEPROM/EEPROM.h)-alike is needed
+- [`FS`](#define-macro-properties 'file system (SUPPORTS_FS_FUNCTIONALITY)') supports objects that implement: `read()` `write()` `seek()` `seekp()`
+
+
 # 📌 Important
 1. <details><summary><b>MOST IMPORTANT</b>, DESTRUCTOR WONT FREE LAST-LAYER'S OUTPUTS !!!!</summary><b>By design</b>, the destructor won't free\deallocate the last layer's outputs, allowing you to continue using <a href="https://github.com/GiorgosXou/NeuralNetworks/blob/9ffc36f6e897fe486e2d58ecf8d2cbb9848f71e9/examples/Basic/FeedForward_double_Xor/FeedForward_double_Xor.ino#L7">these outputs</a> through the pointer in your sketch. <b>To fully delete</b> the neural-network and free the associated resources, <b>it's your responsibility to:</b> either <code>delete[] outputs</code> <b>or</b> <code>delete[] NN.layers[NN.numberOflayers - 1].outputs;</code> <ins>at the end of the scope</ins>. <b>Additionally</b>, with <code>NN.load(file)</code>: ensure you deleted last-layer's <code>*outputs</code> in your sketch, in case you plan to re-use the same pointer for capturing the outputs of the newly-loaded-NN's feedforward.</details>
 2. If you need back-propagation **without hidden-layers** see [`_3_OPTIMIZE 0B00001000`](#define-macro-properties)
@@ -88,14 +96,6 @@ Understanding the Basics of a Neural Network:
 5. In case you have an error realated to 'POINTER_REGS' [check this link here](https://forum.arduino.cc/index.php?topic=613857.0)
 6. **Bare-metal and Native-OS** support are still on an experimental state!
 7. Last but not least,I am **NOT a professional** in any of those fields.
-
-
-# 🦾 Bare & Native support
-- To disable `NN.print()`, simply `#define DISABLE_NN_SERIAL_SUPPORT`
-- To use `NN.print()` with bare-metal, you should map `printf` to UART
-- [`USE_PROGMEM`](#define-macro-properties) in native-os applications, simply allows the use of `const`
-- To [`USE_INTERNAL_EEPROM`](#define-macro-properties) with bare-metal, an [`EEPROM.h`](https://github.com/SpenceKonde/ATTinyCore/blob/v2.0.0-devThis-is-the-head-submit-PRs-against-this/avr/libraries/EEPROM/EEPROM.h)-alike is needed
-- [`FS`](#define-macro-properties 'file system (SUPPORTS_FS_FUNCTIONALITY)') supports objects that implement: `read()` `write()` `seek()` `seekp()`
 
 
 
