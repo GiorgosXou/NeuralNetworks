@@ -742,7 +742,7 @@ struct LayerProps {
         #error "💥 You can't USE_INT_QUANTIZATION with HillClimb yet."
     #endif
     #if defined(USE_PROGMEM)
-        #error "💥 You can't USE_PROGMEM with HillClimb"
+        #error "💥 You can't USE_PROGMEM with HillClimb."
     #endif
 #endif
 
