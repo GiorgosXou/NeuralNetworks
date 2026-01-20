@@ -3477,7 +3477,7 @@ public:
                             outputs = new DFLOAT[_numberOfOutputs];
                         #endif
                         #if defined(ACTIVATION__PER_LAYER)
-                            me->F1 = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<byte>(me->address));
+                            me->F1 = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<byte>(me->address)); // NOTE: ##37 get_type_memmory_value<byte> not LayerType because it's never used here with paired nn-architectures
                         #endif
                         #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                             bias = new IDFLOAT(me->get_type_memmory_value<IDFLOAT>(me->address));
@@ -3581,7 +3581,7 @@ public:
                         outputs = new DFLOAT[_numberOfOutputs];
                     #endif
                     #if defined(ACTIVATION__PER_LAYER)
-                        me->F1 = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<byte>(me->address));
+                        me->F1 = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<byte>(me->address)); // NOTE: #37
                     #endif
                     #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
                         bias = new IDFLOAT(me->get_type_memmory_value<IDFLOAT>(me->address));
