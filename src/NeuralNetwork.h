@@ -216,7 +216,7 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
         #undef MSG1
         #undef IS_CONST
         #undef MEM_SUBSTRATE_MSG
-        #if defined(__AVR__)
+        #if defined(__AVR__) // NOTE: ##38
             #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Backpropagation is not Allowed with (USE_PROGMEM)."
             #undef TYPE_MEMMORY_READ_IDFLOAT
             #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_float(&x)
@@ -284,19 +284,21 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
         #undef LLONG 
         #undef DFLOAT_LEN 
         #undef DFLOAT 
-        #undef TYPE_MEMMORY_READ_IDFLOAT 
         #define USE_64_BIT_DOUBLE
         #define ATOL atoll
         #define LLONG long long
         #define DFLOAT_LEN 15
         #define DFLOAT double
-        #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_double(&x)
 
-        double pgm_read_double(const double* address) {
-            double result;
-            memcpy_P(&result, address, sizeof(double));
-            return result;
-        }
+        #if defined(AVR_PROGMEM_LOGIC) // NOTE: that we are safe to undef below here because of ##38
+            #undef TYPE_MEMMORY_READ_IDFLOAT
+            #define TYPE_MEMMORY_READ_IDFLOAT(x) pgm_read_double(&x)
+            double pgm_read_double(const double* address) {
+                double result;
+                memcpy_P(&result, address, sizeof(double));
+                return result;
+            }
+        #endif
 
         #undef MSG7
         #define MSG7 \n- " [1] 0B00000001 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using 64bit\8byte double-precision (USE_64_BIT_DOUBLE)."
@@ -392,11 +394,17 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
         #define NO_BACKPROP
         #define USE_INT_QUANTIZATION
 
-        IDFLOAT TYPE_MEMMORY_READ_IDFLOAT_NAME(const IDFLOAT* address) {
-            IDFLOAT result;
-            memcpy_P(&result, address, sizeof(IDFLOAT));
-            return result;
-        }
+        #if defined(AVR_PROGMEM_LOGIC)
+            IDFLOAT TYPE_MEMMORY_READ_IDFLOAT_NAME(const IDFLOAT* address) {
+                IDFLOAT result;
+                memcpy_P(&result, address, sizeof(IDFLOAT));
+                return result;
+            }
+        #else // we redefine macro-logic back to the default
+            #undef TYPE_MEMMORY_READ_IDFLOAT_NAME
+            #undef TYPE_MEMMORY_READ_IDFLOAT
+            #define TYPE_MEMMORY_READ_IDFLOAT(x) (x)
+        #endif
 
         // FLOAT RANGE = (100.0) - (-100.0) | MAX - MIN
         // INT   RANGE = (32767) - (-32768) | MAX - MIN
