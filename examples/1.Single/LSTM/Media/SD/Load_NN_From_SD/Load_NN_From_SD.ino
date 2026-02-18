@@ -36,7 +36,7 @@ void setup(){
   while (!Serial){ }; // Wait for the Serial connection to be established 
   initializeSD();     // Initialization the SD card
   setupTempSensor();  // Initialization + population of timestep-0 with temperatures
-  NN.load(FROM_FILE)  // Loading our NN after the Initialization of the SD
+  NN.load(FROM_FILE); // Loading our NN after the Initialization of the SD
   NN.print();         // Prints the weights & biases of each layer
 }
 
