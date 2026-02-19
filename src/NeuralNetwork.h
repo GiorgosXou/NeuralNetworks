@@ -536,10 +536,11 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 
 
 // Keyword-based NN optimizations
-//
-#if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER)
+//// Check if the NN has only a SINGLE_BIAS_PER_LAYER
+#if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
     #undef OPTIONAL_SINGLE_BIAS
     #define OPTIONAL_SINGLE_BIAS(x) , x
+    #define SINGLE_BIAS_PER_LAYER
 #endif
 
 /// Messages
@@ -1856,12 +1857,10 @@ public:
                     #endif
 
                     // #if !defined(USE_PROGMEM)
-                    #if !defined(NO_BIAS)
-                        #if defined(MULTIPLE_BIASES_PER_LAYER)
-                            delete[] layers[i].bias;
-                        #else
-                            delete layers[i].bias;
-                        #endif
+                    #if defined(MULTIPLE_BIASES_PER_LAYER)
+                        delete[] layers[i].bias;
+                    #elif defined(SINGLE_BIAS_PER_LAYER)
+                        delete layers[i].bias;
                     #endif
                     // #endif
 
@@ -2492,7 +2491,7 @@ public:
                     #if defined(ACTIVATION__PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES) // #34 + // NOTE: Don't get fooled see #36
                         tmp_addr += SIZEOF_FX
                     #endif
-                    #if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         #if defined(USE_INTERNAL_EEPROM)
                             put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY_P  tmp_addr, (IDFLOAT)(TYPE_MEMMORY_GET(tmp_addr, tmp_w) + (LearningRateOfBiases * NN_RANDOM(-1,2) * direction)));
                         #else // USE_EXTERNAL_FRAM
@@ -2539,7 +2538,7 @@ public:
                 
                 // NN_RANDOM(-1,2) means {-1,0,1}
                 for (unsigned int l = 0; l < numberOflayers; l++){
-                    #if !defined(NO_BIAS) && !defined(MULTIPLE_BIASES_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
+                    #if defined(SINGLE_BIAS_PER_LAYER) // TODO: REDUCE_RAM_BIASES "common reference"
                         *layers[l].bias += (LearningRateOfBiases * NN_RANDOM(-1,2) * direction);
                     #endif
                     for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As fas as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
@@ -2678,7 +2677,7 @@ public:
                     #endif
                     myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n]._numberOfInputs), sizeof(NeuralNetwork::Layer::_numberOfInputs));
                     myFile.write(reinterpret_cast<CHAR_BYTE*>(&layers[n]._numberOfOutputs), sizeof(NeuralNetwork::Layer::_numberOfOutputs));
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         myFile.write(reinterpret_cast<CHAR_BYTE*>(layers[n].bias), sizeof(*NeuralNetwork::Layer::bias));
                     #endif
                     // TODO: make an i_j loop for REDUCE_RAM_WEIGHTS_LVL2 instead
@@ -2736,7 +2735,7 @@ public:
                         #endif
                         myFile.println(layers[n]._numberOfInputs); 
                         myFile.println(layers[n]._numberOfOutputs); 
-                        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        #if defined(SINGLE_BIAS_PER_LAYER)
                             myFile.println(CAST_TO_LLONG_IF_NOT_INT_QUANTIZATION(*layers[n].bias)); 
                         #endif
 
@@ -2816,13 +2815,12 @@ public:
                     #endif
                     myFile.read(reinterpret_cast<CHAR_BYTE*>(&tmp_layerInputs), sizeof(tmp_layerInputs));
                     myFile.read(reinterpret_cast<CHAR_BYTE*>(&tmp_layerOutputs), sizeof(tmp_layerOutputs));
-                    #if !defined(NO_BIAS)
-                        #if !defined(MULTIPLE_BIASES_PER_LAYER)
-                            tmp_bias  = new IDFLOAT;
-                            myFile.read(reinterpret_cast<CHAR_BYTE*>(tmp_bias), sizeof(*tmp_bias));
-                        #else
-                            tmp_bias = new IDFLOAT[tmp_layerOutputs * NUMBER_OF_PATHS]; // reminder: this is fine for NOT-REDUCE_RAM_WEIGHTS_LVL2 too
-                        #endif
+
+                    #if defined(SINGLE_BIAS_PER_LAYER)
+                        tmp_bias = new IDFLOAT;
+                        myFile.read(reinterpret_cast<CHAR_BYTE*>(tmp_bias), sizeof(*tmp_bias));
+                    #elif defined(MULTIPLE_BIASES_PER_LAYER)
+                        tmp_bias = new IDFLOAT[tmp_layerOutputs * NUMBER_OF_PATHS]; // reminder: this is fine for NOT-REDUCE_RAM_WEIGHTS_LVL2 too
                     #endif
 
                     #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
@@ -2946,19 +2944,18 @@ public:
                         #endif      
                         tmp_layerInputs  = myFile.readStringUntil('\n').toInt();
                         tmp_layerOutputs = myFile.readStringUntil('\n').toInt();
-                        #if !defined(NO_BIAS)
-                            #if !defined(MULTIPLE_BIASES_PER_LAYER)
-                                #if !defined(USE_INT_QUANTIZATION)
-                                    tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
-                                    tmp_bias  = new DFLOAT;
-                                    *tmp_bias = *((DFLOAT*)(&tmp));
-                                #else
-                                    tmp_bias  = new IDFLOAT;
-                                    *tmp_bias = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
-                                #endif
+
+                        #if defined(SINGLE_BIAS_PER_LAYER)
+                            #if !defined(USE_INT_QUANTIZATION)
+                                tmp       = ATOL((char*)myFile.readStringUntil('\n').c_str());
+                                tmp_bias  = new DFLOAT;
+                                *tmp_bias = *((DFLOAT*)(&tmp));
                             #else
-                                tmp_bias  = new IDFLOAT[tmp_layerOutputs];
+                                tmp_bias  = new IDFLOAT;
+                                *tmp_bias = (IDFLOAT)strtol((char*)myFile.readStringUntil('\n').c_str(), NULL, 10);
                             #endif
+                        #elif defined(MULTIPLE_BIASES_PER_LAYER)
+                            tmp_bias  = new IDFLOAT[tmp_layerOutputs];
                         #endif
 
                         #if !defined(REDUCE_RAM_WEIGHTS_LVL2) // #1.1
@@ -3094,7 +3091,7 @@ public:
                         #if defined(ACTIVATION__PER_LAYER) or defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
                             put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, PropsPerLayer[n]);
                         #endif
-                        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        #if defined(SINGLE_BIAS_PER_LAYER)
                             put_type_memmory_value(IN_EXTERNAL_TYPE_MEMMORY  atAddress, TYPE_MEMMORY_READ_IDFLOAT(*layers[n].bias));
                         #endif
                         for(unsigned int p=0; p< NUMBER_OF_PATHS; p++){ // p = path | NOTE: (As far as I am aware) the compiler is smart enough to optimize\inline this block when NUMBER_OF_PATHS = 1 since it's just a const and always executes once
@@ -3455,7 +3452,7 @@ public:
                 #else          
                     bias = new IDFLOAT[_numberOfOutputs];                   // ##1    New          Biases  // even for USE_RNN_LAYERS_ONLY or USE_PAIR__DENSE_RNN is ok
                 #endif         
-            #elif !defined(NO_BIAS) // TODO: Investigate if with GRU or LSTM anything changes
+            #elif defined(SINGLE_BIAS_PER_LAYER) // TODO: Investigate if with GRU or LSTM anything changes
                 bias = new IDFLOAT;                                         // ##1    New          Bias   .
                 *bias = 1.0; // SuS cause IDFLOAT
             #endif
@@ -3563,7 +3560,7 @@ public:
                         #if defined(ACTIVATION__PER_LAYER)
                             me->F1 = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<byte>(me->address)); // NOTE: ##37 get_type_memmory_value<byte> not LayerType because it's never used here with paired nn-architectures
                         #endif
-                        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        #if defined(SINGLE_BIAS_PER_LAYER)
                             bias = new IDFLOAT(me->get_type_memmory_value<IDFLOAT>(me->address));
                         #endif
                     }else{
@@ -3630,7 +3627,7 @@ public:
                     #endif
 
                     if (j == _numberOfInputs -1){
-                        #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                        #if defined(SINGLE_BIAS_PER_LAYER)
                             delete bias;
                         #endif
 
@@ -3667,7 +3664,7 @@ public:
                     #if defined(ACTIVATION__PER_LAYER)
                         me->F1 = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<byte>(me->address)); // NOTE: #37
                     #endif
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         bias = new IDFLOAT(me->get_type_memmory_value<IDFLOAT>(me->address));
                     #endif
                 }else{
@@ -3738,7 +3735,7 @@ public:
                 #endif
 
                 if (j == _numberOfInputs -1){
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         delete bias;
                     #endif
 
@@ -3935,7 +3932,7 @@ public:
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); 
                 #endif
 
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                #if defined(SINGLE_BIAS_PER_LAYER)
                     DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
                 #endif
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
@@ -3992,7 +3989,7 @@ public:
             #if defined(ACTIVATION__PER_LAYER) // #27
                 byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
             #endif
-            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27
+            #if defined(SINGLE_BIAS_PER_LAYER) // #27
                 DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
             #endif
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
@@ -4084,7 +4081,7 @@ public:
                 #if defined(ACTIVATION__PER_LAYER) // TODO: ##27 move this logic to NeuralNetwork::FeedForward since it's kinda shared across architectures
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
                 #endif
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
+                #if defined(SINGLE_BIAS_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
                     DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
                 #endif
 
@@ -4125,7 +4122,7 @@ public:
                 #if defined(ACTIVATION__PER_LAYER) // TODO: ##27 move this logic to NeuralNetwork::FeedForward since it's kinda shared across architectures
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
                 #endif
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
+                #if defined(SINGLE_BIAS_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
                     DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
                 #endif
 
@@ -4517,7 +4514,7 @@ public:
             preLgamma = new DFLOAT[_numberOfInputs]{}; // create gamma of previous layer and initialize{} values to 0 .. meh  // #10
             
 
-            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+            #if defined(SINGLE_BIAS_PER_LAYER)
                 DFLOAT bias_Delta = 1.0;
             #endif
             DFLOAT gamma;
@@ -4550,7 +4547,7 @@ public:
 
                     CommonCompute(gamma, gamma, inputs, i, _numberOfInputs);
 
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
                 } while (i != 0);
@@ -4577,13 +4574,13 @@ public:
                     
                     CommonCompute(gamma, gamma, inputs, i);
 
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
                 }
             #endif
             
-            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+            #if defined(SINGLE_BIAS_PER_LAYER)
                 *bias -= bias_Delta * me->LearningRateOfBiases;
             #endif
         }
@@ -4595,7 +4592,7 @@ public:
             #endif
             preLgamma = new DFLOAT[_numberOfInputs]{}; // #10
 
-            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+            #if defined(SINGLE_BIAS_PER_LAYER)
                 DFLOAT bias_Delta = 1.0;
             #endif
             DFLOAT gamma;
@@ -4607,7 +4604,7 @@ public:
                     i--;
                     CommonCompute(gamma, frontLayer->preLgamma[i], inputs, i, _numberOfInputs);
 
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
                 } while (i != 0);
@@ -4617,13 +4614,13 @@ public:
                 {
                     CommonCompute(gamma, frontLayer->preLgamma[i], inputs, i);
 
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         bias_Delta *= gamma;
                     #endif
                 }
             #endif
 
-            #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+            #if defined(SINGLE_BIAS_PER_LAYER)
                 *bias -= bias_Delta * me->LearningRateOfBiases;
             #endif
 
@@ -4654,7 +4651,7 @@ public:
                         NN_PRINT_1(F_MACRO("| F(x):"));
                         NN_PRINT_1(me->get_type_memmory_value<byte>(me->address));
                     #endif
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         NN_PRINT_1(F_MACRO("| bias:"));
                         NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
@@ -4737,7 +4734,7 @@ public:
                         NN_PRINT_1(me->threshold);
                     }
                 #endif
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                #if defined(SINGLE_BIAS_PER_LAYER)
                     NN_PRINT_1(F_MACRO("| bias:"));
                     NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
@@ -4838,7 +4835,7 @@ public:
                             NN_PRINT_1(me->threshold);
                         }
                     #endif
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         NN_PRINT_1(F_MACRO("| bias:"));
                         NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
@@ -4877,7 +4874,7 @@ public:
                             NN_PRINT_1(me->threshold);
                         }
                     #endif
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         NN_PRINT_1(F_MACRO("| bias:"));
                         NN_PRINT_2(me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
@@ -4949,7 +4946,7 @@ public:
                     NN_PRINT_1(F_MACRO("*"));
                     NN_PRINT_1(_numberOfOutputs);
                     NN_PRINT_1(F_MACRO("))*3] "));
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         NN_PRINT_1(F_MACRO("| bias:"));
                         NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
@@ -4987,7 +4984,7 @@ public:
                     NN_PRINT_1(F_MACRO("*"));
                     NN_PRINT_1(_numberOfOutputs);
                     NN_PRINT_1(F_MACRO("))*4] "));
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         NN_PRINT_1(F_MACRO("| bias:"));
                         NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
@@ -5024,7 +5021,7 @@ public:
                     NN_PRINT_1(F_MACRO(")*"));
                     NN_PRINT_1(_numberOfOutputs);
                     NN_PRINT_1(F_MACRO("]"));
-                    #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                    #if defined(SINGLE_BIAS_PER_LAYER)
                         NN_PRINT_1(F_MACRO("| bias:"));
                         NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                     #endif
@@ -5113,7 +5110,7 @@ public:
                 #if defined(MULTIPLE_NN_TYPE_ARCHITECTURES)
                     NN_PRINT_1(F_MACRO("]"));
                 #endif
-                #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+                #if defined(SINGLE_BIAS_PER_LAYER)
                     NN_PRINT_1(F_MACRO("| bias:"));
                     NN_PRINT_2(TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION, DFLOAT_LEN);
                 #endif
