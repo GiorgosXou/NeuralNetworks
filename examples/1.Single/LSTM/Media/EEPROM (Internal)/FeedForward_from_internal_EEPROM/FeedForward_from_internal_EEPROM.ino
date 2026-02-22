@@ -5,7 +5,6 @@
    CAUTION: Use Save_NN_to_internal_EEPROM.ino TO SAVE AN NN INTO EEPROM FIRST, BEFORE USE OF THIS SKETCH
    CAUTION: Use Save_NN_to_internal_EEPROM.ino TO SAVE AN NN INTO EEPROM FIRST, BEFORE USE OF THIS SKETCH
 */
-//#define DISABLE_SINGLE_TIMESTEP_THRESHOLD // You may completely disable the single-threshold-logic to reduce sketch-size (if unnecessary)
 
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
 #define _3_OPTIMIZE 0B00000001 // Enables REDUCE_RAM_DELETE__GATED_OUTPUTS (Comment\Disable it to increase CPU performance)
