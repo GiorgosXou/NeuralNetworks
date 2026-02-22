@@ -8,8 +8,8 @@
 //#define DISABLE_SINGLE_TIMESTEP_THRESHOLD // You may completely disable the single-threshold-logic to reduce sketch-size (if unnecessary)
 
 #define NumberOf(arg) ((unsigned int) (sizeof (arg) / sizeof (arg [0]))) // calculates the number of layers (in this case 3)
-#define _3_OPTIMIZE 0B00000001 // ENABLES REDUCE_RAM_DELETE__GATED_OUTPUTS (Comment\Disable it to increase CPU performance)
-#define _2_OPTIMIZE 0B10100000 // Enables MULTIPLE_BIASES_PER_LAYER
+#define _3_OPTIMIZE 0B00000001 // Enables REDUCE_RAM_DELETE__GATED_OUTPUTS (Comment\Disable it to increase CPU performance)
+#define _2_OPTIMIZE 0B10100000 // Enables USE_INTERNAL_EEPROM + MULTIPLE_BIASES_PER_LAYER
 #define _1_OPTIMIZE 0B01011010 // https://github.com/GiorgosXou/NeuralNetworks#define-macro-properties
 #define FROM_EEPROM_ADDRESS 0  // The position at which the NN will be saved in the internal EEPROM
 #define USE_LSTM__NB           // Makes LSTM the core-architecture of your NeuralNetwork. (NB = NO_BACKPROP support)
