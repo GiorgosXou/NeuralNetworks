@@ -1599,13 +1599,13 @@ private:
             #endif
         #endif
         #if defined(USE_GRU_LAYERS_ONLY)
-            void GRU_Only_print();
+            void GRU_Only_print (OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex));
         #endif
         #if defined(USE_LSTM_LAYERS_ONLY)
-            void LSTM_Only_print();
+            void LSTM_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex));
         #endif
         #if defined(USE_RNN_LAYERS_ONLY)
-            void RNN_Only_print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex));
+            void RNN_Only_print (OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex));
         #endif
         void print(OPTIONAL_TIME__TYPE_MEMMORY_INDEX(unsigned int _AtlayerIndex));
     };  
