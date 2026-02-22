@@ -43,7 +43,7 @@
 #ifndef NeuralNetwork_h
 #define NeuralNetwork_h
 
-#define __NN_VERSION__ "VERSION: 4.1.0-Alpha"\n
+#define __NN_VERSION__ "VERSION: 4.1.7-Alpha"\n
 
 
 #if defined(ARDUINO)
