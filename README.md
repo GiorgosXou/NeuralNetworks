@@ -48,7 +48,7 @@ Understanding the Basics of a Neural Network:
 - - ```+``` Use of activation-functions per layer-to-layer.
 - - ```+``` Optimizations based on [user's preference](#define-macro-properties). 
 - - ```+``` Support for [custom activation functions](#define-custom-functions).
-- - ```+``` [Basic ESP32-S3 SIMD acceleration.](https://github.com/GiorgosXou/NeuralNetworks/blob/3dceb2f195bd3341ad0af37d5f020093c8f29988/src/NeuralNetwork.h#L2337-L2340 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
+- - ```+``` [ESP32-S3 DSP-accelerated dot-prod.](https://github.com/GiorgosXou/NeuralNetworks/blob/3dceb2f195bd3341ad0af37d5f020093c8f29988/src/NeuralNetwork.h#L2337-L2340 'Improving speed from ~ O(n^3) to O(n^2) in Feedforward')
 - - ```+``` Both 16 and 8 bit, [int quantization](#int-quantization).
 - - ```+``` MSE/BCE/CCE [loss-functions](#dfloat-loss-functions).
 - - ```+``` Support for [double precision](#define-macro-properties).
@@ -374,7 +374,7 @@ byte ActivFunctions[] = {
 | ```0B00000000``` | |   Nothing | |
 | ```0B10000000``` |<sup><sub>⚠️</sub></sup>|<details><summary>Use `const`\\`PROGMEM` instead of RAM</summary>Enables the use of programmable-memmory instead of RAM, to store and use weights & biases. For non AVR-mcus, the same effect is achieved without the old legacy-progmem-api, therefore you don't need to worry about compatibility when enabling it.</details>|<sub><sup>`USE_PROGMEM`</sup></sub>|
 | ```0B01000000``` |<sup><sub>⚠️📌</sub></sup>| <details><summary>Deletes previous layer's Outputs</summary>**Highly-Recommended** because: for each layer-to-layer input-to-ouput operation of internal feedforward, it deletes the previous layer's outputs. **Important note:** in case you want to `delete[] NN->layers[NN->numberOflayers - 1].outputs;` make sure afterwards to `...outputs = NULL` *(if you plan to `feedforward` again later in your sketch)*. Reducing RAM by a factor of ((the_sum_of_each_layer'_s **\_numberOfOutputs**) - (**\_numberOfOutputs** of_biggest_layer) *(4[float] or 8[double])Bytes )  <sub><sup>approximately i think ?</sub></sup></details>|<sub><sup>`REDUCE_RAM_DELETE_OUTPUTS`</sup></sub>|
-| ```0B00100000``` |<sup><sub>ⓘ</sub></sup>| <details><summary>Disables SIMD support when available</summary>You may disable SIMD-support to ensure the use of any type of input-data</details>| <sub><sup>`DISABLE_SIMD_SUPPORT`</sup></sub>|
+| ```0B00100000``` |<sup><sub>ⓘ</sub></sup>| <details><summary>Disables DSP-acceleration if available</summary>You may disable DSP-acceleration-support to ensure the use of any type of input-data</details>| <sub><sup>`DISABLE_DSP_ACCELERATION`</sup></sub>|
 | ```0B00010000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces RAM for Weights, level 2 </summary> by a factor of (number_of_layers-1)*[2](## 'Size of a pointer (two bytes in the arduino)') Bytes</details>|<sub><sup>`REDUCE_RAM_WEIGHTS_LVL2`</sup></sub>|  
 | ```0B00001000``` |<sup><sub>📌</sub></sup>| <details><summary>Reduces sketch but may effect speed</summary>Optimizes `accumulatedDotProduct` to minimize sketch consumption. May slightly reduce the performance</details>|<sub><sup>`REDUCED_SKETCH_SIZE_DOT_PROD`</sup></sub>| 
 | ```0B00000100``` |<sup><sub>ⓘ</sub></sup> |<details><summary>Reduces RAM using static reference</summary>... to the NN-object (for layers) \| by a factor of [2](## 'Size of a pointer (two bytes in the arduino)')*(number_of_layers - 1 or 2)bytes. _(With this optimization)_ Note that, when you are using multiple NN-**objects** interchangeably in your sketch, you should either update `NN.me` manually before using the next one like `NN.me = &NN2` or just use `_2_OPTIMIZE 0B00000010` instead</details>|<sub><sup>`REDUCE_RAM_STATIC_REFERENCE`</sup></sub>|
@@ -908,7 +908,7 @@ Here most of the resources I came across the internet, I recommend you to have a
 - - - <sub><sup>⭐ </sup></sub>[Use randomSeed() to fallback to PRNG](https://github.com/espressif/arduino-esp32/discussions/7399 '2025-02-17 05:32:41 PM')
 - - ***```CH32V003:```***
 - - - [CH32V arduino support issue](https://community.platformio.org/t/ch32v-arduino-support-issue/38128/9 '2025-07-24 10:34:12 PM')
-- - ***```SIMD:```***
+- - ***```SIMD/DSP:```***
 - - - ***```Pico 2 (RP2350):```***
 - - - - [GPT - Is there a C-api?](https://chatgpt.com/share/67b32cae-0604-8000-b143-de94ac59f082 '2025-02-17 02:35:20 PM')
 - - - - [Reddit post speaking about SIMD too](https://www.reddit.com/r/embedded/comments/1eqyp48/ '2025-02-17 02:26:06 PM')

@@ -242,8 +242,8 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 
     #if ((_1_OPTIMIZE bitor 0B11011111) == 0B11111111)
         #undef MSG22
-        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_SIMD_SUPPORT), allows any type to be used as input-data."
-        #define DISABLE_SIMD_SUPPORT
+        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (DISABLE_DSP_ACCELERATION), allows any type to be used as input-data."
+        #define DISABLE_DSP_ACCELERATION
     #endif
     
     #if ((_1_OPTIMIZE bitor 0B11101111) == 0B11111111) && !defined(FORCED_REDUCE_RAM_WEIGHTS_LVL2) && !defined(IGNORE_OB0001_OPT)
@@ -782,36 +782,36 @@ struct LayerProps { // NOTE: ##34
     #endif
 #endif
 
-// Disable SIMD parallel processing if double-precision or int-quntization is enabled
-#if (!defined(DISABLE_SIMD_SUPPORT) && (defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_SIMD)))
+// Disable DSP parallel processing if double-precision or int-quntization is enabled
+#if (!defined(DISABLE_DSP_ACCELERATION) && (defined(CONFIG_IDF_TARGET_ESP32S3) || defined(USE_ESP_DSP)))
     #undef MSG22
     #if defined(USE_64_BIT_DOUBLE)
-        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support when double precision."
+        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] DSP-acceleration disabled, there is no support when double precision."
     #elif defined(USE_INT_QUANTIZATION)
-        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] SIMD disabled, there is no support for USE_INT_QUANTIZATION."
+        #define MSG22 \n- " [1] 0B00100000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] DSP-acceleration disabled, there is no support for USE_INT_QUANTIZATION."
     #else
-        #define ESP_SUPPORTS_SIMD
+        #define ESP_SUPPORTS_DSP
         #undef ACCUMULATED_DOT_PRODUCT_OF
         // TODO: tmp_dest will be removed once I implement the custom-assembly-dotprod function of esp32 and stuff
         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
             // We keep me->i_j+= len; for Backprop but //TODO: might remove it when (NO_BACKPROP and (NO USE_RNN_LAYERS_ONLY))
 
-            /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; me->i_j+=len; } while(0)
+            /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_DSP_ACCELERATION` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; me->i_j+=len; } while(0)
         #else
-            /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_SIMD_SUPPORT` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
+            /* 💥 𝗡𝗢𝗧𝗘: Try `#define _1_OPTIMIZE 0B00100000` to `DISABLE_DSP_ACCELERATION` OR simply use `float` values as inputs if you're having type-errors */ #define ACCUMULATED_DOT_PRODUCT_OF(src1, src2, dest, len) do { dsps_dotprod_f32(src1, src2, &me->tmp_dest, len); *dest+=me->tmp_dest; } while(0)
         #endif
-        #define MSG22 \n- " [1] 0B00X00000 [I] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using SIMD acceleration."
+        #define MSG22 \n- " [1] 0B00X00000 [I] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] You are using DSP acceleration."
         #if defined(REDUCED_SKETCH_SIZE_DOT_PROD)
             #undef MSG4
-            #define MSG4 \n- " [1] 0B0000X000 [Χ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCED_SKETCH_SIZE_DOT_PROD) not used since (ESP_SUPPORTS_SIMD)."
+            #define MSG4 \n- " [1] 0B0000X000 [Χ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (REDUCED_SKETCH_SIZE_DOT_PROD) not used since (ESP_SUPPORTS_DSP)."
         #endif
         #include "esp_dsp.h"
     #endif
 #endif
 
 // REMINDER DO NOT UNCOMMENT THIS!!!!!! BECAUSE IT WILL RESULT ON ESP32-S3 NOT COMPILING WITH USE_PROGMEM or USE_INTERNAL_EEPROM AT ALL | i keep it here as a future reminder
-// #if defined(ESP_SUPPORTS_SIMD) and (defined(USE_PROGMEM) or defined(USE_INTERNAL_EEPROM))
-//     #error "There's no support for SIMD use with USE_PROGMEM or USE_INTERNAL_EEPROM yet."
+// #if defined(ESP_SUPPORTS_DSP) and (defined(USE_PROGMEM) or defined(USE_INTERNAL_EEPROM))
+//     #error "There's no support for DSP-acceleration use with USE_PROGMEM or USE_INTERNAL_EEPROM yet."
 // #endif
 
 #define ACT1  0
@@ -1621,7 +1621,7 @@ public:
         void resetStates();
     #endif
 
-    #if defined(ESP_SUPPORTS_SIMD)
+    #if defined(ESP_SUPPORTS_DSP)
         DFLOAT tmp_dest; // TODO: tmp_dest will be removed once I implement the custom-assembly-dotprod function of esp32 and stuff
     #endif
 
@@ -2085,7 +2085,7 @@ public:
                 me = this;
             #endif
 
-            #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: SIMD
+            #if defined(REDUCE_RAM_WEIGHTS_LVL2) //footprint episis san leksi // TODO: DSP
                 for (unsigned int i = 0; i < numberOflayers; i++)
                     i_j += NUMBER_FROM(layer_[i], layer_[i + 1], PropsPerLayer[i].arch);
                 
@@ -4128,7 +4128,7 @@ public:
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
 
-                for (unsigned int i=0; i < _numberOfOutputs; i++) // c_t = f_t * c_t-1 ... | Could be SIMD?
+                for (unsigned int i=0; i < _numberOfOutputs; i++) // c_t = f_t * c_t-1 ... | Could be DSP?
                     cellStates[i] *= gatedOutputs[i];
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // u_t (Update-Gate at time t) #14
@@ -4377,7 +4377,7 @@ public:
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
 
-                for (unsigned int i=0; i < _numberOfOutputs; i++) // c_t = f_t * c_t-1 ... | Could be SIMD?
+                for (unsigned int i=0; i < _numberOfOutputs; i++) // c_t = f_t * c_t-1 ... | Could be DSP?
                     cellStates[i] *= gatedOutputs[i];
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_MULTI_BIAS(&bias[_numberOfOutputs]), LSTM_ACTIVATION_FUNCTION, gatedOutputs, (_numberOfInputs+_numberOfOutputs)); // u_t (Update-Gate at time t) #14
