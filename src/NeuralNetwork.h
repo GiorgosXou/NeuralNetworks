@@ -3536,11 +3536,11 @@ public:
         {
             #if defined(REDUCED_SKETCH_SIZE_DOT_PROD) // WARN: #26
                 do {
-                    *dest += (*src1++) * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    *dest += (*src1++) * me->get_type_memmory_value<IDFLOAT>(me->address);
                 } while (--len);
             #else
                 for (unsigned int i = 0; i < len; i++)
-                    *dest += src1[i] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    *dest += src1[i] * me->get_type_memmory_value<IDFLOAT>(me->address);
             #endif
         }
     #endif
@@ -3593,14 +3593,14 @@ public:
                             #if defined(NO_BIAS)
                                 outputs[i] = 0;
                             #else
-                                outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
+                                outputs[i] = *bias;
                             #endif
                         }
                         #if defined(USE_INTERNAL_EEPROM)
-                            outputs[i] += input * TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] += input * TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight);
                         #else // USE_EXTERNAL_FRAM
                             TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight);
-                            outputs[i] += input * tmp_jweight MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] += input * tmp_jweight;
                         #endif
                         me->address += _numberOfInputs * sizeof(IDFLOAT); 
 
@@ -3608,12 +3608,12 @@ public:
                         if (j == _numberOfInputs -1){
                             accumulatedDotProduct(hiddenStates, &outputs[i], _numberOfOutputs); // WithSrc2Address
                             #if defined(ACTIVATION__PER_LAYER)
-                                outputs[i] = (IS_THIS(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                                outputs[i] = (IS_THIS(activation_Function_ptrs)[me->F1])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                             #elif defined(Softmax)
-                                outputs[i] = exp(outputs[i]);
+                                outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                                 me->sumOfSoftmax += outputs[i];
                             #else
-                                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                             #endif
                         }else{
                             me->address += _numberOfOutputs * sizeof(IDFLOAT); 
@@ -3697,14 +3697,14 @@ public:
                         #if defined(NO_BIAS)
                             outputs[i] = 0;
                         #else
-                            outputs[i] = *bias MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] = *bias;
                         #endif
                     }
                     #if defined(USE_INTERNAL_EEPROM)
-                        outputs[i] += input * TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        outputs[i] += input * TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight);
                     #else // USE_EXTERNAL_FRAM
                         TYPE_MEMMORY_ME_GET(me->address + j*sizeof(IDFLOAT), tmp_jweight);
-                        outputs[i] += input * tmp_jweight MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        outputs[i] += input * tmp_jweight;
                     #endif
                     me->address += _numberOfInputs * sizeof(IDFLOAT); 
 
@@ -3714,12 +3714,12 @@ public:
                         //     accumulatedDotProduct(hiddenStates, &outputs[i], _numberOfOutputs); // WithSrc2Address
                         // #endif
                         #if defined(ACTIVATION__PER_LAYER)
-                            outputs[i] = (IS_THIS(activation_Function_ptrs)[me->F1])(outputs[i]); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                            outputs[i] = (IS_THIS(activation_Function_ptrs)[me->F1])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                         #elif defined(Softmax)
-                            outputs[i] = exp(outputs[i]);
+                            outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                             me->sumOfSoftmax += outputs[i];
                         #else
-                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                         #endif
                     // }else{ // #20
                     //     #if defined(USE_RNN_LAYERS_ONLY)
@@ -3778,16 +3778,16 @@ public:
                             #if defined(NO_BIAS)
                                 outputs[i] = 0; // ? speed ? safe one..
                             #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                                outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                                outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]);
                             #else
-                                outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                                outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias);
                             #endif
                         }
 
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                            outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j+j]);
                         #else
-                            outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION; // if double pgm_read_dword 
+                            outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]); // if double pgm_read_dword 
                         #endif
 
                         #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -3802,12 +3802,12 @@ public:
                                 ACCUMULATED_DOT_PRODUCT_OF(hiddenStates, &weights[i][_numberOfInputs], &outputs[i], _numberOfOutputs);
                             #endif
                             #if defined(ACTIVATION__PER_LAYER)
-                                outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[0])])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                                outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[0])])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                             #elif defined(Softmax)
-                                outputs[i] = exp(outputs[i]);
+                                outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                                 me->sumOfSoftmax += outputs[i];
                             #else
-                                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                                outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); // if double pgm_read_dword //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                             #endif
                         }else{
                             #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -3860,16 +3860,16 @@ public:
                         #if defined(NO_BIAS)
                             outputs[i] = 0; // ? speed ? safe one..
                         #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                            outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]);
                         #else
-                            outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias);
                         #endif
                     }
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
-                        outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j+j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(me->weights[me->i_j+j]);
                     #else
-                        outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        outputs[i] += input * TYPE_MEMMORY_READ_IDFLOAT(weights[i][j]);
                     #endif
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -3886,12 +3886,12 @@ public:
                         //     #endif
                         // #endif
                         #if defined(ACTIVATION__PER_LAYER)
-                            outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[0])])(outputs[i]);  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
+                            outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[0])])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));  // AtlayerIndex is always 0 because FeedForward_Individual always refers to first layer
                         #elif defined(Softmax)
-                            outputs[i] = exp(outputs[i]);
+                            outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                             me->sumOfSoftmax += outputs[i];
                         #else
-                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); // if double pgm_read_dword
+                            outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); // if double pgm_read_dword
                         #endif
                     // }else{ // #20
                     //     #if defined(USE_RNN_LAYERS_ONLY) && defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -3933,14 +3933,14 @@ public:
                 #endif
 
                 #if defined(SINGLE_BIAS_PER_LAYER)
-                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address); // NOTE: #28
                 #endif
                 for (unsigned int i = 0; i < _numberOfOutputs; i++)
                 {
                     #if defined(NO_BIAS)
                         outputs[i] = 0;
                     #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                        outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address); 
                     #else
                         outputs[i] = tmp_bias;
                     #endif
@@ -3949,12 +3949,12 @@ public:
                     accumulatedDotProduct(hiddenStates, &outputs[i], _numberOfOutputs); // WithSrc2Address
 
                     #if defined(ACTIVATION__PER_LAYER)
-                        outputs[i] = (IS_THIS(activation_Function_ptrs)[fx])(outputs[i]);
+                        outputs[i] = (IS_THIS(activation_Function_ptrs)[fx])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                     #elif defined(Softmax)
-                        outputs[i] = exp(outputs[i]);
+                        outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                         me->sumOfSoftmax += outputs[i];
                     #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
+                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                     #endif
                 }
 
@@ -3990,14 +3990,14 @@ public:
                 byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
             #endif
             #if defined(SINGLE_BIAS_PER_LAYER) // #27
-                DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; // NOTE: #28
+                DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address); // NOTE: #28
             #endif
             for (unsigned int i = 0; i < _numberOfOutputs; i++)
             {
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION; 
+                    outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address); 
                 #else
                     outputs[i] = tmp_bias;
                 #endif
@@ -4009,21 +4009,21 @@ public:
                     #if defined(REDUCED_SKETCH_SIZE_DOT_PROD) // WARN: #26
                         unsigned int j = 0;
                         do {
-                            outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address);
                         } while (++j != _numberOfInputs);
                     #else
                         for (unsigned int j = 0; j < _numberOfInputs; j++) // REDUCE_RAM_WEIGHTS_LVL2 is disabled
-                            outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                            outputs[i] += inputs[j] * me->get_type_memmory_value<IDFLOAT>(me->address);
                     #endif
                 // #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = (IS_THIS(activation_Function_ptrs)[fx])(outputs[i]);
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[fx])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                 #elif defined(Softmax)
-                    outputs[i] = exp(outputs[i]);
+                    outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                     me->sumOfSoftmax += outputs[i];
                 #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]);
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                 #endif
             }
 
@@ -4052,16 +4052,15 @@ public:
                     #if defined(NO_BIAS)
                         _outputs[i] = 0;
                     #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        _outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        _outputs[i] = me->get_type_memmory_value<IDFLOAT>(me->address);
                     #else 
-                        // MULTIPLY_BY_INT_IF_QUANTIZATION is done, don't worry
                         _outputs[i] = tmp_single_bias; // #14 #15 using bias instead of b since it's single per layer // 2025-05-01 04:46:32 PM  TODO: Tensorflow custom training class-implementation
                     #endif
 
                     ACCUMULATED_DOT_PRODUCT_OF(inputs , &_outputs[i], _numberOfInputs);
                     ACCUMULATED_DOT_PRODUCT_OF(inputs2, &_outputs[i], _numberOfOutputs); 
 
-                    _outputs[i] = activate(_outputs[i]);
+                    _outputs[i] = activate((_outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                 }
             }
         #endif
@@ -4082,7 +4081,7 @@ public:
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
                 #endif
                 #if defined(SINGLE_BIAS_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
-                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address);  // NOTE: ##28 DFLOAT not IDFLOAT
                 #endif
 
                 // Since they are MCUs we care a bit more about sketch size vs speed (not that it can be way faster but anyways)
@@ -4123,7 +4122,7 @@ public:
                     byte fx = GET_ACTIVATION_FUNCTION_FROM(me->get_type_memmory_value<LayerType>(me->address)); // #23
                 #endif
                 #if defined(SINGLE_BIAS_PER_LAYER) // #27 via *bias ? but... bias is IDFLOAT and not DFLOAT unfortunately so I might change it just for it?
-                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address) MULTIPLY_BY_INT_IF_QUANTIZATION;  // NOTE: ##28 DFLOAT not IDFLOAT
+                    DFLOAT tmp_bias = me->get_type_memmory_value<IDFLOAT>(me->address);  // NOTE: ##28 DFLOAT not IDFLOAT
                 #endif
 
                 gateActivationOf(inputs,hiddenStates OPTIONAL_SINGLE_BIAS(tmp_bias), LSTM_ACTIVATION_FUNCTION, gatedOutputs); // f_t (Forget-Gate at time t) #14
@@ -4167,11 +4166,11 @@ public:
 
             #if defined(REDUCED_SKETCH_SIZE_DOT_PROD) // WARN: #26
                 do {
-                    *dest += (*src1++) * TYPE_MEMMORY_READ_IDFLOAT(*src2++) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    *dest += (*src1++) * TYPE_MEMMORY_READ_IDFLOAT(*src2++);
                 } while (--len);
             #else
                 for (unsigned int i = 0; i < len; i++)
-                    *dest += src1[i] * TYPE_MEMMORY_READ_IDFLOAT(src2[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    *dest += src1[i] * TYPE_MEMMORY_READ_IDFLOAT(src2[i]);
             #endif
         }
 
@@ -4189,9 +4188,9 @@ public:
                 #if defined(NO_BIAS)
                     outputs[i] = 0;
                 #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                    outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                    outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]);
                 #else
-                    outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
+                    outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias);
                 #endif
 
                 // https://github.com/GiorgosXou/NeuralNetworks/discussions/16#discussioncomment-7479256
@@ -4210,12 +4209,12 @@ public:
                 // #endif
 
                 #if defined(ACTIVATION__PER_LAYER)
-                    outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex])])(outputs[i]);
+                    outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex])])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                 #elif defined(Softmax)
-                    outputs[i] = exp(outputs[i]);
+                    outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                     me->sumOfSoftmax += outputs[i];
                 #else
-                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                    outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                 #endif
             }
 
@@ -4251,9 +4250,9 @@ public:
                     #if defined(NO_BIAS)
                         outputs[i] = 0;
                     #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(bias[i]);
                     #else
-                        outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // TODO: Do the MULTIPLY_BY_INT_IF_QUANTIZATION-computation once, outside the loop, in a temp-variable when single-bias per layer.... Maybe? also in feedforward etc.
+                        outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias);
                     #endif
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -4265,12 +4264,12 @@ public:
                     #endif
 
                     #if defined(ACTIVATION__PER_LAYER)
-                        outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex])])(outputs[i]);
+                        outputs[i] = (IS_THIS(activation_Function_ptrs)[GET_ACTIVATION_FUNCTION_FROM(me->PropsPerLayer[me->AtlayerIndex])])((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                     #elif defined(Softmax)
-                        outputs[i] = exp(outputs[i]);
+                        outputs[i] = exp((outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                         me->sumOfSoftmax += outputs[i];
                     #else
-                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, outputs[i]); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
+                        outputs[i] = ACTIVATE_WITH(ACTIVATION_FUNCTION, (outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION)); //  (neuron[i]'s output) = Sigmoid_Activation_Function_Value_Of((neuron[i]'s output))
                     #endif
                 }
 
@@ -4308,9 +4307,9 @@ public:
                     #if defined(NO_BIAS)
                         _outputs[i] = 0;
                     #elif defined(MULTIPLE_BIASES_PER_LAYER)                                                                                 // TODO: REDUCE_RAM_BIASES "common reference"
-                        _outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(b[i]) MULTIPLY_BY_INT_IF_QUANTIZATION;
+                        _outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(b[i]);
                     #else
-                        _outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias) MULTIPLY_BY_INT_IF_QUANTIZATION; // #14 #15 using bias instead of b since it's single per layer // 2025-05-01 04:46:32 PM  TODO: Tensorflow custom training class-implementation
+                        _outputs[i] = TYPE_MEMMORY_READ_IDFLOAT(*bias); // #14 #15 using bias instead of b since it's single per layer // 2025-05-01 04:46:32 PM  TODO: Tensorflow custom training class-implementation
                     #endif
 
                     #if defined(REDUCE_RAM_WEIGHTS_LVL2)
@@ -4321,7 +4320,7 @@ public:
                         ACCUMULATED_DOT_PRODUCT_OF(inputs2, &weights[i][offset + _numberOfInputs], &_outputs[i], _numberOfOutputs);
                     #endif
 
-                    _outputs[i] = activate(_outputs[i]);
+                    _outputs[i] = activate((_outputs[i] MULTIPLY_BY_INT_IF_QUANTIZATION));
                 }
             }
         #endif
