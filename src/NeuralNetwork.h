@@ -890,7 +890,6 @@ struct LayerProps { // NOTE: ##34
     #undef AN_1
     #undef ACT1
     #undef Sigmoid
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT1 1
     #define ACTIVATION 
     #define ACTIVATION_FUNCTION Sigmoid
@@ -903,7 +902,6 @@ struct LayerProps { // NOTE: ##34
     #undef Tanh
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT2 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Tanh
@@ -916,7 +914,6 @@ struct LayerProps { // NOTE: ##34
     #undef ReLU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT3 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION ReLU
@@ -930,7 +927,6 @@ struct LayerProps { // NOTE: ##34
     #undef LeakyReLU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT4 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION LeakyReLU
@@ -944,7 +940,6 @@ struct LayerProps { // NOTE: ##34
     #undef ELU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT5 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION ELU
@@ -958,7 +953,6 @@ struct LayerProps { // NOTE: ##34
     #undef SELU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT6 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION SELU
@@ -971,7 +965,6 @@ struct LayerProps { // NOTE: ##34
     #undef Softmax
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT7 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Softmax
@@ -984,7 +977,6 @@ struct LayerProps { // NOTE: ##34
     #undef Identity
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACT8 1
     #define ACTIVATION
     #define ACTIVATION_FUNCTION Identity
@@ -998,7 +990,6 @@ struct LayerProps { // NOTE: ##34
     #undef BinaryStep
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT9 1
@@ -1014,7 +1005,6 @@ struct LayerProps { // NOTE: ##34
     #undef Softplus
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT10 1
@@ -1030,7 +1020,6 @@ struct LayerProps { // NOTE: ##34
     #undef SiLU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT11 1
@@ -1046,7 +1035,6 @@ struct LayerProps { // NOTE: ##34
     #undef GELU
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT12 1
@@ -1062,7 +1050,6 @@ struct LayerProps { // NOTE: ##34
     #undef Mish
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT13 1
@@ -1078,7 +1065,6 @@ struct LayerProps { // NOTE: ##34
     #undef Gaussian
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define NO_BACKPROP
     #define NB | 𝗡𝗢_𝗕𝗔𝗖𝗞𝗣𝗥𝗢𝗣 SUPPORT FOR:
     #define ACT14 1
@@ -1098,7 +1084,6 @@ struct LayerProps { // NOTE: ##34
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
     #undef CUSTOM_AF1_DEFINITION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
     #define CUSTOM_AF1_DEFINITION IS_STATIC DFLOAT CUSTOM_AF1(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
@@ -1125,7 +1110,6 @@ struct LayerProps { // NOTE: ##34
     #undef ACTIVATION
     #undef ACTIVATION_FUNCTION
     #undef CUSTOM_AF2_DEFINITION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
     #define CUSTOM_AF2_DEFINITION IS_STATIC DFLOAT CUSTOM_AF2(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
@@ -1152,7 +1136,6 @@ struct LayerProps { // NOTE: ##34
     #undef ACTIVATION
     #undef CUSTOM_AF3_DEFINITION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
     #define CUSTOM_AF3_DEFINITION IS_STATIC DFLOAT CUSTOM_AF3(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
@@ -1179,7 +1162,6 @@ struct LayerProps { // NOTE: ##34
     #undef ACTIVATION
     #undef CUSTOM_AF4_DEFINITION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
     #define CUSTOM_AF4_DEFINITION IS_STATIC DFLOAT CUSTOM_AF4(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
@@ -1206,7 +1188,6 @@ struct LayerProps { // NOTE: ##34
     #undef ACTIVATION
     #undef CUSTOM_AF5_DEFINITION
     #undef ACTIVATION_FUNCTION
-    #undef DEFAULT_ACTIVATION_FUNCTION
     #define ACTIVATION
     #define CUSTOM_AF5_DEFINITION IS_STATIC DFLOAT CUSTOM_AF5(const DFLOAT &x);
     #define CSTA ||| (𝗖𝗨𝗦𝗧𝗢𝗠)
@@ -1259,7 +1240,6 @@ struct LayerProps { // NOTE: ##34
         // i will also create a mechanism to show #error if more than one is defined with B opperations?
         #undef AN_1
         #undef Sigmoid
-        #define DEFAULT_ACTIVATION_FUNCTION
         #define ACTIVATION //Sigmoid default but for more than one you must declare it
         #define ACTIVATION_FUNCTION Sigmoid
         #define Sigmoid Sigmoid
