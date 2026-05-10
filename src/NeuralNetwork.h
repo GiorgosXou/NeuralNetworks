@@ -228,6 +228,10 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
             #define MSG1 \n- " [1] 0B10000000 [Δ] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] Using (non-AVR), (CONST_MODERN_PROGMEM_LOGIC)." 
             #define CONST_MODERN_PROGMEM_LOGIC
         #endif
+        // Prevent non-AVR build issues when PROGMEM is undefined
+        #if !defined(__AVR__) && !defined(PROGMEM)
+            #define PROGMEM
+        #endif
         #define IS_CONST const
         #define NO_BACKPROP
         #define USE_PROGMEM
