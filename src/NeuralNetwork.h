@@ -282,7 +282,7 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
     #if ((_1_OPTIMIZE bitor 0B11111110) == 0B11111111)
         #include <float.h>
         #if (DBL_MANT_DIG == FLT_MANT_DIG) // https://stackoverflow.com/questions/8751109
-            #error "💥 Your MCU doesn't support 64bit/8byte double-precision !!! | (DBL_MANT_DIG == FLT_MANT_DIG)"
+            #error "💥 Your device doesn't support 64bit/8byte double-precision !!! | (DBL_MANT_DIG == FLT_MANT_DIG)"
         #endif
         #undef ATOL 
         #undef LLONG 
