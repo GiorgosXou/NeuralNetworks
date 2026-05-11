@@ -433,7 +433,13 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler
 import tensorflow as tf
 import numpy as np
+import random
 
+
+# Reproducibility
+random.seed(13)
+np.random.seed(41)
+tf.random.set_seed(21)
 
 # Define if you want to use biases
 IS_BIASED = True
@@ -458,16 +464,16 @@ input_size = 3
 # Create a simple convolutional neural network
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(input_size,)), # Input layer (no bias) 
-    tf.keras.layers.Dense(3, activation='sigmoid', use_bias=IS_BIASED), # Dense  3 units 
+    tf.keras.layers.Dense(4, activation='sigmoid', use_bias=IS_BIASED), # Dense  4 units
     tf.keras.layers.Dense(1, activation='sigmoid', use_bias=IS_BIASED)  # Output 1 unit 
 ])
 
 # Compile the model
-optimizer = Adam(learning_rate=0.031)
+optimizer = Adam(learning_rate=0.071)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
 # Train the model
-model.fit(inputs, outputs, epochs=900, verbose=0)
+model.fit(inputs, outputs, epochs=200, verbose=1)
 
 # Evaluate the model on the training data
 loss, accuracy = model.evaluate(inputs, outputs)
@@ -491,7 +497,7 @@ if IS_BIASED:
     for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
         print('  ', end='')
         for j in range(0, w.shape[1]):
-            print(b[j], end=', ')
+            print(f"{'' if b[j] < 0 else ' '}{b[j]:.8f}f", end=', ')
         print()
     print('};\n')
 else:
@@ -503,7 +509,7 @@ for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
     for j in range(0, w.shape[1]):
         print('  ', end='')
         for i in range(0, w.shape[0]):
-            print(w[i][j], end=', ')
+            print(f"{'' if w[i][j] < 0 else ' '}{w[i][j]:.8f}f", end=', ')
         print()
 print('};\n')
 ```
@@ -701,6 +707,13 @@ You can change that by defining your own value in your sketch, like:
 from tensorflow.keras.optimizers import Adam
 import tensorflow as tf
 import numpy as np
+import random
+
+
+# Reproducibility
+random.seed(13)
+np.random.seed(41)
+tf.random.set_seed(21)
 
 
 IS_BIASED  = True      # Define if you want to use biases
@@ -738,16 +751,16 @@ input_size = 3
 # Create a simple convolutional neural network
 model = tf.keras.Sequential([
     tf.keras.layers.Input(shape=(input_size,)),  # Input layer (no bias)
-    tf.keras.layers.Dense(3, activation='sigmoid', use_bias=IS_BIASED),  # Dense 3 units
+    tf.keras.layers.Dense(4, activation='sigmoid', use_bias=IS_BIASED),  # Dense 4 units
     tf.keras.layers.Dense(1, activation='sigmoid', use_bias=IS_BIASED)  # Output 1 unit
 ])
 
 # Compile the model
-optimizer = Adam(learning_rate=0.031)
+optimizer = Adam(learning_rate=0.071)
 model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
 
 # Train the model
-model.fit(inputs, outputs, epochs=1000, verbose=0)
+model.fit(inputs, outputs, epochs=200, verbose=1)
 
 # Evaluate the model on the training data
 loss, accuracy = model.evaluate(inputs, outputs)
