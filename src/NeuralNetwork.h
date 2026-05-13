@@ -542,9 +542,11 @@ template<size_t   N> struct is_not_a_cstring<      char[N]> { static const bool 
 // Keyword-based NN optimizations
 //// Check if the NN has only a SINGLE_BIAS_PER_LAYER
 #if !defined(NO_BIAS) and !defined(MULTIPLE_BIASES_PER_LAYER)
+    #undef MSG12
     #undef OPTIONAL_SINGLE_BIAS
     #define OPTIONAL_SINGLE_BIAS(x) , x
     #define SINGLE_BIAS_PER_LAYER
+    #define MSG12 \n- " [2] 0B0XX00000 [Ι] [𝗥𝗲𝗺𝗶𝗻𝗱𝗲𝗿] (default) You are using a (SINGLE_BIAS_PER_LAYER)."
 #endif
 
 /// Messages
