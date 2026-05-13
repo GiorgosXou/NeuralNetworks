@@ -490,6 +490,7 @@ for i in range(len(inputs)):
 print()
 weights_biases = model.get_weights()
 
+shift = int(not IS_BIASED) 
 print("#define _1_OPTIMIZE 0B01000000 // Highly-Recommended Optimization For RAM")
 if IS_BIASED:
     print("#define _2_OPTIMIZE 0B00100000 // MULTIPLE_BIASES_PER_LAYER \n")
@@ -504,7 +505,7 @@ else:
     print("#define _2_OPTIMIZE 0B01000000 // NO_BIAS \n")
 
 print('float weights[] = {', end="")
-for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
+for l, (w, b) in enumerate(zip(weights_biases[::2-shift], weights_biases[1-shift::2-shift])):
     print()
     for j in range(0, w.shape[1]):
         print('  ', end='')
@@ -795,8 +796,9 @@ else:
         print("#define _2_OPTIMIZE 0B01000100 // NO_BIAS + int8_t quantization \n")
 
 # Quantize float32 weights to intX_t, print and then back to float32
+shift = int(not IS_BIASED) 
 print(('const PROGMEM ' if IS_PROGMEM else '') + TYPE_NAME + ' weights[] = {', end="")
-for l, (w, b) in enumerate(zip(weights_biases[::2], weights_biases[1::2])):
+for l, (w, b) in enumerate(zip(weights_biases[::2-shift], weights_biases[1-shift::2-shift])):
     print()
     for j in range(0, w.shape[1]):
         print('  ', end='')
